@@ -182,7 +182,7 @@ export class SnaraIndex {
 
     const modal = document.getElementById('chapter-index-modal');
     const title = this.activeBookTitle || `Book ${this.activeBookId}`;
-    modal.innerHTML = this._shell('chapter-index-modal', `Chapters — ${title}`,
+    modal.innerHTML = this._shell('chapter-index-modal', `${title}`,
       `<p class="idx-empty idx-loading">Loading chapters…</p>`);
     openModal('chapter-index-modal');
     icx.delayreplace('#chapter-index-modal [data-icon]');
@@ -202,21 +202,55 @@ export class SnaraIndex {
     }
   }
 
+  // ── Chapter list grouped by act ───────────────
+  // Chapters with same act title are grouped under an act header.
+  // Empty act = ungrouped, shown under "—" at the end.
+
   _chapterListHTML(chapters) {
     if (!chapters.length) {
       return `<p class="idx-empty">No chapters saved yet in this book.</p>`;
     }
-    return chapters.map((ch, i) => `
-      <div class="idx-row" data-filename="${esc(ch.filename)}"
-           data-book-id="${esc(String(this.activeBookId))}"
-           role="button" tabindex="0">
-        <span class="idx-row-num">${chapters.length - i}</span>
-        <span class="idx-row-main">
-          <span class="idx-row-title">${esc(ch.title || ch.filename)}</span>
-          <span class="idx-row-sub">${fmtDate(ch.mtime)}</span>
-        </span>
-        <span class="idx-row-badge">${esc(String(ch.entries ?? 0))} entries</span>
-      </div>`).join('');
+
+    // Group chapters preserving sort order (already sorted by order ASC from PHP)
+    const groups = [];   // [{ act, chapters[] }]
+    const actSeen = new Map(); // act label → group index
+
+    for (const ch of chapters) {
+      const actLabel = ch.act || '';
+      if (actSeen.has(actLabel)) {
+        groups[actSeen.get(actLabel)].chapters.push(ch);
+      } else {
+        actSeen.set(actLabel, groups.length);
+        groups.push({ act: actLabel, chapters: [ch] });
+      }
+    }
+
+    let html = '';
+    let globalIdx = 0;
+
+    for (const group of groups) {
+      // Act header — only render if there's an act title
+      if (group.act) {
+        html += `<div class="idx-act-header">${esc(group.act)}</div>`;
+      }
+
+      for (const ch of group.chapters) {
+        globalIdx++;
+        html += `
+          <div class="idx-row" data-filename="${esc(ch.filename)}"
+               data-book-id="${esc(String(this.activeBookId))}"
+               role="button" tabindex="0">
+            <span class="idx-row-num">${globalIdx}</span>
+            <span class="idx-row-main">
+              <span class="idx-row-title">${esc(ch.title || ch.filename)}</span>
+              <span class="idx-row-sub">${fmtDate(ch.mtime)}${ch.order !== 99 ? ` · #${ch.order}` : ''}</span>
+            </span>
+            <span class="idx-row-badge">${esc(String(ch.entries ?? 0))} entries</span>
+          </div>`;
+      }
+    }
+
+    return html;
   }
 
   _bindChapterRows(modal) {
@@ -232,7 +266,7 @@ export class SnaraIndex {
     });
   }
 
-  _shell(id, heading, bodyHTML) {
+_shell(id, heading, bodyHTML) {
     return `
       <div class="modal-header">
         <span class="modal-title">${esc(heading)}</span>
@@ -249,9 +283,21 @@ export class SnaraIndex {
           <button class="cfg-btn cfg-btn-primary" id="idx-new-book">Create</button>
         </div>` : ''}
       </div>
-      <div class="idx-body modal-body">
-        ${bodyHTML}
-      </div>`;
+      ${id !== 'book-index-modal' ? `<div class='mgrid'>` : `<div>` }
+        <div class="idx-body modal-body">
+          ${bodyHTML}
+        </div>
+        ${id !== 'book-index-modal' ? `     
+        <div class="idx-body modal-opt">
+		<div class="idx-act-header">Tools</div>		
+		<ul class='opt-menu coverimg'>
+		  <li><i data-icon="l-img"></i></i><span>Cover</span></li>
+          <li><i data-icon="book-up"></i><span>Export</span></li>
+		  <li class='enable'><i data-icon="kanban"></i><span>Kanban</span></li>
+		  
+		</ul>
+		</div>` : ``}
+      </div>`; // This </div> now properly closes <div class='mgrid'>
   }
 
   _filter(input, modalId) {
@@ -259,6 +305,17 @@ export class SnaraIndex {
     document.querySelectorAll(`#${modalId} .idx-row`).forEach(row => {
       const text = row.querySelector('.idx-row-title')?.textContent.toLowerCase() ?? '';
       row.hidden = !text.includes(q);
+    });
+    // Hide act headers with no visible rows
+    document.querySelectorAll(`#${modalId} .idx-act-header`).forEach(header => {
+      // Find all rows until the next header
+      let next = header.nextElementSibling;
+      let hasVisible = false;
+      while (next && !next.classList.contains('idx-act-header')) {
+        if (!next.hidden) hasVisible = true;
+        next = next.nextElementSibling;
+      }
+      header.hidden = !hasVisible;
     });
   }
 }

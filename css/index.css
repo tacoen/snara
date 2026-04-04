@@ -6,7 +6,7 @@
 /* ── Nav grouped layout ───────────────────────── */
 
 nav {
-  justify-content: space-between;  /* top group vs bottom group */
+  justify-content: space-between;
 }
 
 .nav-top,
@@ -18,7 +18,6 @@ nav {
   padding: var(--s-xs) 0;
 }
 
-/* bookindex button mirrors settings/theme-toggle style */
 #bookindex-btn {
   background: none;
   border: none;
@@ -124,7 +123,7 @@ nav {
   flex: 1;
   overflow-y: auto;
   padding: var(--s-sm) 0;
-  gap: 0;                /* override settings-body gap */
+  gap: 0;
 }
 
 .idx-empty {
@@ -138,6 +137,26 @@ nav {
 
 .idx-loading::before {
   content: '⟳ ';
+}
+
+/* ── Act group header ───────────────────────────── */
+
+.idx-act-header {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--fg-muted);
+  padding: var(--s-sm) var(--s-lg) var(--s-xs);
+  border-bottom: 1px solid var(--border);
+  background: var(--bg-alt);
+  margin-top: var(--s-xs);
+  opacity: 0.8;
+}
+
+.idx-act-header:first-child {
+  margin-top: 0;
 }
 
 /* ── Row ────────────────────────────────────────── */
@@ -167,7 +186,6 @@ html[theme="dark"] .idx-row-active {
   background: var(--selection);
 }
 
-/* Active indicator dot */
 .idx-row-active-dot {
   width: 6px;
   height: 6px;
@@ -176,7 +194,6 @@ html[theme="dark"] .idx-row-active {
   flex-shrink: 0;
 }
 
-/* Row icon (book shelf icon) */
 .idx-row-icon {
   font-size: 16px;
   color: var(--fg-muted);
@@ -185,7 +202,6 @@ html[theme="dark"] .idx-row-active {
   align-items: center;
 }
 
-/* Number badge (chapter list) */
 .idx-row-num {
   font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
   font-size: 10px;
@@ -196,7 +212,6 @@ html[theme="dark"] .idx-row-active {
   flex-shrink: 0;
 }
 
-/* Main text block */
 .idx-row-main {
   flex: 1;
   display: flex;
@@ -220,7 +235,6 @@ html[theme="dark"] .idx-row-active {
   opacity: 0.65;
 }
 
-/* Right-side count badge */
 .idx-row-badge {
   font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
   font-size: 10px;

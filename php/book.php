@@ -4,7 +4,7 @@
 
    Actions:
      GET  ?action=book.index           → [{id, title, mtime, chapters}]
-     GET  ?action=book.chapters&id=$n  → [{filename, title, mtime, entries}], sorted newest first
+     GET  ?action=book.chapters&id=$n  → [{filename, title, mtime, entries, act, order}], sorted by order
      POST ?action=book.create          ← {title}  → {id, title}
      POST ?action=book.setActive       ← {bookId} → {ok}
 
@@ -13,11 +13,9 @@
        bookindex.json        — [{id, title}]
        1/                    — book 1 documents
          chapter-name.json
+         act.json            — [{filename, act}] auto-rebuilt on save
        2/
          …
-
-   bookindex.json is the authoritative list of books.
-   Each book directory is named by its integer id.
 ─────────────────────────────────────────────────── */
 
 class Book {
@@ -51,16 +49,15 @@ class Book {
   }
 
   // ── book.index ────────────────────────────────
-  // Returns all books, enriched with mtime and chapter count.
 
   public static function index(): array {
     $books = self::readIndex();
     return array_map(function($book) {
       $dir      = self::bookDir((int)$book['id']);
       $mtime    = is_dir($dir) ? filemtime($dir) : null;
-      $chapters = is_dir($dir)
-        ? count(glob($dir . '/*.json') ?: [])
-        : 0;
+      $files    = glob($dir . '/*.json') ?: [];
+      // Exclude act.json from count
+      $chapters = count(array_filter($files, fn($f) => basename($f) !== 'act.json'));
       return [
         'id'       => $book['id'],
         'title'    => $book['title'] ?? '',
@@ -71,24 +68,36 @@ class Book {
   }
 
   // ── book.chapters ─────────────────────────────
-  // Lists .json files in data/$id/, sorted by mtime DESC (newest first).
+  // Lists .json files in data/$id/ (excluding act.json).
+  // Enriches each chapter with:
+  //   - act: from act.json lookup (empty string if no act entry)
+  //   - order: from meta.order (default 99)
+  // Sorted by order ASC, then filename ASC.
 
   public static function chapters(int $id): array {
     $dir = self::bookDir($id);
     if (!is_dir($dir)) return [];
 
+    // Load act index: filename → act title
+    $actMap = [];
+    foreach (Document::readActIndex($id) as $entry) {
+      $actMap[$entry['filename']] = $entry['act'] ?? '';
+    }
+
     $files = glob($dir . '/*.json') ?: [];
+    // Exclude act.json
+    $files = array_filter($files, fn($f) => basename($f) !== 'act.json');
 
-    // Sort by mtime descending (newest first = creation time desc proxy)
-    usort($files, fn($a, $b) => filemtime($b) <=> filemtime($a));
+    $chapters = [];
 
-    return array_map(function($path) {
+    foreach ($files as $path) {
       $filename = basename($path, '.json');
       $mtime    = filemtime($path);
+      $title    = $filename;
+      $entries  = 0;
+      $order    = 99;
+      $act      = $actMap[$filename] ?? '';
 
-      // Try to extract title and entry count from the saved JSON
-      $title   = $filename;
-      $entries = 0;
       $raw = @file_get_contents($path);
       if ($raw) {
         $data = json_decode($raw, true);
@@ -97,25 +106,37 @@ class Book {
           if (isset($data['article']) && is_array($data['article'])) {
             $entries = count($data['article']);
           }
+          // Read order from meta
+          if (isset($data['meta']['order'])) {
+            $order = (int) $data['meta']['order'];
+          }
         }
       }
 
-      return [
+      $chapters[] = [
         'filename' => $filename,
         'title'    => $title,
         'mtime'    => $mtime,
         'entries'  => $entries,
+        'act'      => $act,
+        'order'    => $order,
       ];
-    }, $files);
+    }
+
+    // Sort by order ASC, then filename ASC as tiebreaker
+    usort($chapters, function($a, $b) {
+      if ($a['order'] !== $b['order']) return $a['order'] <=> $b['order'];
+      return strcmp($a['filename'], $b['filename']);
+    });
+
+    return $chapters;
   }
 
   // ── book.create ───────────────────────────────
-  // Appends a new book to bookindex.json, creates the directory.
 
   public static function create(string $title): array {
     $books  = self::readIndex();
 
-    // Auto-increment id
     $maxId = 0;
     foreach ($books as $b) {
       if ((int)$b['id'] > $maxId) $maxId = (int)$b['id'];
@@ -125,7 +146,6 @@ class Book {
     $books[] = ['id' => $newId, 'title' => $title];
     self::writeIndex($books);
 
-    // Create book directory
     $dir = self::bookDir($newId);
     if (!is_dir($dir)) mkdir($dir, 0755, true);
 
@@ -133,8 +153,6 @@ class Book {
   }
 
   // ── book.setActive ─────────────────────────────
-  // Persists the active book choice into config.json so it
-  // survives a page refresh.
 
   public static function setActive(int $bookId): void {
     $books = self::readIndex();

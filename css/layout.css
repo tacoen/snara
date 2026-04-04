@@ -1,0 +1,30 @@
+
+.dashboard {
+  display: grid;
+  grid-template-columns: auto 15rem;
+}
+
+aside, .content-area {
+  height: calc(100dvh - 42px);
+}
+
+aside {
+  grid-row: span 2;
+  padding: var(--s-md);
+  border-left: 1px solid var(--border);
+}
+
+
+.content-area {
+  display: flex;
+  width: 100%;
+  flex-direction: column;
+}
+
+#article {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+
