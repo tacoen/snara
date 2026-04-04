@@ -1,0 +1,266 @@
+import { AppConfig } from '../snara.js';
+import icx           from '../icons/ge-icon.js';
+
+function esc(str) {
+  return String(str ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;');
+}
+
+function fmtDate(ts) {
+  if (!ts) return '—';
+  const d = new Date(ts * 1000);
+  return d.toLocaleDateString(undefined, { year:'numeric', month:'short', day:'numeric' });
+}
+
+function ensureModal(id) {
+  if (document.getElementById(id)) return document.getElementById(id);
+
+  const overlay = document.createElement('div');
+  overlay.className = 'app-overlay';
+  overlay.id = id + '-overlay';
+
+  const modal = document.createElement('div');
+  modal.className = 'app-modal idx-modal';
+  modal.id = id;
+  modal.setAttribute('role', 'dialog');
+  modal.setAttribute('aria-modal', 'true');
+
+  document.body.appendChild(overlay);
+  document.body.appendChild(modal);
+
+  overlay.addEventListener('click', () => closeModal(id));
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape' && modal.classList.contains('open')) closeModal(id);
+  });
+
+  return modal;
+}
+
+function openModal(id) {
+  document.getElementById(id + '-overlay')?.classList.add('open');
+  document.getElementById(id)?.classList.add('open');
+  document.body.classList.add('modal-open');
+}
+
+function closeModal(id) {
+  document.getElementById(id + '-overlay')?.classList.remove('open');
+  document.getElementById(id)?.classList.remove('open');
+  document.body.classList.remove('modal-open');
+}
+
+export class SnaraIndex {
+
+  static instance = null;
+
+  constructor() {
+    SnaraIndex.instance = this;
+    this.activeBookId    = AppConfig.activeBookId ?? null;
+    this.activeBookTitle = AppConfig.activeBookTitle ?? '';
+    this._ensureDOM();
+  }
+
+  _ensureDOM() {
+    ensureModal('book-index-modal');
+    ensureModal('chapter-index-modal');
+  }
+
+  async openBookIndex() {
+    const modal = document.getElementById('book-index-modal');
+    modal.innerHTML = this._shell('book-index-modal', 'Books', this._bookIndexBody('loading'));
+    openModal('book-index-modal');
+    icx.delayreplace('#book-index-modal [data-icon]');
+
+    modal.querySelector('#idx-new-book')?.addEventListener('click', () => this._createBook(modal));
+
+    try {
+      const res   = await fetch(AppConfig.apiPath + '?action=book.index');
+      const books = await res.json();
+      if (books.error) throw new Error(books.error);
+      modal.querySelector('.idx-body').innerHTML = this._bookListHTML(books);
+      this._bindBookRows(modal);
+    } catch(e) {
+      modal.querySelector('.idx-body').innerHTML =
+        `<p class="idx-empty">Could not load books: ${esc(e.message)}</p>`;
+    }
+  }
+
+  _bookIndexBody(state) {
+    if (state === 'loading') return `<p class="idx-empty idx-loading">Loading books…</p>`;
+    return '';
+  }
+
+  _bookListHTML(books) {
+    if (!books.length) {
+      return `<p class="idx-empty">No books yet. Create your first one above.</p>`;
+    }
+    return books.map(b => `
+      <div class="idx-row${this.activeBookId == b.id ? ' idx-row-active' : ''}"
+           data-book-id="${esc(b.id)}" data-book-title="${esc(b.title)}" role="button" tabindex="0">
+        <span class="idx-row-icon"><i data-icon="t-shelf"></i></span>
+        <span class="idx-row-main">
+          <span class="idx-row-title">${esc(b.title || 'untitled')}</span>
+          <span class="idx-row-sub">id ${esc(String(b.id))} · ${fmtDate(b.mtime)}</span>
+        </span>
+        <span class="idx-row-badge">${esc(String(b.chapters ?? 0))} ch</span>
+        ${this.activeBookId == b.id
+          ? '<span class="idx-row-active-dot" title="Active book"></span>'
+          : ''}
+      </div>`).join('');
+  }
+
+  _bindBookRows(modal) {
+    modal.querySelectorAll('.idx-row').forEach(row => {
+      const activate = () => {
+        const id    = row.dataset.bookId;
+        const title = row.dataset.bookTitle;
+        this._setActiveBook(id, title);
+        closeModal('book-index-modal');
+      };
+      row.addEventListener('click', activate);
+      row.addEventListener('keydown', e => { if (e.key === 'Enter') activate(); });
+    });
+    icx.delayreplace('#book-index-modal [data-icon]');
+  }
+
+  async _createBook(modal) {
+    const titleInput = modal.querySelector('#idx-new-book-title');
+    const title = titleInput?.value.trim();
+    if (!title) { titleInput?.focus(); return; }
+
+    const btn = modal.querySelector('#idx-new-book');
+    btn.disabled = true;
+    btn.textContent = 'creating…';
+
+    try {
+      const res  = await fetch(AppConfig.apiPath + '?action=book.create', {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify({ title }),
+      });
+      const data = await res.json();
+      if (data.error) throw new Error(data.error);
+
+      this._setActiveBook(data.id, title);
+      closeModal('book-index-modal');
+    } catch(e) {
+      btn.disabled    = false;
+      btn.textContent = 'Create';
+      console.error('[snara] book create failed:', e);
+    }
+  }
+
+  _setActiveBook(id, title) {
+    const switching = this.activeBookId != id;
+
+    this.activeBookId    = id;
+    this.activeBookTitle = title;
+    AppConfig.activeBookId    = id;
+    AppConfig.activeBookTitle = title;
+
+    const label = document.getElementById('active-book-label');
+    if (label) label.textContent = title || `Book ${id}`;
+
+    if (switching) {
+      const entries = document.querySelector('.entries');
+      if (entries) entries.innerHTML = '';
+
+      const fn = document.getElementById('filename');
+      if (fn) fn.innerText = '';
+    }
+
+    fetch(AppConfig.apiPath + '?action=book.setActive', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify({ bookId: id }),
+    }).catch(() => {});
+  }
+
+  async openChapterIndex() {
+    if (!this.activeBookId) {
+      await this.openBookIndex();
+      return;
+    }
+
+    const modal = document.getElementById('chapter-index-modal');
+    const title = this.activeBookTitle || `Book ${this.activeBookId}`;
+    modal.innerHTML = this._shell('chapter-index-modal', `Chapters — ${title}`,
+      `<p class="idx-empty idx-loading">Loading chapters…</p>`);
+    openModal('chapter-index-modal');
+    icx.delayreplace('#chapter-index-modal [data-icon]');
+
+    try {
+      const res  = await fetch(
+        AppConfig.apiPath + `?action=book.chapters&id=${encodeURIComponent(this.activeBookId)}`
+      );
+      const chapters = await res.json();
+      if (chapters.error) throw new Error(chapters.error);
+
+      modal.querySelector('.idx-body').innerHTML = this._chapterListHTML(chapters);
+      this._bindChapterRows(modal);
+    } catch(e) {
+      modal.querySelector('.idx-body').innerHTML =
+        `<p class="idx-empty">Could not load chapters: ${esc(e.message)}</p>`;
+    }
+  }
+
+  _chapterListHTML(chapters) {
+    if (!chapters.length) {
+      return `<p class="idx-empty">No chapters saved yet in this book.</p>`;
+    }
+    return chapters.map((ch, i) => `
+      <div class="idx-row" data-filename="${esc(ch.filename)}"
+           data-book-id="${esc(String(this.activeBookId))}"
+           role="button" tabindex="0">
+        <span class="idx-row-num">${chapters.length - i}</span>
+        <span class="idx-row-main">
+          <span class="idx-row-title">${esc(ch.title || ch.filename)}</span>
+          <span class="idx-row-sub">${fmtDate(ch.mtime)}</span>
+        </span>
+        <span class="idx-row-badge">${esc(String(ch.entries ?? 0))} entries</span>
+      </div>`).join('');
+  }
+
+  _bindChapterRows(modal) {
+    modal.querySelectorAll('.idx-row').forEach(row => {
+      const load = () => {
+        const filename = row.dataset.filename;
+        const bookId   = row.dataset.bookId;
+        closeModal('chapter-index-modal');
+        window.loadDocument?.(bookId, filename);
+      };
+      row.addEventListener('click', load);
+      row.addEventListener('keydown', e => { if (e.key === 'Enter') load(); });
+    });
+  }
+
+  _shell(id, heading, bodyHTML) {
+    return `
+      <div class="modal-header">
+        <span class="modal-title">${esc(heading)}</span>
+        <button class="modal-close" onclick="closeModal('${id}')" title="Close">
+          <i data-icon="x"></i>
+        </button>
+      </div>
+      <div class="idx-toolbar">
+        <input class="cfg-input idx-search" placeholder="Filter…" id="idx-search-${id}"
+               oninput="SnaraIndex.instance._filter(this,'${id}')">
+        ${id === 'book-index-modal' ? `
+        <div class="idx-create-row">
+          <input class="cfg-input" id="idx-new-book-title" placeholder="New book title…">
+          <button class="cfg-btn cfg-btn-primary" id="idx-new-book">Create</button>
+        </div>` : ''}
+      </div>
+      <div class="idx-body modal-body">
+        ${bodyHTML}
+      </div>`;
+  }
+
+  _filter(input, modalId) {
+    const q = input.value.toLowerCase();
+    document.querySelectorAll(`#${modalId} .idx-row`).forEach(row => {
+      const text = row.querySelector('.idx-row-title')?.textContent.toLowerCase() ?? '';
+      row.hidden = !text.includes(q);
+    });
+  }
+}
+
+window.closeModal = closeModal;
