@@ -38,7 +38,7 @@ class Document {
     if (!is_dir($dir)) return [];
     $files = glob($dir . '/*.json') ?: [];
     // Exclude act.json from document list
-    $files = array_filter($files, fn($f) => basename($f) !== 'act.json');
+    $files = array_filter($files, fn($f) => strpos($f, '/conf/') === false);
     return array_map(fn($f) => basename($f, '.json'), array_values($files));
   }
 
@@ -55,6 +55,7 @@ class Document {
   public static function save(string $filename, array $data, ?int $bookId = null): void {
     $dir = self::dir($bookId);
     if (!is_dir($dir)) mkdir($dir, 0755, true);
+    if ($bookId) Config::ensureBookDirs($bookId);
 
     $data['filename'] = self::safeName($filename);
     if ($bookId) $data['bookId'] = $bookId;
@@ -64,10 +65,11 @@ class Document {
       $data['meta'] = array_merge(['order' => 99], $data['meta'] ?? []);
     }
 
-    file_put_contents(
-      self::path($filename, $bookId),
-      json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE)
-    );
+    $writePath = self::path($filename, $bookId);
+    $encoded   = json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
+    if (file_put_contents($writePath, $encoded) === false) {
+      throw new RuntimeException("Failed to write document: $writePath");
+    }
 
     // Rebuild act.json for this book
     if ($bookId) {
@@ -96,11 +98,16 @@ class Document {
     $dir = self::dir($bookId);
     if (!is_dir($dir)) return;
 
+    // Resolve act default: book default.json overrides global default.json
+    $resolved   = Config::resolveDefaults($bookId);
+    $actDefault = $resolved['act'] ?? 'None';
+
     $files = glob($dir . '/*.json') ?: [];
     $result = [];
 
     foreach ($files as $file) {
-      if (basename($file) === 'act.json') continue;
+      // Skip conf/ directory files
+      if (strpos($file, '/conf/') !== false) continue;
 
       $raw = @file_get_contents($file);
       if (!$raw) continue;
@@ -108,7 +115,7 @@ class Document {
       if (!is_array($doc)) continue;
 
       $filename = $doc['filename'] ?? basename($file, '.json');
-      $actText  = '';
+      $actText  = $actDefault;
 
       // Find first entry with class "act"
       $article = $doc['article'] ?? [];
@@ -125,8 +132,9 @@ class Document {
       ];
     }
 
+    Config::ensureBookDirs($bookId);
     file_put_contents(
-      $dir . '/act.json',
+      $dir . '/conf/act.json',
       json_encode($result, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE)
     );
   }
@@ -144,7 +152,7 @@ class Document {
   // ── Act index reader (used by Book::chapters) ─
 
   public static function readActIndex(int $bookId): array {
-    $path = self::dir($bookId) . '/act.json';
+    $path = self::dir($bookId) . '/conf/act.json';
     if (!file_exists($path)) return [];
     $data = json_decode(file_get_contents($path), true);
     return is_array($data) ? $data : [];

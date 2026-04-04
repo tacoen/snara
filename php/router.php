@@ -5,6 +5,11 @@
    Actions:
      GET  ?action=config.get
      POST ?action=config.set
+     GET  ?action=default.get
+     POST ?action=default.set
+     GET  ?action=bookdefault.get&bookId=$n
+     POST ?action=bookdefault.set&bookId=$n    ← {defaults:{…}}
+
      GET  ?action=doc.list
      GET  ?action=doc.get&filename=name
      POST ?action=doc.save
@@ -49,6 +54,39 @@ class Router {
                 case 'config.set':
                     self::requireMethod($method, 'POST');
                     Config::set(self::body());
+                    echo json_encode(['ok' => true]);
+                    break;
+
+                // ── Global defaults ──────────────────────────
+                case 'default.get':
+                    self::requireMethod($method, 'GET');
+                    echo json_encode(['defaults' => Config::getGlobalDefaults()]);
+                    break;
+
+                case 'default.set':
+                    self::requireMethod($method, 'POST');
+                    $body = self::body();
+                    $defaults = $body['defaults'] ?? $body;
+                    Config::setGlobalDefaults($defaults);
+                    echo json_encode(['ok' => true]);
+                    break;
+
+                // ── Per-book defaults ────────────────────────
+                case 'bookdefault.get':
+                    self::requireMethod($method, 'GET');
+                    $bookId = (int) self::requireParam('bookId');
+                    echo json_encode(['defaults' => Config::getBookDefaults($bookId)]);
+                    break;
+
+                case 'bookdefault.set':
+                    self::requireMethod($method, 'POST');
+                    $body     = self::body();
+                    $bookId   = isset($_GET['bookId'])
+                        ? (int)$_GET['bookId']
+                        : (int)($body['bookId'] ?? 0);
+                    if (!$bookId) self::error(400, 'Missing bookId');
+                    $defaults = $body['defaults'] ?? $body;
+                    Config::setBookDefaults($bookId, $defaults);
                     echo json_encode(['ok' => true]);
                     break;
 

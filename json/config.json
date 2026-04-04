@@ -3,14 +3,6 @@
     "dataPath": "\/data",
     "jsonPath": "\/json",
     "theme": "dark",
-    "defaultTag": "beat",
-    "autosave": true,
-    "autosaveInterval": 30,
-    "metaFields": [
-        "characters",
-        "settings",
-        "prompts"
-    ],
     "classes": [
         "act",
         "chapter",

@@ -10,10 +10,16 @@
 
    Data layout:
      data/
-       bookindex.json        — [{id, title}]
-       1/                    — book 1 documents
+       bookindex.json          — [{id, title}]
+       1/                      — book 1 article documents
          chapter-name.json
-         act.json            — [{filename, act}] auto-rebuilt on save
+         conf/
+           act.json            — [{filename, act}] auto-rebuilt on save
+           default.json        — per-book defaults (seeded from json/default.json)
+         image/                — book cover and assets
+         cache/                — generated/cached files
+         import/               — import staging
+         export/               — export output
        2/
          …
 ─────────────────────────────────────────────────── */
@@ -56,8 +62,7 @@ class Book {
       $dir      = self::bookDir((int)$book['id']);
       $mtime    = is_dir($dir) ? filemtime($dir) : null;
       $files    = glob($dir . '/*.json') ?: [];
-      // Exclude act.json from count
-      $chapters = count(array_filter($files, fn($f) => basename($f) !== 'act.json'));
+      $chapters = count($files);
       return [
         'id'       => $book['id'],
         'title'    => $book['title'] ?? '',
@@ -68,7 +73,7 @@ class Book {
   }
 
   // ── book.chapters ─────────────────────────────
-  // Lists .json files in data/$id/ (excluding act.json).
+  // Lists .json files in data/$id/.
   // Enriches each chapter with:
   //   - act: from act.json lookup (empty string if no act entry)
   //   - order: from meta.order (default 99)
@@ -77,16 +82,18 @@ class Book {
   public static function chapters(int $id): array {
     $dir = self::bookDir($id);
     if (!is_dir($dir)) return [];
+    Config::ensureBookDirs($id);
 
     // Load act index: filename → act title
+    $resolved = Config::resolveDefaults($id);
+    $actDefault = $resolved['act'] ?? 'None';
+
     $actMap = [];
     foreach (Document::readActIndex($id) as $entry) {
-      $actMap[$entry['filename']] = $entry['act'] ?? '';
+      $actMap[$entry['filename']] = $entry['act'] ?? $actDefault;
     }
 
     $files = glob($dir . '/*.json') ?: [];
-    // Exclude act.json
-    $files = array_filter($files, fn($f) => basename($f) !== 'act.json');
 
     $chapters = [];
 
@@ -96,7 +103,7 @@ class Book {
       $title    = $filename;
       $entries  = 0;
       $order    = 99;
-      $act      = $actMap[$filename] ?? '';
+      $act      = $actMap[$filename] ?? $actDefault;
 
       $raw = @file_get_contents($path);
       if ($raw) {
@@ -148,6 +155,7 @@ class Book {
 
     $dir = self::bookDir($newId);
     if (!is_dir($dir)) mkdir($dir, 0755, true);
+    Config::ensureBookDirs($newId);
 
     return ['id' => $newId, 'title' => $title];
   }

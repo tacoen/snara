@@ -13,11 +13,8 @@ import icx               from './icons/ge-icon.js';
 export const AppConfig = {
   apiPath:          '/api.php',
   dataPath:         '/data',
+  jsonPath:         '/json',
   theme:            'light',
-  defaultTag:       'beat',
-  autosave:         true,
-  autosaveInterval: 30,
-  metaFields:       ['characters', 'settings', 'prompts'],
   classes:          ['act', 'chapter', 'scene', 'beat'],
   headingMap:       [
     { prefix: '#### ', cls: 'beat'    },
@@ -29,19 +26,37 @@ export const AppConfig = {
   activeBookTitle: '',
 };
 
-// ── Boot: load config first, then init ────────────
+// ── Global defaults store (from json/default.json) ─
+export const AppDefaults = {
+  act:              'None',
+  defaultTag:       'beat',
+  autosave:         true,
+  autosaveInterval: 30,
+  metaFields:       ['characters', 'settings', 'prompts'],
+};
+
+// ── Boot ──────────────────────────────────────────
 
 async function boot() {
   try {
-    const res    = await fetch(AppConfig.apiPath + '?action=config.get');
-    const config = await res.json();
-    Object.assign(AppConfig, config);
+    const [cfgRes, defRes] = await Promise.all([
+      fetch(AppConfig.apiPath + '?action=config.get'),
+      fetch(AppConfig.apiPath + '?action=default.get'),
+    ]);
+    const config   = await cfgRes.json();
+    const defData  = await defRes.json();
+
+    Object.assign(AppConfig,   config);
+    Object.assign(AppDefaults, defData.defaults ?? {});
   } catch (e) {
     console.warn('[snara] config load failed, using defaults:', e);
   }
 
-  // Apply struct customisation
-  SnaraStruct.configure(AppConfig);
+  // Apply struct customisation from config
+  SnaraStruct.configure({
+    classes:    AppConfig.classes,
+    headingMap: AppConfig.headingMap,
+  });
 
   // Apply theme
   SnaraTool.applyTheme(AppConfig.theme || SnaraTool.savedTheme());
@@ -76,16 +91,16 @@ async function boot() {
   window.removeField   = btn  => ui.removeField(btn);
   window.toggleTheme   = ()   => ui.toggleTheme();
 
-  // ── Settings globals ─────────────────────────────
+  // ── Settings globals ────────────────────────────
   window.openSettings  = ()   => settings.open();
   window.settingsInst  = settings;
 
-  // ── Index globals ────────────────────────────────
+  // ── Index globals ───────────────────────────────
   window.bookIndex     = ()   => idx.openBookIndex();
   window.chapterIndex  = ()   => idx.openChapterIndex();
-  window.SnaraIndex    = SnaraIndex;   // needed for inline filter oninput
+  window.SnaraIndex    = SnaraIndex;
 
-  // ── Keyboard shortcuts ───────────────────────────
+  // ── Keyboard shortcuts ──────────────────────────
   document.addEventListener('keydown', e => {
     if (e.key === 's' && (e.ctrlKey || e.metaKey)) {
       e.preventDefault();

@@ -1,8 +1,8 @@
 {
-    "filename": "untitled",
+    "filename": "copyofbefore",
     "bookId": 1,
     "meta": {
-        "order": 99,
+        "order": "99",
         "characters": "",
         "settings": "",
         "prompts": ""

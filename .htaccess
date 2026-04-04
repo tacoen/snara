@@ -1,0 +1,10 @@
+RewriteEngine On
+RewriteRule ^favicon\.ico$ - [R=204,L]
+
+<FilesMatch "\.(htm|html|css|js|txt)$">
+    AddDefaultCharset UTF-8
+</FilesMatch>
+
+<FilesMatch "\.js|\.css|\.html|\.json$">
+    Header set Cache-Control "no-store, no-cache, must-revalidate, max-age=0"
+</FilesMatch>
