@@ -1,0 +1,44 @@
+{
+    "apiPath": "\/api.php",
+    "dataPath": "\/data",
+    "jsonPath": "\/json",
+    "theme": "dark",
+    "defaultTag": "beat",
+    "autosave": true,
+    "autosaveInterval": 30,
+    "metaFields": [
+        "characters",
+        "settings",
+        "prompts"
+    ],
+    "classes": [
+        "act",
+        "chapter",
+        "scene",
+        "beat"
+    ],
+    "headingMap": [
+        {
+            "prefix": "#### ",
+            "cls": "beat"
+        },
+        {
+            "prefix": "### ",
+            "cls": "scene"
+        },
+        {
+            "prefix": "## ",
+            "cls": "chapter"
+        },
+        {
+            "prefix": "# ",
+            "cls": "act"
+        },
+        {
+            "prefix": "---",
+            "cls": "beat"
+        }
+    ],
+    "activeBookId": 2,
+    "activeBookTitle": "Wei"
+}

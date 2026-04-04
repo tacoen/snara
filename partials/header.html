@@ -1,0 +1,23 @@
+<header>
+  <div class="header-left">
+    <button id="chapterIndex-btn" onclick="chapterIndex()" title="Chapter index" aria-label="Chapter index">
+      <i data-icon="t-book"></i>
+    </button>
+    <div class="filename">
+      <span id="active-book-label" class="book-label">—</span>
+      <span class="filename-sep">/</span>
+      <span id="filename" contenteditable spellcheck="false" data-placeholder="untitled"></span>
+    </div>
+  </div>
+
+  <button id="save-btn" onclick="saveDocument()" title="Save (Ctrl+S)" aria-label="Save document">
+    <i data-icon="t-save"></i>
+    <span class="save-label">save</span>
+  </button>
+
+  <ul class="tabmenu">
+    <li class="active" data-tab="editor">Editor</li>
+    <li data-tab="meta">Meta</li>
+    <li data-tab="files">Files</li>
+  </ul>
+</header>

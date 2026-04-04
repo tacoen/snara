@@ -1,0 +1,39 @@
+{
+    "filename": "untitled",
+    "bookId": 1,
+    "meta": {
+        "characters": "",
+        "settings": "",
+        "prompts": ""
+    },
+    "article": [
+        {
+            "class": "beat",
+            "content": "<p>we test this lah<\/p>\n"
+        },
+        {
+            "class": "beat",
+            "content": "\n\n<h1>Dokumen Sumber: Panduan Visual GUI Windows (Analogi Dapur)<\/h1>\n\n<p>## Identitas Dokumen\n\n<\/p><p>Topik Utama: Pengenalan Graphical User Interface (GUI) Windows 10\/11 untuk Pemula.\n\n<\/p><p>Metode Pengajaran: Analogi\/Metafora (Membuat Roti Selai Kacang &amp; Stroberi di Rumah).\n\n<\/p><p>Target Audiens: Pengguna komputer baru, lansia, atau siapa saja yang merasa teknologi itu rumit.\n\nTujuan: Menyederhanakan konsep abstrak komputer menjadi tindakan fisik yang familier.\n\n<\/p>"
+        },
+        {
+            "class": "beat",
+            "content": "<h2>Bagian 1: Pengantar &amp; Premis Utama Konsep: Menggunakan komputer tidak perlu memahami kode program. Cukup memahami fungsi objek visual. Analogi: Menjalankan Windows sama dengan beraktivitas di dapur rumah. ## Bagian 2: Pemetaan Komponen (Analogi Inti) Di bawah ini adalah rincian elemen GUI Windows dan padanannya dalam analogi dapur, lengkap dengan deskripsi visual untuk materi video.<\/h2>\n"
+        },
+        {
+            "class": "beat",
+            "content": "<h1>2.1. DESKTOP - Istilah Teknis: Desktop - Padanan Analogi: Meja Dapur \/ Permukaan Area Kerja - Deskripsi Fungsi: Tempat utama semua aktivitas terjadi dan di mana benda-benda diletakkan saat digunakan. - Kunci Pemahaman: Desktop yang rapi (sedikit ikon) sama dengan meja dapur yang bersih; membuat kerja lebih fokus. - Prompt Visual Video: Tampilkan layar desktop Windows 11 yang bersih, lalu transisi menjadi gambar meja dapur kayu yang luas dan kosong.<\/h1>\n"
+        },
+        {
+            "class": "beat",
+            "content": "<h1>2.2. IKON (ICONS) - Istilah Teknis: Ikon Aplikasi \/ File \/ Shortcut - Padanan Analogi: Bahan-Bahan Fisik (Stoples Selai, Botol, Bungkus Roti) - Deskripsi Fungsi: Perwakilan visual dari program atau data. - Kunci Pemahaman: Klik dua kali (double-click) sama dengan tindakan fisik membuka tutup stoples atau membuka bungkus plastik untuk mengakses isinya. - Prompt Visual Video: Kursor menunjuk ikon &#39;Google Chrome&#39;. Layar berubah menjadi tangan yang memegang stoples selai kacang. Saat kursor klik dua kali, tangan tersebut memutar tutup stoples hingga terbuka.<\/h1>\n"
+        },
+        {
+            "class": "beat",
+            "content": "<p>2.3. JENDELA (WINDOWS) Istilah Teknis: Window (Jendela Aplikasi) Padanan Analogi: Wadah Kerja (Piring, Mangkok, atau Talenan) Deskripsi Fungsi: Bingkai pembatas tempat sebuah aplikasi berjalan. Kunci Pemahaman: Anda tidak menaruh selai langsung di atas meja (desktop), tapi di dalam piring (jendela). Jendela bisa digeser (move), ditumpuk (layering), atau diperkecil (minimize) ke bawah meja. Prompt Visual Video: Tampilkan jendela browser yang terbuka setengah layar. Animasikan jendela tersebut berubah menjadi piring keramik di atas meja dapur. Tunjukkan piring lain (misal: Piring Stroberi) diletakkan di atas piring Roti.<\/p>\n"
+        },
+        {
+            "class": "beat",
+            "content": "<h2>Bagian 7: Kesimpulan &amp; Call to Action Pesan Kunci: GUI Windows dirancang agar intuitif dan mirip dunia nyata. Jangan takut mencoba, logikanya sama dengan aktivitas sehari-hari. Penutup: Sekarang Anda siap memasak di dapur digital Anda!<\/h2>\n"
+        }
+    ]
+}

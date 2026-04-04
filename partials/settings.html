@@ -1,0 +1,21 @@
+<div class="app-overlay" id="settings-overlay"></div>
+
+<div class="app-modal" id="settings-modal" role="dialog" aria-modal="true" aria-labelledby="settings-title">
+  <div class="modal-header">
+    <span class="modal-title" id="settings-title">
+      <i data-icon="t-cog"></i> Settings
+    </span>
+    <button class="modal-close" onclick="window.settingsInst?.close()" title="Close">
+      <i data-icon="x"></i>
+    </button>
+  </div>
+
+  <div class="modal-body" id="settings-body">
+    <div class="cfg-loading">loading config…</div>
+  </div>
+
+  <div class="modal-footer">
+    <button class="cfg-btn cfg-btn-ghost"   onclick="window.settingsInst?.close()">cancel</button>
+    <button class="cfg-btn cfg-btn-primary" id="cfg-save-btn" onclick="window.settingsInst?.save()">save</button>
+  </div>
+</div>

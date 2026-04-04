@@ -1,0 +1,28 @@
+<div class="editor-area">
+  <div class="toolbar-row">
+    <button class="tb-btn" onclick="fmt('bold')" title="Bold"><b>B</b></button>
+    <button class="tb-btn" onclick="fmt('italic')" title="Italic"><i>I</i></button>
+    <div class="tb-sep"></div>
+    <button class="tb-btn" onclick="wrapMd('# ')" title="Heading 1">H1</button>
+    <button class="tb-btn" onclick="wrapMd('## ')" title="Heading 2">H2</button>
+    <button class="tb-btn" onclick="wrapMd('### ')" title="Heading 3">H3</button>
+    <div class="tb-sep"></div>
+    <button class="tb-btn" onclick="wrapInline('`','`')" title="Inline code">⌥</button>
+    <button class="tb-btn" onclick="wrapMd('> ')" title="Blockquote">"</button>
+    <button class="tb-btn" onclick="wrapMd('- ')" title="List item">—</button>
+    <span class="hint">ctrl+enter to post</span>
+  </div>
+
+  <div id="editor" contenteditable="true" data-placeholder="Write something…"></div>
+
+  <div class="submit-row">
+    <div class="tag-pills">
+      <span class="tag-label">class:</span>
+      <button class="tag-pill" data-tag="beat"    onclick="setTag('beat')">beat</button>
+      <button class="tag-pill" data-tag="scene"   onclick="setTag('scene')">scene</button>
+      <button class="tag-pill" data-tag="chapter" onclick="setTag('chapter')">chapter</button>
+      <button class="tag-pill" data-tag="act"     onclick="setTag('act')">act</button>
+    </div>
+    <button class="submit-btn" onclick="submitEntry()">post →</button>
+  </div>
+</div>
