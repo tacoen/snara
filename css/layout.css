@@ -2,10 +2,11 @@
 .dashboard {
   display: grid;
   grid-template-columns: auto 15rem;
+  height: calc(100dvh - 43px);
 }
 
 aside, .content-area {
-  height: calc(100dvh - 42px);
+  height: calc(100dvh - 6px - 43px);
 }
 
 aside {
@@ -14,6 +15,23 @@ aside {
   border-left: 1px solid var(--border);
 }
 
+nav {
+  height: calc(100dvh - 4px);
+  justify-content: space-between;
+}
+
+.nav-top,
+.nav-bottom {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--s-xs);
+  padding: var(--s-xs) 0;
+}
+
+.nav-bottom {
+  margin-bottom: var(--s-sm)
+}
 
 .content-area {
   display: flex;

@@ -5,8 +5,8 @@
 @import url('./css/layout.css');
 @import url('./css/index.css');
 @import url('./css/toc.css');
-@import url('./css/settings-tabs.css');
-
+@import url('./css/modal.css');
+@import url('./css/pref.css');
 
 
 .idx-act-header {
@@ -30,6 +30,7 @@
 .mgrid .modal-opt {/* padding: var(--s-sm); */}
 
 .opt-menu {display: flex; }
+
 .coverimg { 
 background-color: var(--bg-mate);
 }

@@ -1,0 +1,153 @@
+/* â”€â”€ Pref modal â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+
+.pref-modal {
+  width: min(620px, calc(100vw - 32px));
+  max-height: 88dvh;
+}
+
+/* Body: no extra padding â€” sections provide their own */
+.pref-body {
+  padding: 0;
+  gap: 0;
+}
+
+/* â”€â”€ Tab strip sits between header and body â”€â”€â”€â”€â”€â”€â”€ */
+
+.pref-tabs {
+  border-bottom: 1px solid var(--border);
+  padding: 0 var(--s-sm);
+  /* flex-shrink: 0; */
+}
+
+/* â”€â”€ Sections â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+
+.pref-section {
+  padding: var(--s-md) var(--s-lg);
+  border-bottom: 1px solid var(--border);
+  gap: var(--s-xs);
+}
+
+.pref-section:last-child { border-bottom: none; }
+
+.pref-section .cfg-heading {
+  margin-bottom: var(--s-xs);
+}
+
+/* â”€â”€ Row â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+
+.pref-row {
+  gap: var(--s-sm);
+  flex-wrap: nowrap;
+  align-items: center;
+  min-height: 34px;
+}
+
+/* â”€â”€ Label â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+
+.pref-var-label {
+  width: 90px;
+  flex-shrink: 0;
+  font-size: var(--f-xs);
+  color: var(--fg-muted);
+}
+
+/* â”€â”€ Var name badge â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+
+.pref-var-name {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 10px;
+  color: var(--fg-muted);
+  background: var(--bg-alt);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 1px 6px;
+  white-space: nowrap;
+  flex-shrink: 0;
+  opacity: 0.75;
+  /* fixed width so rows align */
+  width: 168px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* â”€â”€ Color swatch â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+
+.pref-color {
+  width: 34px;
+  height: 28px;
+  padding: 2px;
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  background: none;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.pref-color::-webkit-color-swatch-wrapper { padding: 0; }
+.pref-color::-webkit-color-swatch         { border: none; border-radius: 3px; }
+
+/* â”€â”€ Text input (companion or standalone) â”€â”€â”€â”€â”€â”€â”€â”€ */
+
+.pref-text {
+  flex: 1;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: var(--f-xs);
+  min-width: 0;
+}
+
+/* â”€â”€ Footer â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+
+.modal-footer,
+.pref-footer {
+  gap: var(--s-sm);
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+/* Reset button pushed left, danger-styled */
+.pref-reset-btn {
+  margin-right: auto;
+  background: none;
+  border: 1px solid var(--danger);
+  color: var(--danger);
+  opacity: 0.7;
+  border-radius: 6px;
+  padding: var(--s-xs) var(--s-md);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: var(--f-xs);
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.pref-reset-btn:hover { opacity: 1; background: rgba(207,34,46,.07); }
+
+/* Export button */
+.pref-export-btn {
+  display: flex;
+  align-items: center;
+  gap: var(--s-xs);
+}
+
+/* â”€â”€ Nav button #pref-btn â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+
+#pref-btn {
+  background: none;
+  border: none;
+  border-radius: 6px;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  cursor: pointer;
+  color: var(--fg-muted);
+  flex-shrink: 0;
+  padding: 0;
+  transition: background 0.15s, color 0.15s;
+}
+
+#pref-btn:hover {
+  background: var(--bg-hover);
+  color: var(--fg-main);
+}

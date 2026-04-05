@@ -3,21 +3,6 @@
    @import this from style.css
 ───────────────────────────────────────────────── */
 
-/* ── Nav grouped layout ───────────────────────── */
-
-nav {
-  justify-content: space-between;
-}
-
-.nav-top,
-.nav-bottom {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--s-xs);
-  padding: var(--s-xs) 0;
-}
-
 #bookindex-btn {
   background: none;
   border: none;

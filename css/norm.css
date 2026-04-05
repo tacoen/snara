@@ -20,3 +20,7 @@ body {
   margin: 0;
   padding: 0;
 }
+
+svg, svg.ge {
+	stroke-width: 1px;
+}

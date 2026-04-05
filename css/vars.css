@@ -8,9 +8,13 @@
   --f-xs: 0.75rem;
   --f-sm: 1rem;
   --f-md: 1.25rem;
+}
 
+:root,
+html[theme="light"] {
   --bg-main:    #ffffff;
   --bg-alt:     #f6f8fa;
+  --bg-mate:    #fcfcfc;
   --bg-hover:   #f0f2f5;
   --fg-main:    #24292f;
   --fg-muted:   #57606a;
@@ -38,6 +42,7 @@
   --tag-act-bg:     #fbca33;
   --tag-act-fg:     #aa6600;
   --tag-act-bd:     #ed93b1;
+  
 }
 
 html[theme="dark"] {
@@ -54,6 +59,24 @@ html[theme="dark"] {
   --overlay:    rgba(0, 0, 0, 0.75);
   --selection:  rgba(56, 139, 253, 0.15);
   --sel-border: #388bfd;
+  
+  --tag-beat-bg:    #eeedfe;
+  --tag-beat-fg:    #0f6e56;
+  --tag-beat-bd:    #afa9ec;
+  --tag-draft-fg:   #3c3489;
+
+  --tag-scene-bg:   #e1f5ee;
+  --tag-scene-fg:   #0f6e56;
+  --tag-scene-bd:   #5dcaa5;
+
+  --tag-chapter-bg: #faece7;
+  --tag-chapter-fg: #993c1d;
+  --tag-chapter-bd: #f0997b;
+
+  --tag-act-bg:     #fbca33;
+  --tag-act-fg:     #aa6600;
+  --tag-act-bd:     #ed93b1;
+  
 }
 
 ::-webkit-scrollbar {

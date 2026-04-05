@@ -2,7 +2,7 @@
     "apiPath": "\/api.php",
     "dataPath": "\/data",
     "jsonPath": "\/json",
-    "theme": "dark",
+    "theme": "system",
     "classes": [
         "act",
         "chapter",

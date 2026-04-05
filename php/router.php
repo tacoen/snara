@@ -27,7 +27,8 @@ require_once __DIR__ . '/book.php';
 
 // ── Add this require near the top of router.php, alongside the others ──
 require_once __DIR__ . '/state.php';
-
+require_once __DIR__ . '/pref.php';
+	 
 class Router {
 
     public static function dispatch(): void {
@@ -168,6 +169,18 @@ class Router {
                     $state    = trim($body['state']    ?? 'unlock');
                     if (!$bookId || !$filename) self::error(400, 'Missing bookId or filename');
                     ChapterState::set($bookId, $filename, $state);
+                    echo json_encode(['ok' => true]);
+                    break;
+
+                case 'pref.get':
+                    self::requireMethod($method, 'GET');
+                    echo json_encode(['vars' => Pref::get()]);
+                    break;
+ 
+                case 'pref.set':
+                    self::requireMethod($method, 'POST');
+                    $body = self::body();
+                    Pref::set($body['vars'] ?? []);
                     echo json_encode(['ok' => true]);
                     break;
 					

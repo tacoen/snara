@@ -10,6 +10,7 @@ import { SnaraIndex }    from './snara/index.js';
 
 import icx               from './icons/ge-icon.js';
 import { SnaraTools } from './tools.js';
+import { SnaraPref } from './pref.js';
 
 // ── Central config store (populated at boot) ──────
 export const AppConfig = {
@@ -70,6 +71,8 @@ async function boot() {
   const idx      = new SnaraIndex();
 
   const tools = new SnaraTools();
+  const pref = new SnaraPref();
+   
 
   icx.replace();
 
@@ -111,6 +114,8 @@ window.loadDocument = (bookId, filename) => {
   window.chapterIndex  = ()   => idx.openChapterIndex();
   window.SnaraIndex    = SnaraIndex;
 
+  window.openPref = () => pref.open();
+	 
   // ── Keyboard shortcuts ──────────────────────────
   document.addEventListener('keydown', e => {
     if (e.key === 's' && (e.ctrlKey || e.metaKey)) {
