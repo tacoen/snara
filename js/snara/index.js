@@ -185,7 +185,6 @@ export class SnaraIndex {
     modal.innerHTML = this._shell('chapter-index-modal', `${title}`,
       `<p class="idx-empty idx-loading">Loading chapters…</p>`);
     openModal('chapter-index-modal');
-    icx.delayreplace('#chapter-index-modal [data-icon]');
 
     try {
       const res  = await fetch(
@@ -196,10 +195,16 @@ export class SnaraIndex {
 
       modal.querySelector('.idx-body').innerHTML = this._chapterListHTML(chapters);
       this._bindChapterRows(modal);
+	  
+
+	  
     } catch(e) {
       modal.querySelector('.idx-body').innerHTML =
         `<p class="idx-empty">Could not load chapters: ${esc(e.message)}</p>`;
     }
+	
+    icx.delayreplace('#chapter-index-modal [data-icon]');
+	
   }
 
   // ── Chapter list grouped by act ───────────────
@@ -246,6 +251,11 @@ export class SnaraIndex {
               <span class="idx-row-sub">${fmtDate(ch.mtime)}${ch.order !== 99 ? ` · #${ch.order}` : ''}</span>
             </span>
             <span class="idx-row-badge">${esc(String(ch.entries ?? 0))} entries</span>
+            <span class="idx-row-tool" data-state='unlock'>
+				<i class='lock' data-icon="l-lock"></i>
+				<i class='unlock' data-icon="l-unlock"></i>
+				<i class='delete' data-icon="x"></i>
+			</span>
           </div>`;
       }
     }
@@ -288,9 +298,8 @@ _shell(id, heading, bodyHTML) {
           ${bodyHTML}
         </div>
         ${id !== 'book-index-modal' ? `     
-        <div class="idx-body modal-opt">
-		<div class="idx-act-header">Tools</div>		
-		<ul class='opt-menu coverimg'>
+        <div class="idx-body modal-opt coverimg">
+		<ul class='opt-menu'>
 		  <li><i data-icon="l-img"></i></i><span>Cover</span></li>
           <li><i data-icon="book-up"></i><span>Export</span></li>
 		  <li class='enable'><i data-icon="kanban"></i><span>Kanban</span></li>

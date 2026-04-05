@@ -246,3 +246,30 @@ html[theme="dark"] .idx-row-active {
   flex-shrink: 0;
   white-space: nowrap;
 }
+
+.idx-act-header {
+	display: flex;
+	align-items: center;
+	gap: var(--s-sm);
+	padding: var(--s-sm) var(--s-lg);
+	cursor: pointer;
+	border-bottom: 1px solid var(--border);
+	transition: background 0.1s;
+	position: relative;
+	outline: none;
+}
+
+.idx-row-tool {
+  padding: 1px 0 1px 6px;
+  flex-shrink: 0;
+}
+
+.idx-row-tool svg { 
+width: 24px; 
+height: 24px;
+display: none; 
+stroke-width: 1px !important }
+
+span.idx-row-tool[data-state='lock'] .lock { display: inline-block; color: var(--selection); }
+span.idx-row-tool[data-state='unlock'] .unlock { display: inline-block; color: var(--fg-muted); }
+span.idx-row-tool[data-state='delete'] .delete { display: inline-block; color: var(--danger); }
