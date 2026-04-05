@@ -246,30 +246,67 @@ html[theme="dark"] .idx-row-active {
   flex-shrink: 0;
   white-space: nowrap;
 }
-
-.idx-act-header {
-	display: flex;
-	align-items: center;
-	gap: var(--s-sm);
-	padding: var(--s-sm) var(--s-lg);
-	cursor: pointer;
-	border-bottom: 1px solid var(--border);
-	transition: background 0.1s;
-	position: relative;
-	outline: none;
-}
+/* ── Replace the existing .idx-row-tool block in index.css with this ── */
 
 .idx-row-tool {
   padding: 1px 0 1px 6px;
   flex-shrink: 0;
+  cursor: pointer;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  transition: background 0.12s;
+  user-select: none;
 }
 
-.idx-row-tool svg { 
-width: 24px; 
-height: 24px;
-display: none; 
-stroke-width: 1px !important }
+.idx-row-tool:hover {
+  background: var(--bg-hover);
+}
 
-span.idx-row-tool[data-state='lock'] .lock { display: inline-block; color: var(--selection); }
-span.idx-row-tool[data-state='unlock'] .unlock { display: inline-block; color: var(--fg-muted); }
+/* Locked row — dim it and show not-allowed on the row body */
+.idx-row:has(.idx-row-tool[data-state='lock']) {
+  opacity: 0.55;
+}
+
+.idx-row:has(.idx-row-tool[data-state='lock']) .idx-row-main,
+.idx-row:has(.idx-row-tool[data-state='lock']) .idx-row-num,
+.idx-row:has(.idx-row-tool[data-state='lock']) .idx-row-badge {
+  cursor: not-allowed;
+}
+
+/* Delete state — strike-through the title */
+.idx-row:has(.idx-row-tool[data-state='delete']) .idx-row-title {
+  text-decoration: line-through;
+  opacity: 0.5;
+}
+
+/* Icon visibility — only show the icon matching current state */
+.idx-row-tool svg {
+  width: 16px;
+  height: 16px;
+  display: none;
+  stroke-width: 1.5px !important;
+}
+
+/* unlock state → show unlock icon (muted) */
+.idx-row-tool[data-state='unlock'] i.unlock ~ svg,
+span.idx-row-tool[data-state='unlock'] .unlock { display: inline-block; color: var(--fg-muted); opacity: 0.35; }
+
+/* lock state → show lock icon (primary blue) */
+span.idx-row-tool[data-state='lock']   .lock   { display: inline-block; color: var(--primary); }
+
+/* delete state → show x icon (danger red) */
 span.idx-row-tool[data-state='delete'] .delete { display: inline-block; color: var(--danger); }
+
+/* hide all icons by default, show only the active one */
+.idx-row-tool i { display: none; }
+
+span.idx-row-tool[data-state='unlock'] i.unlock { display: inline-flex; color: var(--fg-muted); opacity: 0.3; }
+span.idx-row-tool[data-state='lock']   i.lock   { display: inline-flex; color: var(--primary); }
+span.idx-row-tool[data-state='delete'] i.delete { display: inline-flex; color: var(--danger); }
+
+/* Tooltip hint on hover */
+.idx-row-tool[data-state='unlock']:hover i.unlock { opacity: 0.7; }

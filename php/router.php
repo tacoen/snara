@@ -25,6 +25,9 @@ require_once __DIR__ . '/config.php';
 require_once __DIR__ . '/document.php';
 require_once __DIR__ . '/book.php';
 
+// ── Add this require near the top of router.php, alongside the others ──
+require_once __DIR__ . '/state.php';
+
 class Router {
 
     public static function dispatch(): void {
@@ -147,6 +150,27 @@ class Router {
                     Book::setActive($bookId);
                     echo json_encode(['ok' => true]);
                     break;
+
+// ── Paste these two cases into the switch block in Router::dispatch() ──
+// (e.g. right after the 'book.setActive' case, before the default)
+
+                case 'state.get':
+                    self::requireMethod($method, 'GET');
+                    $bookId = (int) self::requireParam('bookId');
+                    echo json_encode(['states' => ChapterState::get($bookId)]);
+                    break;
+
+                case 'state.set':
+                    self::requireMethod($method, 'POST');
+                    $body     = self::body();
+                    $bookId   = (int)($body['bookId'] ?? 0);
+                    $filename = trim($body['filename'] ?? '');
+                    $state    = trim($body['state']    ?? 'unlock');
+                    if (!$bookId || !$filename) self::error(400, 'Missing bookId or filename');
+                    ChapterState::set($bookId, $filename, $state);
+                    echo json_encode(['ok' => true]);
+                    break;
+					
 
                 default:
                     self::error(404, 'Unknown action: ' . $action);

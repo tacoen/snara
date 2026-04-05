@@ -30,9 +30,8 @@ $title  = 'Snara';
 
   </main>
 
-  <aside class="side-panel">
-	<?php include __DIR__ . '/partials/side.html'; ?>
-  </aside>
+  <?php include __DIR__ . '/partials/editor-side.html'; ?>
+
   </div>
 </div>
 

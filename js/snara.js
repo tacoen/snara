@@ -7,7 +7,9 @@ import { SnaraEditor }   from './snara/core.js';
 import { SnaraUI }       from './snara/ui.js';
 import { SnaraSettings } from './snara/settings.js';
 import { SnaraIndex }    from './snara/index.js';
+
 import icx               from './icons/ge-icon.js';
+import { SnaraTools } from './tools.js';
 
 // ── Central config store (populated at boot) ──────
 export const AppConfig = {
@@ -67,6 +69,8 @@ async function boot() {
   const settings = new SnaraSettings();
   const idx      = new SnaraIndex();
 
+  const tools = new SnaraTools();
+
   icx.replace();
 
   // Restore active book label if config had one
@@ -82,7 +86,14 @@ async function boot() {
   window.wrapMd       = prefix => editor.wrapMd(prefix);
   window.wrapInline   = (b, a) => editor.wrapInline(b, a);
   window.saveDocument = ()     => ui.saveDocument();
-  window.loadDocument = (bookId, filename) => ui.loadDocument(bookId, filename);
+//  window.loadDocument = (bookId, filename) => ui.loadDocument(bookId, filename);
+
+window.loadDocument = (bookId, filename) => {
+  ui.loadDocument(bookId, filename).then?.(() => tools.refresh());
+  // ui.loadDocument may not return a promise — also refresh after a short delay:
+  setTimeout(() => tools.refresh(), 400);
+};
+
 
   // ── UI globals ──────────────────────────────────
   window.setEntryClass = cls  => ui.setEntryClass(cls);

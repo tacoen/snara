@@ -187,38 +187,55 @@ export class SnaraIndex {
     openModal('chapter-index-modal');
 
     try {
-      const res  = await fetch(
-        AppConfig.apiPath + `?action=book.chapters&id=${encodeURIComponent(this.activeBookId)}`
-      );
-      const chapters = await res.json();
+      // Fetch chapters and persisted states in parallel
+      const [chapRes, states] = await Promise.all([
+        fetch(AppConfig.apiPath + `?action=book.chapters&id=${encodeURIComponent(this.activeBookId)}`),
+        this._loadStates(this.activeBookId),
+      ]);
+
+      const chapters = await chapRes.json();
       if (chapters.error) throw new Error(chapters.error);
 
-      modal.querySelector('.idx-body').innerHTML = this._chapterListHTML(chapters);
-      this._bindChapterRows(modal);
-	  
+      // Execute pending deletions before rendering
+      const toDelete = chapters.filter(ch => states[ch.filename] === 'delete');
+      if (toDelete.length > 0) {
+        await Promise.all(toDelete.map(ch =>
+          fetch(
+            AppConfig.apiPath
+              + '?action=doc.delete'
+              + `&filename=${encodeURIComponent(ch.filename)}`
+              + `&bookId=${encodeURIComponent(this.activeBookId)}`,
+            { method: 'DELETE' }
+          ).then(() => {
+            // Clear the state entry so a future file with the same name isn't auto-deleted
+            delete states[ch.filename];
+            this._saveState(this.activeBookId, ch.filename, 'unlock');
+          })
+        ));
+      }
 
-	  
+      // Render only surviving chapters
+      const surviving = chapters.filter(ch => states[ch.filename] !== 'delete');
+      modal.querySelector('.idx-body').innerHTML = this._chapterListHTML(surviving);
+      this._bindChapterRows(modal, states);
+
     } catch(e) {
       modal.querySelector('.idx-body').innerHTML =
         `<p class="idx-empty">Could not load chapters: ${esc(e.message)}</p>`;
     }
-	
+
     icx.delayreplace('#chapter-index-modal [data-icon]');
-	
   }
 
   // ── Chapter list grouped by act ───────────────
-  // Chapters with same act title are grouped under an act header.
-  // Empty act = ungrouped, shown under "—" at the end.
 
   _chapterListHTML(chapters) {
     if (!chapters.length) {
       return `<p class="idx-empty">No chapters saved yet in this book.</p>`;
     }
 
-    // Group chapters preserving sort order (already sorted by order ASC from PHP)
-    const groups = [];   // [{ act, chapters[] }]
-    const actSeen = new Map(); // act label → group index
+    const groups  = [];
+    const actSeen = new Map();
 
     for (const ch of chapters) {
       const actLabel = ch.act || '';
@@ -234,11 +251,9 @@ export class SnaraIndex {
     let globalIdx = 0;
 
     for (const group of groups) {
-      // Act header — only render if there's an act title
       if (group.act) {
         html += `<div class="idx-act-header">${esc(group.act)}</div>`;
       }
-
       for (const ch of group.chapters) {
         globalIdx++;
         html += `
@@ -251,11 +266,11 @@ export class SnaraIndex {
               <span class="idx-row-sub">${fmtDate(ch.mtime)}${ch.order !== 99 ? ` · #${ch.order}` : ''}</span>
             </span>
             <span class="idx-row-badge">${esc(String(ch.entries ?? 0))} entries</span>
-            <span class="idx-row-tool" data-state='unlock'>
-				<i class='lock' data-icon="l-lock"></i>
-				<i class='unlock' data-icon="l-unlock"></i>
-				<i class='delete' data-icon="x"></i>
-			</span>
+            <span class="idx-row-tool" data-state="unlock" title="Click to cycle: unlock → lock → delete">
+              <i class="lock"   data-icon="l-lock"></i>
+              <i class="unlock" data-icon="l-unlock"></i>
+              <i class="delete" data-icon="x"></i>
+            </span>
           </div>`;
       }
     }
@@ -263,20 +278,79 @@ export class SnaraIndex {
     return html;
   }
 
-  _bindChapterRows(modal) {
+  // ── Bind chapter rows ─────────────────────────
+  // Accepts the already-loaded states map — no second fetch needed.
+
+  _bindChapterRows(modal, states = {}) {
+    const bookId = this.activeBookId;
+
+    // Apply persisted states to the rendered tool spans
     modal.querySelectorAll('.idx-row').forEach(row => {
-      const load = () => {
-        const filename = row.dataset.filename;
-        const bookId   = row.dataset.bookId;
+      const filename = row.dataset.filename;
+      const tool     = row.querySelector('.idx-row-tool');
+      if (tool && states[filename] && states[filename] !== 'unlock') {
+        tool.dataset.state = states[filename];
+      }
+    });
+
+    icx.delayreplace('#chapter-index-modal [data-icon]');
+
+    modal.querySelectorAll('.idx-row').forEach(row => {
+      const filename = row.dataset.filename;
+      const tool     = row.querySelector('.idx-row-tool');
+
+      // Row click → load (blocked when locked)
+      const onRowClick = (e) => {
+        if (e.target.closest('.idx-row-tool')) return;
+        if (tool?.dataset.state === 'lock') return;
         closeModal('chapter-index-modal');
-        window.loadDocument?.(bookId, filename);
+        window.loadDocument?.(row.dataset.bookId, filename);
       };
-      row.addEventListener('click', load);
-      row.addEventListener('keydown', e => { if (e.key === 'Enter') load(); });
+
+      row.addEventListener('click', onRowClick);
+      row.addEventListener('keydown', e => { if (e.key === 'Enter') onRowClick(e); });
+
+      // Tool click → cycle state
+      if (tool) {
+        tool.addEventListener('click', e => {
+          e.stopPropagation();
+          const cycle   = { unlock: 'lock', lock: 'delete', delete: 'unlock' };
+          const current = tool.dataset.state || 'unlock';
+          const next    = cycle[current] ?? 'unlock';
+          tool.dataset.state = next;
+          states[filename]   = next;
+          this._saveState(bookId, filename, next);
+        });
+      }
     });
   }
 
-_shell(id, heading, bodyHTML) {
+  // ── State persistence ─────────────────────────
+
+  async _loadStates(bookId) {
+    if (!bookId) return {};
+    try {
+      const res = await fetch(AppConfig.apiPath + `?action=state.get&bookId=${encodeURIComponent(bookId)}`);
+      if (!res.ok) return {};
+      const data = await res.json();
+      return data.states ?? {};
+    } catch {
+      return {};
+    }
+  }
+
+  _saveState(bookId, filename, state) {
+    if (!bookId) return;
+    fetch(AppConfig.apiPath + '?action=state.set', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify({ bookId, filename, state }),
+    }).catch(() => {});
+  }
+
+  // ── Shell ─────────────────────────────────────
+
+  _shell(id, heading, bodyHTML) {
     return `
       <div class="modal-header">
         <span class="modal-title">${esc(heading)}</span>
@@ -293,20 +367,19 @@ _shell(id, heading, bodyHTML) {
           <button class="cfg-btn cfg-btn-primary" id="idx-new-book">Create</button>
         </div>` : ''}
       </div>
-      ${id !== 'book-index-modal' ? `<div class='mgrid'>` : `<div>` }
+      ${id !== 'book-index-modal' ? `<div class='mgrid'>` : `<div>`}
         <div class="idx-body modal-body">
           ${bodyHTML}
         </div>
-        ${id !== 'book-index-modal' ? `     
+        ${id !== 'book-index-modal' ? `
         <div class="idx-body modal-opt coverimg">
-		<ul class='opt-menu'>
-		  <li><i data-icon="l-img"></i></i><span>Cover</span></li>
-          <li><i data-icon="book-up"></i><span>Export</span></li>
-		  <li class='enable'><i data-icon="kanban"></i><span>Kanban</span></li>
-		  
-		</ul>
-		</div>` : ``}
-      </div>`; // This </div> now properly closes <div class='mgrid'>
+          <ul class='opt-menu'>
+            <li><i data-icon="l-img"></i><span>Cover</span></li>
+            <li><i data-icon="book-up"></i><span>Export</span></li>
+            <li class='enable'><i data-icon="kanban"></i><span>Kanban</span></li>
+          </ul>
+        </div>` : ``}
+      </div>`;
   }
 
   _filter(input, modalId) {
@@ -315,9 +388,7 @@ _shell(id, heading, bodyHTML) {
       const text = row.querySelector('.idx-row-title')?.textContent.toLowerCase() ?? '';
       row.hidden = !text.includes(q);
     });
-    // Hide act headers with no visible rows
     document.querySelectorAll(`#${modalId} .idx-act-header`).forEach(header => {
-      // Find all rows until the next header
       let next = header.nextElementSibling;
       let hasVisible = false;
       while (next && !next.classList.contains('idx-act-header')) {
