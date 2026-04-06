@@ -1,8 +1,11 @@
 @import url('./css/vars.css');
 @import url('./css/norm.css');
+@import url('./css/buttons.css');
+
+@import url('./css/layout.css');
+
 @import url('./css/snara.css');
 @import url('./css/editor.css');
-@import url('./css/layout.css');
 @import url('./css/index.css');
 @import url('./css/toc.css');
 @import url('./css/modal.css');

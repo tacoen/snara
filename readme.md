@@ -41,15 +41,6 @@ Built with a clean Markdown editor, it combines distraction-free writing, automa
 ## Quick Start
 
 1. **Clone the repo**
-   ```
-   bash
-   git clone https://github.com/tacoen/snara.git
-   cd snara
-   ```
-
-## Quick Start
-
-1. **Clone the repo**
    ```bash
    git clone https://github.com/tacoen/snara.git
    cd snara
