@@ -7,10 +7,10 @@ import { SnaraEditor }   from './snara/core.js';
 import { SnaraUI }       from './snara/ui.js';
 import { SnaraSettings } from './snara/settings.js';
 import { SnaraIndex }    from './snara/index.js';
+import { SnaraPref }     from './snara/pref.js';
 
 import icx               from './icons/ge-icon.js';
 import { SnaraTools } from './tools.js';
-import { SnaraPref } from './pref.js';
 
 // ── Central config store (populated at boot) ──────
 export const AppConfig = {

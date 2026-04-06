@@ -44,7 +44,11 @@ $title  = 'Snara';
   </div>
 </div>
 
+<!-- onclick="closeModal()" -->
+
+<div id="app-overlay" class='app-overlay' hidden >
 <?php include __DIR__ . '/partials/settings.html'; ?>
+</div>
 
 <script type="module" src="js/snara.js"></script>
 </body>

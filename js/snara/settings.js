@@ -5,9 +5,11 @@
      Defaults — per-app/book defaults (default.json)
    Depends on: SnaraTool, AppConfig, AppDefaults, icx
 ─────────────────────────────────────────────────── */
+
 import { SnaraTool }            from './tool.js';
 import { AppConfig, AppDefaults } from '../snara.js';
 import icx                      from '../icons/ge-icon.js';
+import { openModal, closeModal } from './modal.js';
 
 export class SnaraSettings {
 
@@ -23,25 +25,14 @@ export class SnaraSettings {
 
   // ── Open / Close ──────────────────────────────
 
-  open() {
-    this._render();
-    this.modal.classList.add('open');
-    this.overlay.classList.add('open');
-    document.body.classList.add('modal-open');
-  }
+open()  { this._render(); openModal('settings-modal'); }
+close() { closeModal('settings-modal'); }
 
-  close() {
-    this.modal.classList.remove('open');
-    this.overlay.classList.remove('open');
-    document.body.classList.remove('modal-open');
-  }
-
-  _bindClose() {
-    this.overlay.addEventListener('click', () => this.close());
-    document.addEventListener('keydown', e => {
-      if (e.key === 'Escape' && this.modal.classList.contains('open')) this.close();
-    });
-  }
+_bindClose() {
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') closeModal('settings-modal');
+  });
+}
 
   // ── Render ────────────────────────────────────
 

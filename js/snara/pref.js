@@ -1,5 +1,9 @@
 /* ─────────────────────────────────────────────────
-   js/pref.js — SnaraPref
+   js/snara/pref.js — SnaraPref
+   
+   
+   
+   
    CSS variable customizer with Light / Dark / Spacing tabs.
    Persists overrides to /json/cssvars.json via API.
    Applied on boot via injected <style> tag.
@@ -8,8 +12,9 @@
    defaults merged with saved overrides, plus the
    static scrollbar rules appended verbatim.
 ─────────────────────────────────────────────────── */
-import { AppConfig } from './snara.js';
-import icx           from './icons/ge-icon.js';
+import { AppConfig } from '../snara.js';
+import icx           from '../icons/ge-icon.js';
+import { openModal, closeModal } from './modal.js';
 
 // ── Defaults (mirrors css/vars.css exactly) ───────
 
@@ -348,33 +353,33 @@ export class SnaraPref {
     this._ensureDOM();
     this._loadAndApply();
   }
-
-  _ensureDOM() {
-    if (document.getElementById('pref-modal')) {
-      this.modal   = document.getElementById('pref-modal');
-      this.overlay = document.getElementById('pref-overlay');
-      return;
-    }
-    const overlay = document.createElement('div');
-    overlay.className = 'app-overlay';
-    overlay.id = 'pref-overlay';
-    document.body.appendChild(overlay);
-
-    const modal = document.createElement('div');
-    modal.className = 'app-modal pref-modal';
-    modal.id = 'pref-modal';
-    modal.setAttribute('role', 'dialog');
-    modal.setAttribute('aria-modal', 'true');
-    document.body.appendChild(modal);
-
-    this.modal   = modal;
-    this.overlay = overlay;
-
-    overlay.addEventListener('click', () => this.close());
-    document.addEventListener('keydown', e => {
-      if (e.key === 'Escape' && modal.classList.contains('open')) this.close();
-    });
+  
+_ensureDOM() {
+  if (document.getElementById('pref-modal')) {
+    this.modal = document.getElementById('pref-modal');
+    return;
   }
+  const modal = document.createElement('div');
+  modal.className = 'app-modal pref-modal';
+  modal.id = 'pref-modal';
+  modal.setAttribute('hidden', '');
+  modal.setAttribute('role', 'dialog');
+  modal.setAttribute('aria-modal', 'true');
+
+
+  this.modal = modal;
+
+	document.getElementById('app-overlay').appendChild(modal);
+
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape' && !modal.hasAttribute('hidden')) closeModal('pref-modal');
+  });
+}
+
+open()  { this._render(); openModal('pref-modal'); }
+
+close() { closeModal('pref-modal'); console.log('closepref'); }
+
 
   async _loadAndApply() {
     try {
@@ -395,18 +400,7 @@ export class SnaraPref {
     } catch { /* endpoint may not exist yet */ }
   }
 
-  open() {
-    this._render();
-    this.modal.classList.add('open');
-    this.overlay.classList.add('open');
-    document.body.classList.add('modal-open');
-  }
 
-  close() {
-    this.modal.classList.remove('open');
-    this.overlay.classList.remove('open');
-    document.body.classList.remove('modal-open');
-  }
 
   // ── Render shell ──────────────────────────────
 

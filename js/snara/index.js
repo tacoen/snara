@@ -1,5 +1,8 @@
 import { AppConfig } from '../snara.js';
 import icx           from '../icons/ge-icon.js';
+import { openModal, closeModal } from './modal.js';
+
+// Remove the local ensureModal(), openModal(), closeModal() functions entirely.
 
 function esc(str) {
   return String(str ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;');
@@ -35,17 +38,6 @@ function ensureModal(id) {
   return modal;
 }
 
-function openModal(id) {
-  document.getElementById(id + '-overlay')?.classList.add('open');
-  document.getElementById(id)?.classList.add('open');
-  document.body.classList.add('modal-open');
-}
-
-function closeModal(id) {
-  document.getElementById(id + '-overlay')?.classList.remove('open');
-  document.getElementById(id)?.classList.remove('open');
-  document.body.classList.remove('modal-open');
-}
 
 export class SnaraIndex {
 
@@ -58,10 +50,21 @@ export class SnaraIndex {
     this._ensureDOM();
   }
 
-  _ensureDOM() {
-    ensureModal('book-index-modal');
-    ensureModal('chapter-index-modal');
-  }
+
+_ensureDOM() {
+  ['book-index-modal', 'chapter-index-modal'].forEach(id => {
+    if (document.getElementById(id)) return;
+    const modal = document.createElement('div');
+    modal.className = 'app-modal idx-modal';
+    modal.id = id;
+    modal.setAttribute('hidden', '');
+    modal.setAttribute('role', 'dialog');
+    modal.setAttribute('aria-modal', 'true');
+
+	document.getElementById('app-overlay').appendChild(modal);
+
+  });
+}
 
   async openBookIndex() {
     const modal = document.getElementById('book-index-modal');
