@@ -353,7 +353,14 @@ export class SnaraIndex {
   _shell(id, heading, bodyHTML) {
     return `
       <div class="modal-header">
-        <span class="modal-title">${esc(heading)}</span>
+        
+		<div class='flex'>
+		<span class="modal-title">${esc(heading)}</span>
+
+        ${ id !== 'book-index-modal' ? `<ul class='opt-menu'>
+            <li><i data-icon="l-img"></i><span>Cover</span></li>
+		</ul>` : ''}
+		</div>
         <button class="modal-close" onclick="closeModal('${id}')" title="Close">
           <i data-icon="x"></i>
         </button>
@@ -367,18 +374,9 @@ export class SnaraIndex {
           <button class="cfg-btn cfg-btn-primary" id="idx-new-book">Create</button>
         </div>` : ''}
       </div>
-      ${id !== 'book-index-modal' ? `<div class='mgrid'>` : `<div>`}
         <div class="idx-body modal-body">
           ${bodyHTML}
         </div>
-        ${id !== 'book-index-modal' ? `
-        <div class="idx-body modal-opt coverimg">
-          <ul class='opt-menu'>
-            <li><i data-icon="l-img"></i><span>Cover</span></li>
-            <li><i data-icon="book-up"></i><span>Export</span></li>
-            <li class='enable'><i data-icon="kanban"></i><span>Kanban</span></li>
-          </ul>
-        </div>` : ``}
       </div>`;
   }
 

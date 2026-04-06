@@ -8,6 +8,7 @@ $title  = 'Snara';
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title><?= htmlspecialchars($title) ?></title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/9.1.6/marked.min.js"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;1,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
@@ -29,6 +30,10 @@ $title  = 'Snara';
 
 	<?php include __DIR__ . '/partials/editor-side.html'; ?>
 
+	<main id='kanban-area' class="content-area" hidden>
+		<?php include __DIR__ . '/partials/kanban.html'; ?>
+	</main>
+	
 	<main id='meta-area' class="content-area" hidden>
 		<?php include __DIR__ . '/partials/meta.html'; ?>
 	</main>
@@ -41,7 +46,6 @@ $title  = 'Snara';
 
 <?php include __DIR__ . '/partials/settings.html'; ?>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/marked/9.1.6/marked.min.js"></script>
 <script type="module" src="js/snara.js"></script>
 </body>
 </html>

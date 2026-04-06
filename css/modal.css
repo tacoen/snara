@@ -92,10 +92,9 @@ body.modal-open { overflow: hidden; }
 .modal-body {
   flex: 1;
   overflow-y: auto;
-  padding: var(--s-lg);
+  padding: var(--s-sm);
   display: flex;
   flex-direction: column;
-  gap: var(--s-xl);
 }
 
 .modal-body::-webkit-scrollbar { width: 4px; }

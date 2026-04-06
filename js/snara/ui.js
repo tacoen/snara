@@ -40,14 +40,13 @@ export class SnaraUI {
     });
   }
 
-  switchTab(tab) {
-    document.querySelectorAll('.tabmenu li').forEach(el => el.classList.remove('active'));
-    document.querySelector(`.tabmenu li[data-tab="${tab}"]`)?.classList.add('active');
-    const isEditor         = tab === 'editor';
-    this.entriesEl.hidden  = !isEditor;
-    this.metaEl.hidden     =  isEditor;
-    this.editorArea.hidden = !isEditor;
-  }
+	switchTab(tab) {
+		const isEditor = tab === 'editor';
+		this.entriesEl.hidden  = !isEditor;
+		this.editorArea.hidden = !isEditor;
+		// .meta visibility is now handled by parent #meta-area via switchArea()
+	}
+
 
   // ── Popup toolbar ─────────────────────────────
 

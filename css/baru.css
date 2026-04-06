@@ -106,4 +106,20 @@ aside {
 #files ul { margin: 0; padding: 0; list-style-type: none;  }
 
 #files div {display:flex; flex-direction: column; padding: var(--s-md); }
- 
+
+
+
+#chapter-index-modal {
+	width: 90dvw;
+}
+
+.mgrid {display: grid;grid-template-columns: 75% 25%;}
+.mgrid .modal-opt {/* padding: var(--s-sm); */}
+.mgrid .coverimg { height: 80vw; }
+
+.opt-menu {display: flex;columns: 3;gap: var(--s-sm);margin-left: var(--s-lg);}
+.opt-menu li {display: flex;/* flex-flow: column; *//* width: 72px; *//* height: 72px; */align-items: center;justify-content: center;}
+.opt-menu li { opacity: .5; }
+.opt-menu li.enable { opacity: 1; }
+.opt-menu li span {font-size: .7rem;}
+.opt-menu li svg { width: 20px; height: 20px; stroke-width: 1px !important;} 

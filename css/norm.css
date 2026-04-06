@@ -26,6 +26,9 @@ svg.icon {
   height: 1em;
   display: block;
   flex-shrink: 0;
-
 }
+
+.flex { display: flex }
+
+.pad-md { padding: var(--s-md); }
 

@@ -157,15 +157,15 @@ html[theme="dark"] #save-btn.saved {
   border-bottom-color: var(--primary);
 }
 
-
+ 
+#meta,
 .meta {
+  display: flex;
   flex-direction: column;
   gap: var(--s-lg);
   padding: var(--s-xl);
 }
-
-.meta:not([hidden]) { display: flex; }
-
+ 
 .meta-fields {
   display: flex;
   flex-direction: column;

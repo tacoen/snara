@@ -72,7 +72,6 @@ async function boot() {
 
   const tools = new SnaraTools();
   const pref = new SnaraPref();
-   
 
   icx.replace();
 
@@ -81,6 +80,46 @@ async function boot() {
     const label = document.getElementById('active-book-label');
     if (label) label.textContent = AppConfig.activeBookTitle || `Book ${AppConfig.activeBookId}`;
   }
+
+
+window.switchArea = (area) => {
+  const areas = {
+    editor: document.getElementById('editor-area'),
+    meta:   document.getElementById('meta-area'),
+    files:  document.getElementById('files-area'),
+    kanban:  document.getElementById('kanban-area'),  
+	};
+
+  // Show / hide main panels
+  Object.entries(areas).forEach(([key, el]) => {
+    if (!el) return;
+    el.hidden = key !== area;
+  });
+
+  // Also sync aside visibility (TOC only makes sense in editor)
+  const aside = document.querySelector('aside.side-panel');
+  if (aside) aside.hidden = area !== 'editor';
+
+  // Update nav button active state
+  document.querySelectorAll('.nav-tab-btn').forEach(btn => {
+    btn.classList.toggle('active-tab', btn.dataset.area === area);
+  });
+};
+
+// Keep ui.switchTab in sync so loadDocument still works
+const _origSwitchTab = ui.switchTab.bind(ui);
+ui.switchTab = (tab) => {
+  _origSwitchTab(tab);
+  // Map legacy tab names to area ids
+  const map = { editor: 'editor', meta: 'meta', files: 'files' };
+  if (map[tab]) window.switchArea(map[tab]);
+};
+
+// Wire missing globals that nav.html references
+window.Editor     = () => window.switchArea('editor');
+window.Meta       = () => window.switchArea('meta');
+window.FilesIndex = () => window.switchArea('files');
+
 
   // ── Editor globals ──────────────────────────────
   window.submitEntry  = ()     => editor.submit();
