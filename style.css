@@ -11,36 +11,4 @@
 @import url('./css/modal.css');
 @import url('./css/pref.css');
 
-
-.idx-act-header {
-	display: flex;
-	align-items: center;
-	gap: var(--s-sm);
-	padding: var(--s-sm) var(--s-lg);
-	cursor: pointer;
-	border-bottom: 1px solid var(--border);
-	transition: background 0.1s;
-	position: relative;
-	outline: none;
-}
-
-
-#chapter-index-modal {
-	width: 90dvw;
-}
-
-.mgrid {display: grid;grid-template-columns: 75% 25%;}
-.mgrid .modal-opt {/* padding: var(--s-sm); */}
-
-.opt-menu {display: flex; }
-
-.coverimg { 
-background-color: var(--bg-mate);
-}
-
-.opt-menu li {display: flex;flex-flow: column;width: 72px;height: 72px;align-items: center;justify-content: center;}
-.opt-menu li { opacity: .5; }
-.opt-menu li.enable { opacity: 1; }
-.opt-menu li span {font-size: .7rem;}
-.opt-menu li svg {stroke-width: 1px !important;}
-	
+@import url('./css/baru.css');

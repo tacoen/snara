@@ -1,44 +1,5 @@
 /* ── Header layout groups ──────────────────────── */
 
-header {
-  justify-content: space-between; /* left group, save btn, tabmenu */
-}
-
-.header-left {
-  display: flex;
-  align-items: center;
-  gap: var(--s-sm);
-  flex: 1;
-  min-width: 0;      /* allow filename to truncate */
-}
-
-svg.ge {
-  width: 1em;
-  height: 1em;
-  display: block;
-  flex-shrink: 0;
-}
-
-#app {
-  display: grid;
-  grid-template-columns: 40px auto;
-  background: var(--bg-main);
-}
-
-
-nav {
-  position: sticky;
-  top: 0;
-  height: 100dvh;
-  z-index: 200;
-  display: flex;
-  flex-direction: column;
-  flex-wrap: nowrap;
-  padding-top: var(--s-xs);
-  border-right: 1px solid var(--border);
-  align-items: center;
-  grid-row: span 2;
-}
 
 #theme-toggle,
 #settings-btn {
@@ -71,20 +32,6 @@ nav {
 }
 
 
-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--s-md);
-  padding: 0 var(--s-sm);
-  height: 42px;
-  border-bottom: 1px solid var(--border);
-  background: var(--bg-main);
-  flex-shrink: 0;
-  position: sticky;
-  top: 0;
-  z-index: 100;
-}
 
 .header-left {
   display: flex;

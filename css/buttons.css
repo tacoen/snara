@@ -1,14 +1,6 @@
 /* buttons.css — Consolidated buttons + icons + interactions */
 /* Fully obeys vars.css (spacing, fonts, colors, themes) */
 
-svg.ge,
-svg.icon {
-  width: 1em;
-  height: 1em;
-  display: block;
-  flex-shrink: 0;
-  stroke-width: 1.5px !important;
-}
 
 /* === BASE BUTTON (text + icon buttons) === */
 .btn {

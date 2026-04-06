@@ -1,15 +1,28 @@
 <nav>
-  <div class="nav-top">
-    <button id="bookindex-btn" onclick="bookIndex()" title="Book index" aria-label="Book index">
+  <div>
+    <button class="btn-icon" id="bookindex-btn" onclick="bookIndex()" title="Book index" aria-label="Book index">
       <i data-icon="t-shelf"></i>
     </button>
   </div>
-  <div class="nav-bottom">
-    <button id="theme-toggle" onclick="toggleTheme()" title="Toggle theme" aria-label="Toggle theme"></button>
-	<button id="pref-btn" onclick="openPref()" title="Settings" aria-label="Settings">
+
+  <div class='embed'>
+
+    <button class="btn-icon" id="editor-btn" onclick="Editor()" title="Editor" aria-label="Editor">
+		<i data-icon="marker"></i>
+    <button class="btn-icon" id="files-btn" onclick="Meta()" title="Meta" aria-label="Meta">
+      	<i data-icon="vocabulary"></i>
+    </button>
+    <button class="btn-icon" id="files-btn" onclick="FilesIndex()" title="Files" aria-label="Files">
+      <i data-icon="archive"></i>
+    </button>
+  </div>
+
+  <div>
+    <button class="btn-icon" id="theme-toggle" onclick="toggleTheme()" title="Toggle theme" aria-label="Toggle theme"></button>
+	<button class="btn-icon" id="pref-btn" onclick="openPref()" title="Settings" aria-label="Settings">
 		<i data-icon="pref"></i>
 	</button>
-    <button id="settings-btn" onclick="openSettings()" title="Settings" aria-label="Settings">
+    <button class="btn-icon" id="settings-btn" onclick="openSettings()" title="Settings" aria-label="Settings">
       <i data-icon="t-cog"></i>
     </button>
   </div>

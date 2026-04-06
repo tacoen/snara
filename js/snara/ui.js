@@ -17,13 +17,13 @@ export class SnaraUI {
 
     this.article       = document.getElementById('article');
     this.entriesEl     = this.article.querySelector('.entries');
-    this.metaEl        = this.article.querySelector('.meta');
+    this.metaEl        = document.querySelector('.meta');
     this.editorArea    = document.querySelector('.editor-area');
     this.popup         = document.getElementById('popup');
     this.focusedEntry  = null;
     this._popupTimeout = null;
 
-    this._bindTabs();
+    // this._bindTabs();
     this._bindPopup();
     this._initTheme();
 

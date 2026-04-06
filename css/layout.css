@@ -5,44 +5,4 @@
   height: calc(100dvh - 43px);
 }
 
-aside, .content-area {
-  height: calc(100dvh - 6px - 43px);
-}
-
-aside {
-  grid-row: span 2;
-  padding: var(--s-md);
-  border-left: 1px solid var(--border);
-}
-
-nav {
-  height: calc(100dvh - 4px);
-  justify-content: space-between;
-}
-
-.nav-top,
-.nav-bottom {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--s-xs);
-  padding: var(--s-xs) 0;
-}
-
-.nav-bottom {
-  margin-bottom: var(--s-sm)
-}
-
-.content-area {
-  display: flex;
-  width: 100%;
-  flex-direction: column;
-}
-
-#article {
-  flex: 1;
-  overflow-y: auto;
-  display: flex;
-  flex-direction: column;
-}
 

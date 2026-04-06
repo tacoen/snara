@@ -16,11 +16,16 @@ html {
   -webkit-font-smoothing: antialiased;
 }
 
-body {
-  margin: 0;
-  padding: 0;
+svg {
+  stroke-width: 1.5px !important;
+}
+  
+svg.ge,
+svg.icon {
+  width: 1em;
+  height: 1em;
+  display: block;
+  flex-shrink: 0;
+
 }
 
-svg, svg.ge {
-	stroke-width: 1px;
-}

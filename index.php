@@ -14,31 +14,35 @@ $title  = 'Snara';
 </head>
 <body>
 
-<div id="app">
+<div id="app" class='grid-v'>
   <?php include __DIR__ . '/partials/nav.html'; ?>
-  <?php include __DIR__ . '/partials/header.html'; ?>
+  <div class="grid-h">
+	<?php include __DIR__ . '/partials/header.html'; ?>
 
-  <div class="dashboard">
-  <main class="content-area">
+	<main id='editor-area' class="content-area" >
+		<article id="article">
+			<div class="entries"></div>
+		</article>
+		<?php include __DIR__ . '/partials/editor.html'; ?>
+		<?php include __DIR__ . '/partials/popup.html'; ?>
+	</main>
 
-  <article id="article">
-	<div class="entries"></div>
-	<?php include __DIR__ . '/partials/meta.html'; ?>
-  </article>
+	<?php include __DIR__ . '/partials/editor-side.html'; ?>
 
-  <?php include __DIR__ . '/partials/editor.html'; ?>
-
-  </main>
-
-  <?php include __DIR__ . '/partials/editor-side.html'; ?>
+	<main id='meta-area' class="content-area" hidden>
+		<?php include __DIR__ . '/partials/meta.html'; ?>
+	</main>
+	<main id='files-area' class="content-area" hidden>
+		<?php include __DIR__ . '/partials/files.html'; ?>
+	</main>
 
   </div>
 </div>
 
-<?php include __DIR__ . '/partials/popup.html'; ?>
 <?php include __DIR__ . '/partials/settings.html'; ?>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/9.1.6/marked.min.js"></script>
 <script type="module" src="js/snara.js"></script>
 </body>
 </html>
+
