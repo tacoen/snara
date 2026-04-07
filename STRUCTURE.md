@@ -1,5 +1,5 @@
 # Project Structure
-
+```
 snara/
 ├── .htaccess              # Apache clean URL rules
 ├── api.php                # Single REST API endpoint
@@ -17,4 +17,4 @@ snara/
     ├── config.php
     ├── document.php
     └── router.php
-
+```
