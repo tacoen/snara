@@ -1,3 +1,7 @@
+@layer base, layout, components, pages;
+
+@layer base {
+	
 :root {
   --s-xs: 0.25rem;
   --s-sm: 0.5rem;
@@ -94,4 +98,7 @@ html[theme="dark"] {
 
 .entry::-webkit-scrollbar-thumb:hover {
   background: var(--bg-hover);
+}
+
+
 }

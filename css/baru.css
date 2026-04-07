@@ -2,6 +2,11 @@
   display: none !important;
 }
 
+.app-overlay {
+	
+	
+}
+
 #app {
 	background: var(--bg-mate);
 }
@@ -48,7 +53,7 @@ nav div.embed svg {
 }
 
 nav div.embed {
-  margin-right: -10px;
+  margin-right: -11px;
   padding: var(--s-md) 0;
   background: var(--border);
   gap: var(--s-sm);
