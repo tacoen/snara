@@ -270,8 +270,8 @@ html[theme="dark"] .idx-row-active {
 
 /* Icon visibility — only show the icon matching current state */
 .idx-row-tool svg {
-  width: 16px;
-  height: 16px;
+  /* width: 16px; */
+  /* height: 16px; */
   display: none;
   stroke-width: 1.5px !important;
 }

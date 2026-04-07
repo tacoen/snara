@@ -408,7 +408,7 @@ close() { closeModal('pref-modal'); console.log('closepref'); }
     const t = this._activeTab;
     this.modal.innerHTML = `
       <div class="modal-header">
-        <span class="modal-title"><i data-icon="pref"></i> Theme Variables</span>
+        <span class="modal-title"><i data-icon="adjustments-horizontal"></i> Theme Variables</span>
         <button class="modal-close" id="pref-close" title="Close"><i data-icon="x"></i></button>
       </div>
 

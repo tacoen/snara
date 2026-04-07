@@ -13,8 +13,9 @@ export class IconManager {
 
     icon(iconId, classes = '') {
         if (typeof this.icons[iconId] === "undefined") {
+			console.warn('icx - notfound:'+iconId);
             this.icons[iconId] = '<svg></svg>';
-			classes = classes + " nan";
+			classes = "nan " + classes;
         }
 		
         const tempDiv = document.createElement('div');

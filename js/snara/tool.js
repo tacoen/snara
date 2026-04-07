@@ -88,20 +88,6 @@ export class SnaraTool {
     sel.addRange(range);
   }
 
-  // Re-attach a label-tag badge after re-rendering an entry
-/*
-  static syncLabelTag(div) {
-    const cls = ['draft', 'beat', 'chapter', 'act'].find(c => div.classList.contains(c));
-    div.querySelectorAll('.label-tag').forEach(el => el.remove());
-    if (cls) {
-      const tag       = document.createElement('span');
-      tag.className   = 'label-tag';
-      tag.textContent = cls;
-      div.appendChild(tag);
-    }
-  }
-*/
-
   // Apply a theme attribute on <html> and update the toggle button
   static applyTheme(theme) {
     document.documentElement.setAttribute('theme', theme);
@@ -109,8 +95,9 @@ export class SnaraTool {
     if (btn) {
       let i = btn.querySelector('i[data-icon]');
       if (!i) { i = btn.querySelector('i') || btn; }
-      i.setAttribute('data-icon', theme === 'dark' ? 'sun' : 'moon');
+      i.setAttribute('data-icon', theme === 'dark' ? 'moon' : 'sun');
     }
+	console.log(btn);
   }
 
   // Read saved theme or fall back to system preference

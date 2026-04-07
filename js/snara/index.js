@@ -98,7 +98,7 @@ _ensureDOM() {
     return books.map(b => `
       <div class="idx-row${this.activeBookId == b.id ? ' idx-row-active' : ''}"
            data-book-id="${esc(b.id)}" data-book-title="${esc(b.title)}" role="button" tabindex="0">
-        <span class="idx-row-icon"><i data-icon="t-shelf"></i></span>
+        <span class="idx-row-icon"><i data-icon="book"></i></span>
         <span class="idx-row-main">
           <span class="idx-row-title">${esc(b.title || 'untitled')}</span>
           <span class="idx-row-sub">id ${esc(String(b.id))} · ${fmtDate(b.mtime)}</span>
@@ -270,8 +270,8 @@ _ensureDOM() {
             </span>
             <span class="idx-row-badge">${esc(String(ch.entries ?? 0))} entries</span>
             <span class="idx-row-tool" data-state="unlock" title="Click to cycle: unlock → lock → delete">
-              <i class="lock"   data-icon="l-lock"></i>
-              <i class="unlock" data-icon="l-unlock"></i>
+              <i class="lock"   data-icon="lock"></i>
+              <i class="unlock" data-icon="lock-open-2"></i>
               <i class="delete" data-icon="x"></i>
             </span>
           </div>`;
@@ -361,7 +361,7 @@ _ensureDOM() {
 		<span class="modal-title">${esc(heading)}</span>
 
         ${ id !== 'book-index-modal' ? `<ul class='opt-menu'>
-            <li><i data-icon="l-img"></i><span>Cover</span></li>
+            <li><i data-icon="library-photo"></i><span>Cover</span></li>
 		</ul>` : ''}
 		</div>
         <button class="modal-close" onclick="closeModal('${id}')" title="Close">
