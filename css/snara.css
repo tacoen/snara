@@ -1,6 +1,5 @@
 /* ── Header layout groups ──────────────────────── */
 
-
 #theme-toggle,
 #settings-btn {
   background: none;
@@ -333,42 +332,6 @@ html[theme="dark"] #save-btn.saved {
   flex-wrap: wrap;
 }
 
-.tag-pills {
-  display: flex;
-  gap: var(--s-xs);
-  align-items: center;
-  flex-wrap: wrap;
-}
-
-.tag-label {
-  font-size: var(--f-xs);
-  color: var(--fg-muted);
-  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-  opacity: 0.6;
-  margin-right: 2px;
-}
-
-.tag-pill {
-  border: 1px solid var(--border);
-  background: none;
-  border-radius: 20px;
-  padding: 1px var(--s-sm);
-  font-size: var(--f-xs);
-  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-  cursor: pointer;
-  color: var(--fg-muted);
-  transition: all 0.15s;
-  text-transform: uppercase;
-  letter-spacing: 0.07em;
-}
-
-.tag-pill:hover { background: var(--bg-hover); }
-
-.tag-pill.active-draft   { background: var(--tag-beat-bg);    color: var(--tag-draft-fg);   border-color: var(--tag-beat-bd); }
-.tag-pill.active-beat    { background: var(--tag-beat-bg);    color: var(--tag-beat-fg);    border-color: var(--tag-beat-bd); }
-.tag-pill.active-chapter { background: var(--tag-chapter-bg); color: var(--tag-chapter-fg); border-color: var(--tag-chapter-bd); }
-.tag-pill.active-act     { background: var(--tag-act-bg);     color: var(--tag-act-fg);     border-color: var(--tag-act-bd); }
-
 .submit-btn {
   background: var(--primary);
   color: #fff;
@@ -389,72 +352,3 @@ html[theme="dark"] #save-btn.saved {
 .submit-btn:hover  { opacity: 0.85; }
 .submit-btn:active { transform: scale(0.98); }
 
-
-.popup-toolbar {
-  position: fixed;
-  background: var(--bg-main);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  box-shadow: 0 4px 16px var(--overlay);
-  display: flex;
-  gap: 2px;
-  padding: var(--s-xs) var(--s-sm);
-  align-items: center;
-  z-index: 9999;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.12s;
-}
-
-.popup-toolbar.visible {
-  opacity: 1;
-  pointer-events: all;
-}
-
-.pop-pill {
-  border: 1px solid transparent;
-  background: none;
-  border-radius: 20px;
-  padding: 1px var(--s-sm);
-  font-size: 10px;
-  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-  cursor: pointer;
-  text-transform: uppercase;
-  letter-spacing: 0.07em;
-  color: var(--fg-muted);
-  transition: all 0.12s;
-}
-
-.pop-pill:hover {
-  background: var(--bg-hover);
-  border-color: var(--border);
-  color: var(--fg-main);
-}
-
-.pop-pill.draft   { color: var(--tag-draft-fg); }
-.pop-pill.beat    { color: var(--tag-beat-fg); }
-.pop-pill.chapter { color: var(--tag-chapter-fg); }
-.pop-pill.act     { color: var(--tag-act-fg); }
-
-.pop-pill.draft.sel,   .pop-pill.draft:hover   { background: var(--tag-beat-bg);    border-color: var(--tag-beat-bd); }
-.pop-pill.beat.sel,    .pop-pill.beat:hover    { background: var(--tag-beat-bg);    border-color: var(--tag-beat-bd); }
-.pop-pill.chapter.sel, .pop-pill.chapter:hover { background: var(--tag-chapter-bg); border-color: var(--tag-chapter-bd); }
-.pop-pill.act.sel,     .pop-pill.act:hover     { background: var(--tag-act-bg);     border-color: var(--tag-act-bd); }
-
-.pop-sep {
-  width: 1px;
-  height: 14px;
-  background: var(--border);
-  margin: 0 2px;
-}
-
-.pop-remove {
-  font-size: 11px;
-  padding: 1px var(--s-xs);
-  color: var(--fg-muted);
-}
-
-.pop-remove:hover {
-  color: var(--danger);
-  background: none;
-}

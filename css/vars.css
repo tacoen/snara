@@ -1,5 +1,3 @@
-@layer base, layout, components, pages;
-
 @layer base {
 	
 :root {

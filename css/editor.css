@@ -4,7 +4,7 @@
   padding: 0 0 var(--s-xl) 0;
 }
 
-.entries:not([hidden]) {display: flex;padding: var(--s-md);}
+.entries:not([hidden]) {display: flex;padding: 0 var(--s-md) var(--s-lg) 2px;}
 
 .entries:empty::before {
   content: 'Your story will appear here…';
