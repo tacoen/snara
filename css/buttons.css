@@ -222,6 +222,7 @@ html[theme="dark"] .btn-save.saved {
   display: inline-flex;
   align-items: center;
   gap: var(--s-xs);
+  height: 30px;
 }
 
 .cfg-btn-ghost {
@@ -230,7 +231,7 @@ html[theme="dark"] .btn-save.saved {
   color: var(--fg-muted);
 }
 
-.cfg-btn-ghost svg {
+.cfg-btn svg {
   width: 24px;
 }
 

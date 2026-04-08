@@ -137,3 +137,19 @@ nav.embed {
   box-shadow: inset 3px 0 4px rgba(0, 0, 0, 0.5);
 }
 
+
+.del-confirm {
+	position: fixed;
+	bottom: 0px;
+	left: 12.5%;
+	width: 75%;
+	z-index: 999;
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	padding: 10px 16px;
+	font-size: 12px;
+	background: var(--bg-alt);
+	border-top: 1px solid var(--border);
+	box-shadow: 0 -2px 12px var(--overlay);
+}

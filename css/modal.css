@@ -90,7 +90,7 @@ body.modal-open { overflow: hidden; }
 .modal-footer {
   flex-wrap: wrap;
   align-items: center;
-  padding: var(--s-sm);
+  padding: var(--s-sm) var(--s-lg);
   display: flex;
 }
 

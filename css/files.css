@@ -1,4 +1,4 @@
-/* â”€â”€ files.css â€” Snara Files Panel â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* Ã¢â€â‚¬Ã¢â€â‚¬ files.css Ã¢â‚¬â€ Snara Files Panel Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ */
 
 #files {
   display: grid;
@@ -7,7 +7,7 @@
   overflow: hidden;
 }
 
-/* â”€â”€ Sidebar nav â”€â”€ */
+/* Ã¢â€â‚¬Ã¢â€â‚¬ Sidebar nav Ã¢â€â‚¬Ã¢â€â‚¬ */
 #files-nav {
   display: flex;
   flex-direction: column;
@@ -55,19 +55,20 @@
   font-weight: 500;
 }
 
-/* â”€â”€ Main area â”€â”€ */
+/* Ã¢â€â‚¬Ã¢â€â‚¬ Main area Ã¢â€â‚¬Ã¢â€â‚¬ */
 #files-main {
   display: flex;
   flex-direction: column;
   overflow: hidden;
   background: var(--bg-main);
+  height: calc(100dvh - 90px);
 }
 
 #files-topbar {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 8px var(--s-md);
+  padding: 0 var(--s-md) 8px var(--s-md);
   border-bottom: 1px solid var(--border);
   flex-shrink: 0;
   gap: var(--s-sm);
@@ -81,7 +82,7 @@
   letter-spacing: .07em;
 }
 
-/* â”€â”€ Panels â”€â”€ */
+/* Ã¢â€â‚¬Ã¢â€â‚¬ Panels Ã¢â€â‚¬Ã¢â€â‚¬ */
 .fpanel {
   display: flex;
   flex-direction: column;
@@ -104,7 +105,7 @@
   flex-shrink: 0;
 }
 
-/* â”€â”€ Drop zones â”€â”€ */
+/* Ã¢â€â‚¬Ã¢â€â‚¬ Drop zones Ã¢â€â‚¬Ã¢â€â‚¬ */
 #files-dropzone,
 #files-gallery-dz {
   margin: var(--s-sm) var(--s-md);
@@ -135,7 +136,7 @@
 
 #files-gallery-dz { padding: var(--s-md); }
 
-/* â”€â”€ File lists â”€â”€ */
+/* Ã¢â€â‚¬Ã¢â€â‚¬ File lists Ã¢â€â‚¬Ã¢â€â‚¬ */
 .flist {
   list-style: none;
   padding: 4px var(--s-md);
@@ -254,7 +255,7 @@ html[theme="dark"] .fs-ok { background: rgba(45,164,78,.12); }
 .ftool:hover { background: var(--bg-alt); border-color: var(--border); color: var(--fg-main); }
 .ftool.erase-btn:hover { color: var(--danger); }
 
-/* â”€â”€ Delete confirmation bar â”€â”€ */
+/* Ã¢â€â‚¬Ã¢â€â‚¬ Delete confirmation bar Ã¢â€â‚¬Ã¢â€â‚¬ */
 .fdelete-bar {
   display: flex;
   align-items: center;
@@ -269,7 +270,7 @@ html[theme="dark"] .fs-ok { background: rgba(45,164,78,.12); }
   color: var(--danger);
 }
 
-/* â”€â”€ Export checkboxes â”€â”€ */
+/* Ã¢â€â‚¬Ã¢â€â‚¬ Export checkboxes Ã¢â€â‚¬Ã¢â€â‚¬ */
 .fcheck-row {
   display: flex;
   align-items: center;

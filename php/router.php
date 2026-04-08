@@ -28,6 +28,7 @@ require_once __DIR__ . '/book.php';
 // ── Add this require near the top of router.php, alongside the others ──
 require_once __DIR__ . '/state.php';
 require_once __DIR__ . '/pref.php';
+require_once __DIR__ . '/import.php';
 	 
 class Router {
 
@@ -183,7 +184,40 @@ class Router {
                     Pref::set($body['vars'] ?? []);
                     echo json_encode(['ok' => true]);
                     break;
-					
+
+
+                // ── Import staging ───────────────────────────
+                case 'import.upload':
+                    // multipart POST — do NOT use self::body() (that reads php://input)
+                    self::requireMethod($method, 'POST');
+                    $bookId = (int)($_GET['bookId'] ?? $_POST['bookId'] ?? 0);
+                    if (!$bookId) self::error(400, 'Missing bookId');
+                    $result = Import::upload($bookId);
+                    echo json_encode(['ok' => true, 'file' => $result]);
+                    break;
+ 
+                case 'import.list':
+                    self::requireMethod($method, 'GET');
+                    $bookId = (int)self::requireParam('bookId');
+                    echo json_encode(Import::list($bookId));
+                    break;
+ 
+                case 'import.delete':
+                    self::requireMethod($method, 'DELETE');
+                    $bookId   = (int)self::requireParam('bookId');
+                    $filename = self::requireParam('filename');
+                    Import::delete($bookId, $filename);
+                    echo json_encode(['ok' => true]);
+                    break;
+ 
+                case 'import.read':
+                    self::requireMethod($method, 'GET');
+                    $bookId   = (int)self::requireParam('bookId');
+                    $filename = self::requireParam('filename');
+                    // Return raw text — override content-type for this one action
+                    header('Content-Type: text/plain; charset=utf-8');
+                    echo Import::read($bookId, $filename);
+                    exit;					
 
                 default:
                     self::error(404, 'Unknown action: ' . $action);
@@ -192,6 +226,7 @@ class Router {
             self::error(500, $e->getMessage());
         }
     }
+
 
     // ── Helpers ───────────────────────────────────
 

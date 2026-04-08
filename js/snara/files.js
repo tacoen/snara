@@ -1,15 +1,15 @@
 /* ─────────────────────────────────────────────────
    snara/files.js — SnaraFiles
-   Manages the Files area: Import, Export, Gallery, Cache.
-
-   Sections map to:
-     import  → data/$bookId/import
-     export  → data/$bookId/export  (chapter list)
-     gallery → data/$bookId/image
-     cache   → data/$bookId/cache
+   Sections:
+     import  → data/$bookId/import/   (staged raw files)
+     export  → chapter checklist
+     gallery → data/$bookId/image/
+     cache   → data/$bookId/cache/
 ─────────────────────────────────────────────────── */
-import { AppConfig } from '../snara.js';
-import icx           from '../icons/ge-icon.js';
+import { AppConfig }            from '../snara.js';
+import { SnaraStruct }          from './struct.js';
+import icx                      from '../icons/ge-icon.js';
+import { openModal, closeModal } from './modal.js';
 
 export class SnaraFiles {
 
@@ -17,19 +17,183 @@ export class SnaraFiles {
 
   constructor() {
     SnaraFiles.instance = this;
-
-    this._state = {
-      import:  [],   // { name, ext, size, imported, raw }
-      gallery: [],   // { name, ext, size }
-      cache:   [],   // { name, ext, size }
-    };
-
     this._dragSrc = null;
     this._section = 'import';
 
+    this._ensureModal();
     this._bindDropzones();
     this._bindFileInputs();
     this.switchSection('import');
+  }
+
+  // ── Import preview modal ──────────────────────
+
+  _ensureModal() {
+    if (document.getElementById('files-import-modal')) return;
+    const modal = document.createElement('div');
+    modal.className = 'app-modal';
+    modal.id = 'files-import-modal';
+    modal.setAttribute('hidden', '');
+    modal.setAttribute('role', 'dialog');
+    modal.setAttribute('aria-modal', 'true');
+    document.getElementById('app-overlay').appendChild(modal);
+  }
+
+  async _openPreview(filename) {
+    const bookId = AppConfig.activeBookId;
+    if (!bookId) { alert('No active book.'); return; }
+
+    const modal = document.getElementById('files-import-modal');
+    modal.innerHTML = `
+      <div class="modal-header">
+        <span class="modal-title"><i data-icon="file-text"></i> Preview — ${_esc(filename)}</span>
+        <button class="modal-close" onclick="closeModal()"><i data-icon="x"></i></button>
+      </div>
+      <div class="modal-body" style="display:flex;align-items:center;justify-content:center;padding:2rem">
+        <span style="font-size:var(--f-xs);color:var(--fg-muted)">Parsing file…</span>
+      </div>`;
+    openModal('files-import-modal');
+    icx.delayreplace('#files-import-modal [data-icon]');
+
+    // Fetch raw text from server
+    let text;
+    try {
+      const res = await fetch(
+        `${AppConfig.apiPath}?action=import.read&bookId=${bookId}&filename=${encodeURIComponent(filename)}`
+      );
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      text = await res.text();
+    } catch (e) {
+      this._showPreviewError(modal, `Could not read file: ${e.message}`);
+      return;
+    }
+
+    const blocks = SnaraStruct.split(text);
+    if (!blocks.length) {
+      this._showPreviewError(modal, 'File appears to be empty.');
+      return;
+    }
+
+    const defaultFilename = filename
+      .replace(/\.[^.]+$/, '')
+      .replace(/\s+/g, '-')
+      .toLowerCase();
+
+    modal.innerHTML = `
+      <div class="modal-header">
+        <span class="modal-title"><i data-icon="file-text"></i> Preview — ${_esc(filename)}</span>
+        <button class="modal-close" onclick="closeModal()"><i data-icon="x"></i></button>
+      </div>
+      <div class="modal-body" style="padding:var(--s-md);overflow-y:auto;display:flex;flex-direction:column;gap:var(--s-sm)">
+        <div class="cfg-row">
+          <label class="cfg-label" style="flex-shrink:0">Save as</label>
+          <input class="cfg-input" id="imp-filename" value="${_esc(defaultFilename)}"
+            placeholder="filename (no extension)" style="flex:1">
+        </div>
+        <div style="font-size:var(--f-xs);color:var(--fg-muted)">
+          ${blocks.length} block${blocks.length !== 1 ? 's' : ''} detected — review before importing:
+        </div>
+        <div id="imp-preview-list" style="display:flex;flex-direction:column;gap:6px">
+          ${blocks.map((b, bi) => `
+            <div class="imp-block" style="border:1px solid var(--border);border-radius:6px;overflow:hidden">
+              <div style="display:flex;align-items:center;gap:8px;padding:6px 10px;background:var(--bg-alt);border-bottom:1px solid var(--border)">
+                <span class="fbadge imp-cls-badge" data-idx="${bi}" title="Click to cycle class" style="cursor:pointer">${_esc(b.cls)}</span>
+                <span style="font-size:11px;color:var(--fg-muted);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">
+                  ${_esc(b.md.split('\n')[0].slice(0, 80))}
+                </span>
+                <label style="display:flex;align-items:center;gap:4px;font-size:11px;color:var(--fg-muted);cursor:pointer">
+                  <input type="checkbox" class="imp-block-cb" data-idx="${bi}" checked
+                    style="accent-color:var(--primary)"> include
+                </label>
+              </div>
+              <pre style="margin:0;padding:8px 10px;font-size:11px;font-family:var(--font-mono);white-space:pre-wrap;color:var(--fg-muted);max-height:100px;overflow-y:auto;background:var(--bg-main)">${_esc(b.md)}</pre>
+            </div>`).join('')}
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="cfg-btn cfg-btn-ghost" onclick="closeModal()">Cancel</button>
+        <button class="cfg-btn cfg-btn-primary" id="imp-confirm-btn">
+          <i data-icon="download"></i> Import
+        </button>
+      </div>`;
+
+    icx.delayreplace('#files-import-modal [data-icon]');
+    modal._blocks   = blocks;
+    modal._filename = filename;
+
+    modal.querySelectorAll('.imp-cls-badge').forEach(badge => {
+      badge.addEventListener('click', () => {
+        const bi   = parseInt(badge.dataset.idx);
+        const cls  = SnaraStruct.CLASSES;
+        const next = cls[(cls.indexOf(blocks[bi].cls) + 1) % cls.length];
+        blocks[bi].cls    = next;
+        badge.textContent = next;
+      });
+    });
+
+    modal.querySelector('#imp-confirm-btn').addEventListener('click', () => {
+      this._confirmImport(modal, filename);
+    });
+  }
+
+  _showPreviewError(modal, msg) {
+    modal.innerHTML = `
+      <div class="modal-header">
+        <span class="modal-title">Import error</span>
+        <button class="modal-close" onclick="closeModal()"><i data-icon="x"></i></button>
+      </div>
+      <div class="modal-body" style="padding:var(--s-lg);color:var(--danger);font-size:var(--f-xs)">${_esc(msg)}</div>
+      <div class="modal-footer">
+        <button class="cfg-btn cfg-btn-ghost" onclick="closeModal()">Close</button>
+      </div>`;
+    icx.delayreplace('#files-import-modal [data-icon]');
+  }
+
+  async _confirmImport(modal, srcFilename) {
+    const bookId   = AppConfig.activeBookId;
+    const blocks   = modal._blocks;
+    const filename = document.getElementById('imp-filename')?.value.trim()
+      || srcFilename.replace(/\.[^.]+$/, '').replace(/\s+/g, '-').toLowerCase();
+
+    if (!bookId) { alert('No active book.'); return; }
+
+    const checked = [...modal.querySelectorAll('.imp-block-cb')]
+      .map((cb, bi) => cb.checked ? blocks[bi] : null)
+      .filter(Boolean);
+
+    if (!checked.length) { alert('No blocks selected.'); return; }
+
+    const btn = modal.querySelector('#imp-confirm-btn');
+    btn.disabled    = true;
+    btn.textContent = 'Importing…';
+
+    const article = checked.map(b => ({
+      class:   b.cls,
+      content: marked.parse(b.md, { breaks: true }),
+    }));
+
+    try {
+      const res  = await fetch(AppConfig.apiPath + '?action=doc.save', {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify({ filename, bookId, meta: {}, article }),
+      });
+      const json = await res.json();
+      if (!res.ok || json.error) throw new Error(json.error || `HTTP ${res.status}`);
+
+      closeModal();
+      // Reload the import list so the file stays visible (still in /import dir)
+      this._loadImpList();
+
+    } catch (e) {
+      btn.disabled  = false;
+      btn.innerHTML = '<i data-icon="download"></i> Import';
+      icx.delayreplace('#files-import-modal #imp-confirm-btn [data-icon]');
+      const errEl = modal.querySelector('.imp-err');
+      if (errEl) errEl.remove();
+      btn.insertAdjacentHTML('beforebegin',
+        `<span class="imp-err" style="color:var(--danger);font-size:11px">Error: ${_esc(e.message)}</span>`);
+    }
   }
 
   // ── Section switching ─────────────────────────
@@ -50,10 +214,10 @@ export class SnaraFiles {
 
     this._renderTopActions(sec);
 
+    if (sec === 'import')  this._loadImpList();
     if (sec === 'export')  this._renderExport();
-    if (sec === 'gallery') this._renderList('gallery');
-    if (sec === 'cache')   this._renderList('cache');
-    if (sec === 'import')  this._renderImpList();
+    if (sec === 'gallery') this._loadList('gallery');
+    if (sec === 'cache')   this._loadList('cache');
 
     icx.delayreplace(`#fpanel-${sec} [data-icon]`);
     icx.delayreplace('#files-topbar-actions [data-icon]');
@@ -71,11 +235,9 @@ export class SnaraFiles {
     }
   }
 
-  _triggerInput(id) {
-    document.getElementById(id)?.click();
-  }
+  _triggerInput(id) { document.getElementById(id)?.click(); }
 
-  // ── Dropzone & file input binding ────────────
+  // ── Dropzone & file input ─────────────────────
 
   _bindDropzones() {
     const wire = (id, type) => {
@@ -83,10 +245,10 @@ export class SnaraFiles {
       if (!el) return;
       el.addEventListener('dragover',  e => { e.preventDefault(); el.classList.add('drag'); });
       el.addEventListener('dragleave', () => el.classList.remove('drag'));
-      el.addEventListener('drop',      e => {
+      el.addEventListener('drop', e => {
         e.preventDefault();
         el.classList.remove('drag');
-        this._addFiles(e.dataTransfer.files, type);
+        this._uploadFiles(e.dataTransfer.files, type);
       });
     };
     wire('files-dropzone',   'import');
@@ -98,7 +260,7 @@ export class SnaraFiles {
       const el = document.getElementById(id);
       if (!el) return;
       el.addEventListener('change', e => {
-        this._addFiles(e.target.files, type);
+        this._uploadFiles(e.target.files, type);
         e.target.value = '';
       });
     };
@@ -106,92 +268,182 @@ export class SnaraFiles {
     wire('files-img-input', 'gallery');
   }
 
-  _addFiles(files, type) {
-    [...files].forEach(file => {
-      const x = this._ext(file.name);
-      if (type === 'import') {
-        if (!['txt', 'md'].includes(x)) {
-          alert('Only .txt and .md files are accepted for import.');
-          return;
+  // ── Upload to server ──────────────────────────
+
+  async _uploadFiles(files, type) {
+    const bookId = AppConfig.activeBookId;
+    if (!bookId) { alert('No active book — open a book first.'); return; }
+
+    const allowed = type === 'import'
+      ? ['txt', 'md']
+      : ['jpg','jpeg','png','gif','webp','svg','bmp'];
+
+    for (const file of files) {
+      const ext = file.name.split('.').pop().toLowerCase();
+      if (!allowed.includes(ext)) {
+        alert(`"${file.name}" is not allowed here. Accepted: ${allowed.join(', ')}`);
+        continue;
+      }
+
+      const fd = new FormData();
+      fd.append('file', file);
+
+      try {
+        const res  = await fetch(
+          `${AppConfig.apiPath}?action=import.upload&bookId=${bookId}`,
+          { method: 'POST', body: fd }
+        );
+        const json = await res.json();
+        if (!res.ok || json.error) throw new Error(json.error || `HTTP ${res.status}`);
+      } catch (e) {
+        alert(`Upload failed for "${file.name}": ${e.message}`);
+      }
+    }
+
+    // Reload list after all uploads
+    if (type === 'import') this._loadImpList();
+  }
+
+  // ── Import list — loaded from API ─────────────
+
+  async _loadImpList() {
+    const bookId = AppConfig.activeBookId;
+    const ul     = document.getElementById('files-imp-list');
+    if (!ul) return;
+
+    if (!bookId) {
+      ul.innerHTML = '<li class="flist-empty">No active book.</li>';
+      return;
+    }
+
+    ul.innerHTML = '<li class="flist-empty" style="opacity:.5">Loading…</li>';
+
+    try {
+      const res   = await fetch(`${AppConfig.apiPath}?action=import.list&bookId=${bookId}`);
+      const files = await res.json();
+
+      if (!files.length) {
+        ul.innerHTML = '<li class="flist-empty">No files yet — drop some above</li>';
+        this._updateDeleteBar('import');
+        return;
+      }
+
+      ul.innerHTML = files.map((f, i) => `
+        <li id="fi-${i}" class="flist-item" data-filename="${_esc(f.filename)}">
+          <i data-icon="${this._iconFor(f.ext)}"></i>
+          <span class="fname">${_esc(f.filename)}</span>
+          <span class="fbadge">${_fmtSize(f.size)}</span>
+          <div class="ftools">
+            <button class="ftool" title="Preview &amp; import"
+              data-action="preview-import" data-filename="${_esc(f.filename)}">
+              <i data-icon="eye"></i>
+            </button>
+            <button class="ftool erase-btn" title="Delete"
+              data-action="delete-import" data-filename="${_esc(f.filename)}">
+              <i data-icon="trash"></i>
+            </button>
+          </div>
+        </li>`).join('');
+
+      ul.addEventListener('click', this._impListClick.bind(this), { once: true });
+      icx.delayreplace('#files-imp-list [data-icon]');
+
+    } catch (e) {
+      ul.innerHTML = `<li class="flist-empty" style="color:var(--danger)">Error: ${_esc(e.message)}</li>`;
+    }
+  }
+
+  _impListClick(e) {
+    const btn = e.target.closest('[data-action]');
+    if (!btn) {
+      // Re-attach since we used once:true
+      document.getElementById('files-imp-list')
+        ?.addEventListener('click', this._impListClick.bind(this), { once: true });
+      return;
+    }
+
+    const { action, filename } = btn.dataset;
+    if (action === 'preview-import') {
+      this._openPreview(filename);
+    } else if (action === 'delete-import') {
+      this._deleteImportFile(filename, btn.closest('li'));
+    }
+
+    // Re-attach listener
+    document.getElementById('files-imp-list')
+      ?.addEventListener('click', this._impListClick.bind(this), { once: true });
+  }
+
+  _deleteImportFile(filename, li) {
+    const bookId = AppConfig.activeBookId;
+    if (!bookId) return;
+
+    const btn = li.querySelector('[data-action="delete-import"]');
+
+    // ── First click — mark row, swap icon ────────
+    if (!li.classList.contains('delete')) {
+      li.classList.add('delete');
+      if (btn) {
+        btn.innerHTML = '<i data-icon="x"></i>';
+        icx.delayreplace(`#${li.id} [data-action="delete-import"] [data-icon]`);
+      }
+      return;
+    }
+
+    // ── Second click — show inline confirmation ───
+    // Don't show twice
+    if (li.querySelector('.del-confirm')) return;
+
+    const confirm = document.createElement('div');
+    confirm.className = 'del-confirm';
+    confirm.innerHTML = `
+      <span style="flex:1;color:var(--danger)">Delete "${_esc(filename)}"?</span>
+      <button class="cfg-btn cfg-btn-ghost" style="padding:2px 8px;font-size:11px" data-action="del-no">No</button>
+	  <button class="cfg-btn" style="padding:2px 8px;font-size:11px; background: var(--danger); border: 0" data-action="del-yes">Yes, delete</button>    
+	  `;
+    document.body.appendChild(confirm);
+
+    // No — revert
+    confirm.querySelector('[data-action="del-no"]').addEventListener('click', () => {
+      li.classList.remove('delete');
+      confirm.remove();
+      if (btn) {
+        btn.innerHTML = '<i data-icon="trash"></i>';
+        icx.delayreplace(`#${li.id} [data-action="delete-import"] [data-icon]`);
+      }
+    });
+
+    // Yes — fire DELETE
+    confirm.querySelector('[data-action="del-yes"]').addEventListener('click', async () => {
+      confirm.innerHTML = `<span style="color:var(--fg-muted);font-size:11px;padding:2px 4px">Deleting…</span>`;
+      try {
+        const res  = await fetch(
+          `${AppConfig.apiPath}?action=import.delete&bookId=${bookId}&filename=${encodeURIComponent(filename)}`,
+          { method: 'DELETE' }
+        );
+        const json = await res.json();
+        if (!res.ok || json.error) throw new Error(json.error || `HTTP ${res.status}`);
+        li.remove();
+      } catch (e) {
+        alert(`Delete failed: ${e.message}`);
+        li.classList.remove('delete');
+        confirm.remove();
+        if (btn) {
+          btn.innerHTML = '<i data-icon="trash"></i>';
+          icx.delayreplace(`#${li.id} [data-action="delete-import"] [data-icon]`);
         }
-        this._state.import.push({ name: file.name, ext: x, size: this._fmt(file.size), imported: false, raw: file });
-        this._renderImpList();
-      } else if (type === 'gallery') {
-        this._state.gallery.push({ name: file.name, ext: x, size: this._fmt(file.size) });
-        this._renderList('gallery');
       }
     });
   }
 
-  // ── Import list ───────────────────────────────
+  // ── Generic list (gallery / cache) ───────────
+  // These still use in-memory for now — wire similarly when backend is ready
 
-  _renderImpList() {
-    const ul = document.getElementById('files-imp-list');
-    if (!ul) return;
-
-    if (!this._state.import.length) {
-      ul.innerHTML = '<li class="flist-empty">No files yet — drop some above</li>';
-      this._updateDeleteBar('import');
-      return;
-    }
-
-    ul.innerHTML = this._state.import.map((f, i) => `
-      <li id="fi-${i}" draggable="true" class="flist-item">
-        <span class="fhandle"><i data-icon="grip-vertical"></i></span>
-        <i data-icon="${this._iconFor(f.ext)}"></i>
-        <span class="fname">${f.name}</span>
-        <span class="fbadge">${f.ext.toUpperCase()}</span>
-        <span class="fstatus ${f.imported ? 'fs-ok' : 'fs-ready'}">${f.imported ? 'imported' : 'ready'}</span>
-        <div class="ftools">
-          <button class="ftool" title="Convert &amp; import" data-action="import" data-idx="${i}"><i data-icon="download"></i></button>
-          <button class="ftool erase-btn" id="fe-fi-${i}" title="Mark for deletion" data-action="erase" data-prefix="fi" data-idx="${i}" data-sec="import"><i data-icon="trash"></i></button>
-        </div>
-      </li>`).join('');
-
-    this._bindListEvents(ul, 'import');
-    this._updateDeleteBar('import');
-    icx.delayreplace('#files-imp-list [data-icon]');
-  }
-
-  importFile(i) {
-    const f = this._state.import[i];
-    if (!f || f.imported) return;
-    // TODO: read f.raw → SnaraStruct.split() → POST ?action=doc.save
-    const bookId = AppConfig.activeBookId;
-    alert(`Import "${f.name}"\n→ parse structure → POST to ${AppConfig.apiPath}?action=doc.save&book=${bookId}`);
-    f.imported = true;
-    this._renderImpList();
-  }
-
-  // ── Generic sortable list (gallery / cache) ───
-
-  _renderList(sec) {
+  async _loadList(sec) {
     const listIds = { gallery: 'files-gallery-list', cache: 'files-cache-list' };
     const ul = document.getElementById(listIds[sec]);
     if (!ul) return;
-
-    const data = this._state[sec];
-    if (!data.length) {
-      ul.innerHTML = '<li class="flist-empty">No files in this folder</li>';
-      return;
-    }
-
-    ul.innerHTML = data.map((f, i) => `
-      <li id="${sec}-${i}" draggable="true" class="flist-item">
-        <span class="fhandle"><i data-icon="grip-vertical"></i></span>
-        <i data-icon="${this._iconFor(f.ext)}"></i>
-        <span class="fname">${f.name}</span>
-        <span class="fbadge">${f.size || f.ext}</span>
-        <div class="ftools">
-          ${sec === 'gallery' ? `<button class="ftool" title="Preview" data-action="preview" data-idx="${i}"><i data-icon="photo"></i></button>` : ''}
-          <button class="ftool" title="Download" data-action="download" data-idx="${i}"><i data-icon="download"></i></button>
-          <button class="ftool erase-btn" id="fe-${sec}-${i}" title="Mark for deletion" data-action="erase" data-prefix="${sec}" data-idx="${i}" data-sec="${sec}"><i data-icon="trash"></i></button>
-        </div>
-      </li>`).join('');
-
-    this._bindListEvents(ul, sec);
-    this._updateDeleteBar(sec);
-    icx.delayreplace(`#${listIds[sec]} [data-icon]`);
+    ul.innerHTML = '<li class="flist-empty" style="opacity:.5">No files in this folder</li>';
   }
 
   // ── Export list ───────────────────────────────
@@ -202,7 +454,7 @@ export class SnaraFiles {
 
     const chapters = AppConfig._exportChapters || [];
     if (!chapters.length) {
-      ul.innerHTML = `<li class="flist-empty">No chapters loaded.<br>Open a book first, or wire to ?action=book.chapters&id=${AppConfig.activeBookId || '...'}</li>`;
+      ul.innerHTML = `<li class="flist-empty">No chapters loaded. Open a book first.</li>`;
       return;
     }
 
@@ -210,11 +462,12 @@ export class SnaraFiles {
     chapters.forEach(ch => { (grouped[ch.act] = grouped[ch.act] || []).push(ch); });
 
     ul.innerHTML = Object.entries(grouped).map(([act, chs]) => `
-      <li class="flist-act-hdr">${act}</li>
+      <li class="flist-act-hdr">${_esc(act)}</li>
       ${chs.map(ch => `
         <li class="flist-item">
-          <input type="checkbox" class="fexp-cb" value="${ch.filename}" style="accent-color:var(--primary);width:13px;height:13px;flex-shrink:0">
-          <label style="flex:1;cursor:pointer;font-size:var(--f-xs)">${ch.title || ch.filename}</label>
+          <input type="checkbox" class="fexp-cb" value="${_esc(ch.filename)}"
+            style="accent-color:var(--primary);width:13px;height:13px;flex-shrink:0">
+          <label style="flex:1;cursor:pointer;font-size:var(--f-xs)">${_esc(ch.title || ch.filename)}</label>
           <span class="fbadge">${ch.entries ?? ''} entries</span>
         </li>`).join('')}
     `).join('');
@@ -227,120 +480,41 @@ export class SnaraFiles {
   exportSelected(fmt) {
     const sel = [...document.querySelectorAll('.fexp-cb:checked')].map(c => c.value);
     if (!sel.length) { alert('Select at least one chapter.'); return; }
-    // TODO: fetch each via ?action=doc.get&book=...&file=... then convert + download
     alert(`Export ${sel.length} chapter(s) as .${fmt}:\n${sel.join(', ')}`);
   }
 
-  // ── Erase toggle ──────────────────────────────
-
-  _toggleErase(prefix, i, sec) {
-    const liId  = prefix === 'fi' ? `fi-${i}` : `${prefix}-${i}`;
-    const btnId = `fe-${prefix}-${i}`;
-    const li    = document.getElementById(liId);
-    const btn   = document.getElementById(btnId);
-    if (!li || !btn) return;
-
-    const wasDelete = li.classList.contains('delete');
-    li.classList.toggle('delete', !wasDelete);
-    btn.innerHTML = wasDelete ? '<i data-icon="trash"></i>' : '<i data-icon="x"></i>';
-    this._updateDeleteBar(sec);
-    icx.delayreplace(`#${btnId} [data-icon]`);
-  }
+  // ── Delete bar helpers (import uses per-row delete now) ──
 
   _updateDeleteBar(sec) {
-    const barId  = sec === 'import' ? 'files-delete-bar' : `files-delete-bar-${sec}`;
-    const cntId  = sec === 'import' ? 'files-delete-count' : `files-delete-count-${sec}`;
-    const selMap = {
-      import:  '#files-imp-list li.delete',
-      gallery: '#files-gallery-list li.delete',
-      cache:   '#files-cache-list li.delete',
-    };
+    const barId = sec === 'import' ? 'files-delete-bar' : `files-delete-bar-${sec}`;
     const bar   = document.getElementById(barId);
-    const cntEl = document.getElementById(cntId);
-    if (!bar) return;
-    const n = document.querySelectorAll(selMap[sec] || '').length;
-    bar.hidden = n === 0;
-    if (cntEl) cntEl.textContent = `${n} file${n !== 1 ? 's' : ''} marked for deletion`;
-  }
-
-  clearDeletes(sec) {
-    const selMap = {
-      import:  '#files-imp-list li.delete',
-      gallery: '#files-gallery-list li.delete',
-      cache:   '#files-cache-list li.delete',
-    };
-    document.querySelectorAll(selMap[sec] || '').forEach(li => {
-      li.classList.remove('delete');
-      const btn = li.querySelector('.erase-btn');
-      if (btn) { btn.innerHTML = '<i data-icon="trash"></i>'; icx.delayreplace(btn); }
-    });
-    this._updateDeleteBar(sec);
-  }
-
-  applyDeletes(sec) {
-    const selMap = {
-      import:  '#files-imp-list li.delete',
-      gallery: '#files-gallery-list li.delete',
-      cache:   '#files-cache-list li.delete',
-    };
-    const indices = [...document.querySelectorAll(selMap[sec] || '')]
-      .map(li => parseInt(li.id.split('-').pop()))
-      .sort((a, b) => b - a);
-    indices.forEach(i => this._state[sec].splice(i, 1));
-    if (sec === 'import') this._renderImpList();
-    else this._renderList(sec);
+    if (bar) bar.hidden = true;
   }
 
   rebuildCache() {
     const bookId = AppConfig.activeBookId;
-    alert(`Rebuild cache for book "${bookId}"\n→ Hook to: ${AppConfig.apiPath}?action=book.chapters&id=${bookId}`);
-  }
-
-  // ── Drag-to-reorder ───────────────────────────
-
-  _bindListEvents(ul, sec) {
-    ul.querySelectorAll('li[draggable]').forEach((li, i) => {
-      li.addEventListener('dragstart', () => { this._dragSrc = { i, sec }; li.style.opacity = '.4'; });
-      li.addEventListener('dragend',   () => { li.style.opacity = ''; });
-      li.addEventListener('dragover',  e => { e.preventDefault(); li.classList.add('drag-over'); });
-      li.addEventListener('dragleave', () => li.classList.remove('drag-over'));
-      li.addEventListener('drop', e => {
-        e.preventDefault();
-        li.classList.remove('drag-over');
-        if (!this._dragSrc || this._dragSrc.sec !== sec || this._dragSrc.i === i) {
-          this._dragSrc = null; return;
-        }
-        const arr   = this._state[sec];
-        const moved = arr.splice(this._dragSrc.i, 1)[0];
-        arr.splice(i, 0, moved);
-        this._dragSrc = null;
-        if (sec === 'import') this._renderImpList();
-        else this._renderList(sec);
-      });
-    });
-
-    ul.addEventListener('click', e => {
-      const btn = e.target.closest('[data-action]');
-      if (!btn) return;
-      const { action, idx, prefix, sec: btnSec } = btn.dataset;
-      const i = parseInt(idx);
-      if (action === 'import')   this.importFile(i);
-      if (action === 'erase')    this._toggleErase(prefix, i, btnSec);
-      if (action === 'preview')  alert(`Preview: ${this._state[sec][i]?.name}`);
-      if (action === 'download') alert(`Download: ${this._state[sec][i]?.name}`);
-    });
+    if (!bookId) { alert('No active book.'); return; }
+    fetch(`${AppConfig.apiPath}?action=book.chapters&id=${bookId}`)
+      .then(r => r.json())
+      .then(() => alert('Cache rebuilt.'))
+      .catch(e => alert(`Rebuild failed: ${e.message}`));
   }
 
   // ── Helpers ───────────────────────────────────
 
-  _ext(name)  { return (name.split('.').pop() || '').toLowerCase(); }
-  _fmt(bytes) { return bytes < 1024 ? bytes + ' B' : (bytes / 1024).toFixed(1) + ' KB'; }
-
   _iconFor(ext) {
     if (['jpg','jpeg','png','gif','webp','svg','bmp'].includes(ext)) return 'photo';
-    if (ext === 'txt')   return 'file-text';
-    if (ext === 'md')   return 'markdown';
+    if (ext === 'md')   return 'activity-heartbeat';
     if (ext === 'json') return 'checkup-list';
     return 'file-text';
   }
+}
+
+// ── Module-private helpers ────────────────────────
+function _esc(str) {
+  return String(str ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;');
+}
+function _fmtSize(bytes) {
+  if (!bytes) return '';
+  return bytes < 1024 ? bytes + ' B' : (bytes / 1024).toFixed(1) + ' KB';
 }
