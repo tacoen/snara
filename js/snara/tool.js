@@ -97,7 +97,7 @@ export class SnaraTool {
       if (!i) { i = btn.querySelector('i') || btn; }
       i.setAttribute('data-icon', theme === 'dark' ? 'moon' : 'sun');
     }
-	console.log(btn);
+	//console.log(btn);
   }
 
   // Read saved theme or fall back to system preference

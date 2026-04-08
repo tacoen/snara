@@ -1,0 +1,282 @@
+/* â”€â”€ files.css â€” Snara Files Panel â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+
+#files {
+  display: grid;
+  grid-template-columns: 160px 1fr;
+  height: 100%;
+  overflow: hidden;
+}
+
+/* â”€â”€ Sidebar nav â”€â”€ */
+#files-nav {
+  display: flex;
+  flex-direction: column;
+  padding: var(--s-xs) 0;
+  border-left: 1px solid var(--bg-mate);
+  background: var(--border);
+  justify-content: flex-start;
+  align-items: flex-start;
+  width: auto;
+}
+
+.fnav-group-label {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  color: var(--fg-muted);
+  /* opacity: .7; */
+  padding: var(--s-sm) var(--s-md) var(--s-xs);
+}
+
+.fnav-item {
+  display: flex;
+  align-items: center;
+  gap: var(--s-sm);
+  padding: 7px var(--s-md);
+  background: none;
+  border: none;
+  border-left: 2px solid transparent;
+  font-family: inherit;
+  font-size: var(--f-xs);
+  color: var(--fg-muted);
+  cursor: pointer;
+  text-align: left;
+  transition: all .12s;
+  width: 100%;
+}
+.fnav-item svg {width: 20px;height: 20px;flex-shrink: 0;opacity: .7;}
+.fnav-item:hover { color: var(--fg-main); background: var(--bg-main); }
+.fnav-item.active {
+  color: var(--fg-main);
+  /* border-left-color: var(--primary); */
+  background: var(--bg-alt);
+  font-weight: 500;
+}
+
+/* â”€â”€ Main area â”€â”€ */
+#files-main {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: var(--bg-main);
+}
+
+#files-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px var(--s-md);
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+  gap: var(--s-sm);
+}
+
+.files-title {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: var(--f-xs);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: .07em;
+}
+
+/* â”€â”€ Panels â”€â”€ */
+.fpanel {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  overflow: hidden;
+}
+.fpanel[hidden] { display: none; }
+
+.fpanel-hint {
+  padding: 8px var(--s-md) 4px;
+  font-size: var(--f-xs);
+  color: var(--fg-muted);
+}
+
+.fpanel-footer {
+  display: flex;
+  gap: var(--s-sm);
+  padding: var(--s-sm) var(--s-md);
+  border-top: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+/* â”€â”€ Drop zones â”€â”€ */
+#files-dropzone,
+#files-gallery-dz {
+  margin: var(--s-sm) var(--s-md);
+  border: 1.5px dashed var(--border);
+  border-radius: 6px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--s-xs);
+  padding: var(--s-lg);
+  color: var(--fg-muted);
+  cursor: pointer;
+  transition: all .15s;
+  flex-shrink: 0;
+  text-align: center;
+}
+
+#files-dropzone svg, #files-gallery-dz svg { width: 20px; height: 20px; opacity: .5; }
+#files-dropzone p, #files-gallery-dz p { font-size: var(--f-xs); line-height: 1.5; }
+#files-dropzone span { font-size: 11px; opacity: .6; }
+
+#files-dropzone.drag, #files-gallery-dz.drag {
+  border-color: var(--primary);
+  background: var(--selection);
+  color: var(--primary);
+}
+
+#files-gallery-dz { padding: var(--s-md); }
+
+/* â”€â”€ File lists â”€â”€ */
+.flist {
+  list-style: none;
+  padding: 4px var(--s-md);
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.flist-empty {
+  padding: var(--s-lg);
+  font-size: var(--f-xs);
+  color: var(--fg-muted);
+  opacity: .6;
+  text-align: center;
+  line-height: 1.6;
+}
+
+.flist-item {
+  display: flex;
+  align-items: center;
+  gap: var(--s-sm);
+  padding: 6px var(--s-sm);
+  border-radius: 5px;
+  border: 1px solid transparent;
+  transition: all .12s;
+  cursor: default;
+}
+
+.flist-item:hover { background: var(--bg-alt); }
+
+.flist-item.delete {
+  background: rgba(207, 34, 46, 0.06);
+  border-color: var(--border);
+}
+
+.flist-item.delete .fname {
+  text-decoration: line-through;
+  opacity: .5;
+}
+
+.flist-item.drag-over { border-color: var(--primary); }
+
+.flist-act-hdr {
+  padding: var(--s-xs) var(--s-sm);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .07em;
+  color: var(--fg-muted);
+  opacity: .7;
+  margin-top: var(--s-xs);
+}
+
+.fhandle {
+  cursor: grab;
+  opacity: .3;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+}
+.fhandle svg { width: 12px; height: 12px; }
+
+.fname {
+  flex: 1;
+  font-size: var(--f-xs);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--fg-main);
+}
+
+.fbadge {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 10px;
+  padding: 1px 6px;
+  border-radius: 20px;
+  background: var(--bg-alt);
+  border: 1px solid var(--border);
+  color: var(--fg-muted);
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+.fstatus {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 10px;
+  padding: 1px 7px;
+  border-radius: 20px;
+  font-weight: 500;
+  flex-shrink: 0;
+}
+
+.fs-ready { background: var(--selection); color: var(--primary); }
+.fs-ok    { background: #dafbe1; color: #2da44e; }
+html[theme="dark"] .fs-ok { background: rgba(45,164,78,.12); }
+
+.ftools { display: flex; gap: 2px; flex-shrink: 0; }
+
+.ftool {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  background: none;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  cursor: pointer;
+  color: var(--fg-muted);
+  transition: all .12s;
+}
+.ftool svg {width: 20px;pointer-events: none;}
+.ftool:hover { background: var(--bg-alt); border-color: var(--border); color: var(--fg-main); }
+.ftool.erase-btn:hover { color: var(--danger); }
+
+/* â”€â”€ Delete confirmation bar â”€â”€ */
+.fdelete-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--s-sm) var(--s-md);
+  background: rgba(207, 34, 46, 0.06);
+  border-top: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.fdelete-bar p {
+  font-size: var(--f-xs);
+  color: var(--danger);
+}
+
+/* â”€â”€ Export checkboxes â”€â”€ */
+.fcheck-row {
+  display: flex;
+  align-items: center;
+  gap: var(--s-sm);
+  cursor: pointer;
+  font-size: var(--f-xs);
+  padding: 4px var(--s-sm);
+}
+.fcheck-row input { accent-color: var(--primary); width: 13px; height: 13px; cursor: pointer; }
+

@@ -8,6 +8,7 @@ import { SnaraUI }       from './snara/ui.js';
 import { SnaraSettings } from './snara/settings.js';
 import { SnaraIndex }    from './snara/index.js';
 import { SnaraPref }     from './snara/pref.js';
+import { SnaraFiles }    from './snara/files.js';
 
 import icx               from './icons/ge-icon.js';
 import { SnaraTools } from './tools.js';
@@ -72,6 +73,8 @@ async function boot() {
 
   const tools = new SnaraTools();
   const pref = new SnaraPref();
+  const files = new SnaraFiles();
+
 
   icx.replace();
 
@@ -152,6 +155,8 @@ window.loadDocument = (bookId, filename) => {
   window.bookIndex     = ()   => idx.openBookIndex();
   window.chapterIndex  = ()   => idx.openChapterIndex();
   window.SnaraIndex    = SnaraIndex;
+
+  window.SnaraFiles = SnaraFiles;
 
   window.openPref = () => pref.open();
 	 

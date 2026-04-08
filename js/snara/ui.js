@@ -23,7 +23,6 @@ export class SnaraUI {
     this.focusedEntry  = null;
     this._popupTimeout = null;
 
-    // this._bindTabs();
     this._bindPopup();
     this._initTheme();
 
@@ -33,20 +32,11 @@ export class SnaraUI {
 
   // ── Tabs ──────────────────────────────────────
 
-  _bindTabs() {
-    document.querySelector('.tabmenu').addEventListener('click', e => {
-      const li = e.target.closest('li[data-tab]');
-      if (li) this.switchTab(li.dataset.tab);
-    });
+  switchTab(tab) {
+    const isEditor = tab === 'editor';
+    this.entriesEl.hidden  = !isEditor;
+    this.editorArea.hidden = !isEditor;
   }
-
-	switchTab(tab) {
-		const isEditor = tab === 'editor';
-		this.entriesEl.hidden  = !isEditor;
-		this.editorArea.hidden = !isEditor;
-		// .meta visibility is now handled by parent #meta-area via switchArea()
-	}
-
 
   // ── Popup toolbar ─────────────────────────────
 
@@ -105,7 +95,6 @@ export class SnaraUI {
     const filename = document.getElementById('filename').innerText.trim() || 'untitled';
     const bookId   = AppConfig.activeBookId ?? null;
 
-    // Collect entries
     const article = [];
     document.querySelectorAll('.entries .entry').forEach(div => {
       const cls = AppConfig.classes.find(c => div.classList.contains(c)) || 'beat';
@@ -116,7 +105,6 @@ export class SnaraUI {
       article.push({ class: cls, content: html });
     });
 
-    // Collect meta fields
     const meta = {};
     document.querySelectorAll('.meta-field').forEach(row => {
       const key = row.querySelector('.field-key')?.innerText.trim();
@@ -142,7 +130,6 @@ export class SnaraUI {
         btn.classList.add('saved');
         setTimeout(() => btn.classList.remove('saved'), 1800);
       }
-
     } catch (err) {
       if (btn) {
         btn.classList.remove('saving');
@@ -165,39 +152,31 @@ export class SnaraUI {
       const res  = await fetch(url);
       const data = await res.json();
       if (!res.ok || data.error) throw new Error(data.error || `HTTP ${res.status}`);
-
       this._renderDocument(data);
-
     } catch (err) {
       console.error('[snara] load failed:', err);
     }
   }
 
   _renderDocument(data) {
-    // ── Update filename in header ──────────────
     const fnEl = document.getElementById('filename');
     if (fnEl) fnEl.innerText = data.filename ?? '';
 
-    // ── Clear and rebuild entries ──────────────
     this.entriesEl.innerHTML = '';
 
     const article = Array.isArray(data.article) ? data.article : [];
-
     article.forEach(item => {
       const div = document.createElement('div');
       div.contentEditable = 'true';
       div.className = `entry ${item.class ?? 'beat'}`;
-      // content is already stored as rendered HTML
       div.innerHTML = item.content ?? '';
 
-      // Bind entry events via SnaraEditor singleton
       const editor = SnaraEditor.instance ?? null;
       if (editor) editor._bindEntryEvents(div);
 
       this.entriesEl.appendChild(div);
     });
 
-    // ── Restore meta fields ────────────────────
     const metaFields = this.metaEl.querySelector('.meta-fields');
     if (metaFields && data.meta && typeof data.meta === 'object') {
       metaFields.innerHTML = '';
@@ -214,7 +193,6 @@ export class SnaraUI {
       });
     }
 
-    // ── Switch to editor tab and scroll top ────
     this.switchTab('editor');
     this.entriesEl.scrollTop = 0;
   }
@@ -246,8 +224,12 @@ export class SnaraUI {
     SnaraTool.applyTheme(SnaraTool.savedTheme());
   }
 
-  toggleTheme() {
-    const next = document.documentElement.getAttribute('theme') === 'dark' ? 'light' : 'dark';
+  // If `theme` is provided, apply it directly.
+  // If omitted, toggle between dark and light (button click behaviour).
+  toggleTheme(theme) {
+    const next = theme ?? (
+      document.documentElement.getAttribute('theme') === 'dark' ? 'light' : 'dark'
+    );
     localStorage.setItem('theme', next);
     SnaraTool.applyTheme(next);
     icx.delayreplace('#theme-toggle [data-icon]');

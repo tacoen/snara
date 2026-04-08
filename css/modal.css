@@ -345,38 +345,6 @@ body.modal-open { overflow: hidden; }
   flex-shrink: 0;
 }
 
-.cfg-btn {
-  border-radius: 6px;
-  padding: var(--s-xs) var(--s-md);
-  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-  font-size: var(--f-xs);
-  letter-spacing: 0.04em;
-  cursor: pointer;
-  transition: all 0.15s;
-}
-
-.cfg-btn-ghost {
-  background: none;
-  border: 1px solid var(--border);
-  color: var(--fg-muted);
-}
-
-.cfg-btn-ghost:hover {
-  background: var(--bg-hover);
-  color: var(--fg-main);
-}
-
-.cfg-btn-primary {
-  background: var(--primary);
-  border: 1px solid var(--primary);
-  color: #fff;
-}
-
-.cfg-btn-primary:hover    { opacity: 0.85; }
-.cfg-btn-primary:active   { transform: scale(0.98); }
-.cfg-btn-primary:disabled { opacity: 0.5; cursor: default; transform: none; }
-
-
 .cfg-tabs {
   display: flex;
   gap: 0;

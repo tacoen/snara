@@ -3,13 +3,12 @@
    Two-tab config modal:
      General  — app/infra keys  (config.json)
      Defaults — per-app/book defaults (default.json)
-   Depends on: SnaraTool, AppConfig, AppDefaults, icx
+   Depends on: AppConfig, AppDefaults, SnaraUI, icx
 ─────────────────────────────────────────────────── */
-
-import { SnaraTool }            from './tool.js';
 import { AppConfig, AppDefaults } from '../snara.js';
-import icx                      from '../icons/ge-icon.js';
-import { openModal, closeModal } from './modal.js';
+import { SnaraUI }                from './ui.js';
+import icx                        from '../icons/ge-icon.js';
+import { openModal, closeModal }  from './modal.js';
 
 export class SnaraSettings {
 
@@ -17,22 +16,21 @@ export class SnaraSettings {
 
   constructor() {
     SnaraSettings.instance = this;
-    this.modal    = document.getElementById('settings-modal');
-    this.overlay  = document.getElementById('settings-overlay');
+    this.modal      = document.getElementById('settings-modal');
     this._activeTab = 'general';
     this._bindClose();
   }
 
   // ── Open / Close ──────────────────────────────
 
-open()  { this._render(); openModal('settings-modal'); }
-close() { closeModal('settings-modal'); }
+  open()  { this._render(); openModal('settings-modal'); }
+  close() { closeModal('settings-modal'); }
 
-_bindClose() {
-  document.addEventListener('keydown', e => {
-    if (e.key === 'Escape') closeModal('settings-modal');
-  });
-}
+  _bindClose() {
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape') closeModal('settings-modal');
+    });
+  }
 
   // ── Render ────────────────────────────────────
 
@@ -58,7 +56,9 @@ _bindClose() {
 
   _switchTab(tab) {
     this._activeTab = tab;
-    document.querySelectorAll('.cfg-tab').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
+    document.querySelectorAll('.cfg-tab').forEach(b =>
+      b.classList.toggle('active', b.dataset.tab === tab)
+    );
     const content = document.getElementById('cfg-tab-content');
     content.innerHTML = tab === 'general' ? this._renderGeneral() : this._renderDefaults();
     this._bindSegmented();
@@ -68,7 +68,7 @@ _bindClose() {
   }
 
   _bindTabs() {
-    document.querySelectorAll('.cfg-tab').forEach(btn => {
+    document.querySelectorAll('#settings-body .cfg-tab').forEach(btn => {
       btn.addEventListener('click', () => this._switchTab(btn.dataset.tab));
     });
   }
@@ -78,7 +78,6 @@ _bindClose() {
   _renderGeneral() {
     const c = AppConfig;
     return `
-      <!-- Paths -->
       <section class="cfg-section">
         <h3 class="cfg-heading">Paths</h3>
         <div class="cfg-row">
@@ -91,7 +90,6 @@ _bindClose() {
         </div>
       </section>
 
-      <!-- Appearance -->
       <section class="cfg-section">
         <h3 class="cfg-heading">Appearance</h3>
         <div class="cfg-row">
@@ -104,7 +102,6 @@ _bindClose() {
         </div>
       </section>
 
-      <!-- Editor -->
       <section class="cfg-section">
         <h3 class="cfg-heading">Editor</h3>
         <div class="cfg-row">
@@ -114,7 +111,6 @@ _bindClose() {
         </div>
       </section>
 
-      <!-- Heading map -->
       <section class="cfg-section">
         <h3 class="cfg-heading">Heading map</h3>
         <div id="cfg-headingMap" class="cfg-hmap">
@@ -179,7 +175,7 @@ _bindClose() {
 
   _hmapRow({ prefix = '', cls = '' } = {}, i = Date.now()) {
     return `
-      <div class="cfg-hmap-row" data-idx="${i}">
+      <div class="cfg-hmap-row">
         <input class="cfg-input cfg-hmap-prefix" placeholder='e.g. "# "' value="${esc(prefix)}">
         <span class="cfg-arrow">→</span>
         <input class="cfg-input cfg-hmap-cls" placeholder="cls" value="${esc(cls)}">
@@ -190,7 +186,7 @@ _bindClose() {
   // ── Control bindings ──────────────────────────
 
   _bindSegmented() {
-    document.querySelectorAll('.cfg-segmented').forEach(group => {
+    document.querySelectorAll('#settings-body .cfg-segmented').forEach(group => {
       group.addEventListener('click', e => {
         const btn = e.target.closest('.cfg-seg');
         if (!btn) return;
@@ -211,7 +207,7 @@ _bindClose() {
     document.getElementById('cfg-hmap-add')?.addEventListener('click', () => {
       const container = document.getElementById('cfg-headingMap');
       const tmp = document.createElement('div');
-      tmp.innerHTML = this._hmapRow({}, Date.now());
+      tmp.innerHTML = this._hmapRow({});
       const row = tmp.firstElementChild;
       container.appendChild(row);
       row.querySelector('.cfg-hmap-remove').addEventListener('click', () => row.remove());
@@ -226,7 +222,7 @@ _bindClose() {
     });
   }
 
-  // ── Save ──────────────────────────────────────
+  // ── Save — always writes both tabs ───────────
 
   async save() {
     const btn = document.getElementById('cfg-save-btn');
@@ -234,11 +230,10 @@ _bindClose() {
     btn.textContent = 'saving…';
 
     try {
-      if (this._activeTab === 'general') {
-        await this._saveGeneral();
-      } else {
-        await this._saveDefaults();
-      }
+      await Promise.all([
+        this._saveGeneral(),
+        this._saveDefaults(),
+      ]);
       btn.textContent = 'saved ✓';
     } catch {
       btn.textContent = 'error';
@@ -261,8 +256,8 @@ _bindClose() {
       if (prefix || cls) headingMap.push({ prefix, cls });
     });
 
+    // Only write known config keys — never runtime state
     const updated = {
-      ...AppConfig,
       apiPath:    document.getElementById('cfg-apiPath')?.value  || AppConfig.apiPath,
       dataPath:   document.getElementById('cfg-dataPath')?.value || AppConfig.dataPath,
       theme,
@@ -272,13 +267,11 @@ _bindClose() {
 
     Object.assign(AppConfig, updated);
 
-    // Apply theme immediately
-    const resolved = updated.theme === 'system'
+    // Resolve and apply theme immediately via SnaraUI — no SnaraTool needed here
+    const resolved = theme === 'system'
       ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
-      : updated.theme;
-    localStorage.setItem('theme', updated.theme === 'system' ? '' : updated.theme);
-    SnaraTool.applyTheme(resolved);
-    icx.delayreplace('#theme-toggle [data-icon]');
+      : theme;
+    SnaraUI.instance.toggleTheme(resolved);
 
     await fetch(AppConfig.apiPath + '?action=config.set', {
       method:  'POST',
@@ -288,20 +281,21 @@ _bindClose() {
   }
 
   async _saveDefaults() {
-    const defaultTag = document.querySelector('#cfg-defaultTag .cfg-seg.active')?.dataset.val || 'beat';
+    const defaultTag = document.querySelector('#cfg-defaultTag .cfg-seg.active')?.dataset.val
+      || AppDefaults.defaultTag;
 
     const updated = {
       act:              document.getElementById('cfg-act')?.value ?? AppDefaults.act,
       defaultTag,
-      autosave:         document.getElementById('cfg-autosave')?.classList.contains('on') ?? AppDefaults.autosave,
-      autosaveInterval: parseInt(document.getElementById('cfg-autosaveInterval')?.value) || AppDefaults.autosaveInterval,
+      autosave:         document.getElementById('cfg-autosave')?.classList.contains('on')
+                          ?? AppDefaults.autosave,
+      autosaveInterval: parseInt(document.getElementById('cfg-autosaveInterval')?.value)
+                          || AppDefaults.autosaveInterval,
       metaFields:       splitCsv(document.getElementById('cfg-metaFields')?.value),
     };
 
     Object.assign(AppDefaults, updated);
 
-    // Always write to the active book's default.json.
-    // json/default.json is the permanent baseline — never written from the UI.
     const bookId = AppConfig.activeBookId;
     if (!bookId) {
       console.warn('[snara] No active book — defaults not saved.');

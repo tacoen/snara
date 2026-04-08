@@ -210,3 +210,42 @@ html[theme="dark"] .btn-save.saved {
   color: var(--fg-main);
   border-bottom-color: var(--primary);
 }
+
+.cfg-btn {
+  border-radius: 6px;
+  padding: 3px var(--s-xs);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: var(--f-xs);
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  transition: all 0.15s;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-xs);
+}
+
+.cfg-btn-ghost {
+  background: none;
+  border: 1px solid var(--border);
+  color: var(--fg-muted);
+}
+
+.cfg-btn-ghost svg {
+  width: 24px;
+}
+
+.cfg-btn-ghost:hover {
+  background: var(--bg-hover);
+  color: var(--fg-main);
+}
+
+.cfg-btn-primary {
+  background: var(--primary);
+  border: 1px solid var(--primary);
+  color: #fff;
+}
+
+.cfg-btn-primary:hover    { opacity: 0.85; }
+.cfg-btn-primary:active   { transform: scale(0.98); }
+.cfg-btn-primary:disabled { opacity: 0.5; cursor: default; transform: none; }
+

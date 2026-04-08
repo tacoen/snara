@@ -1,28 +1,103 @@
 <div id='files'>
 
-<div>
+  <nav id="files-nav" class='embed'>
+    <div class="fnav-group-label">Workspace</div>
+    <button class="fnav-item active" data-section="import" onclick="SnaraFiles.instance.switchSection('import')">
+      <i data-icon="folder-bolt"></i> Import
+    </button>
+    <button class="fnav-item" data-section="export" onclick="SnaraFiles.instance.switchSection('export')">
+      <i data-icon="folder-share"></i> Export
+    </button>
+    <button class="fnav-item" data-section="gallery" onclick="SnaraFiles.instance.switchSection('gallery')">
+      <i data-icon="library-photo"></i> Gallery
+    </button>
+    <div class="fnav-group-label">System</div>
+    <button class="fnav-item" data-section="cache" onclick="SnaraFiles.instance.switchSection('cache')">
+      <i data-icon="archive"></i> Cache
+    </button>
+  </nav>
 
-<h3>section</h3>
+  <div id="files-main">
 
-<ul>
-<li>Import</li>
-<li>Export</li>
-<li>Gallery</li>
-<ul>
+    <div id="files-topbar">
+      <span id="files-section-title" class="files-title">Import</span>
+      <div id="files-topbar-actions"></div>
+    </div>
 
-<h3>Tools</h3>
+    <!-- Import -->
+    <div id="fpanel-import" class="fpanel">
 
-<button>Rebuild Cache</button>
+      <div id="files-dropzone" onclick="SnaraFiles.instance._triggerInput('files-input')">
+        <i data-icon="upload"></i>
+        <p>Drop <b>.txt</b> or <b>.md</b> files here</p>
+        <span>or click to browse</span>
+      </div>
+      <input type="file" id="files-input" accept=".txt,.md" multiple hidden>
 
-</div>
+      <ul id="files-imp-list" class="flist"></ul>
 
-<div class='filelist'>
+      <div id="files-delete-bar" class="fdelete-bar" hidden>
+        <p id="files-delete-count"></p>
+        <div class="fdelete-actions">
+          <button class="cfg-btn cfg-btn-ghost" onclick="SnaraFiles.instance.clearDeletes('import')">Cancel</button>
+          <button class="cfg-btn cfg-btn-danger" onclick="SnaraFiles.instance.applyDeletes('import')">Delete marked</button>
+        </div>
+      </div>
+    </div>
 
-<ul class=''>
-<li>files1</li>
-<li>files2</li>
-</ul>
+    <!-- Export -->
+    <div id="fpanel-export" class="fpanel" hidden>
+      <div class="fpanel-hint">Select chapters to export:</div>
+      <div class="fpanel-selall">
+        <label class="fcheck-row">
+          <input type="checkbox" id="files-exp-all"> Select all
+        </label>
+      </div>
+      <ul id="files-exp-list" class="flist"></ul>
+      <div class="fpanel-footer">
+        <button class="cfg-btn cfg-btn-ghost" onclick="SnaraFiles.instance.exportSelected('md')">
+          <i data-icon="download"></i> Export .md
+        </button>
+        <button class="cfg-btn cfg-btn-ghost" onclick="SnaraFiles.instance.exportSelected('json')">
+          <i data-icon="download"></i> Export .json
+        </button>
+      </div>
+    </div>
 
-</div>
+    <!-- Gallery -->
+    <div id="fpanel-gallery" class="fpanel" hidden>
+      <div id="files-gallery-dz" class="fmini-dz" onclick="SnaraFiles.instance._triggerInput('files-img-input')">
+        <i data-icon="photo"></i>
+        <p>Drop images or click to upload</p>
+      </div>
+      <input type="file" id="files-img-input" accept="image/*" multiple hidden>
+      <ul id="files-gallery-list" class="flist"></ul>
+      <div id="files-delete-bar-gallery" class="fdelete-bar" hidden>
+        <p id="files-delete-count-gallery"></p>
+        <div class="fdelete-actions">
+          <button class="cfg-btn cfg-btn-ghost" onclick="SnaraFiles.instance.clearDeletes('gallery')">Cancel</button>
+          <button class="cfg-btn cfg-btn-danger" onclick="SnaraFiles.instance.applyDeletes('gallery')">Delete marked</button>
+        </div>
+      </div>
+    </div>
 
+    <!-- Cache -->
+    <div id="fpanel-cache" class="fpanel" hidden>
+      <div class="fpanel-hint">Auto-generated files. Rebuild to refresh indexes.</div>
+      <ul id="files-cache-list" class="flist"></ul>
+      <div id="files-delete-bar-cache" class="fdelete-bar" hidden>
+        <p id="files-delete-count-cache"></p>
+        <div class="fdelete-actions">
+          <button class="cfg-btn cfg-btn-ghost" onclick="SnaraFiles.instance.clearDeletes('cache')">Cancel</button>
+          <button class="cfg-btn cfg-btn-danger" onclick="SnaraFiles.instance.applyDeletes('cache')">Delete marked</button>
+        </div>
+      </div>
+      <div class="fpanel-footer">
+        <button class="cfg-btn cfg-btn-ghost" onclick="SnaraFiles.instance.rebuildCache()">
+          <i data-icon="refresh"></i> Rebuild cache
+        </button>
+      </div>
+    </div>
+
+  </div>
 </div>

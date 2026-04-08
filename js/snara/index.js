@@ -361,7 +361,7 @@ _ensureDOM() {
 		<span class="modal-title">${esc(heading)}</span>
 
         ${ id !== 'book-index-modal' ? `<ul class='opt-menu'>
-            <li><i data-icon="library-photo"></i><span>Cover</span></li>
+            <li><i data-icon="photo"></i><span>Cover</span></li>
 		</ul>` : ''}
 		</div>
         <button class="modal-close" onclick="closeModal('${id}')" title="Close">
