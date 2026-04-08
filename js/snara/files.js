@@ -23,7 +23,26 @@ export class SnaraFiles {
     this._ensureModal();
     this._bindDropzones();
     this._bindFileInputs();
+    this._bindBookChange();
     this.switchSection('import');
+
+window.addEventListener('bookchange', () => {
+  // Reload whichever section is currently visible
+  if (this._section === 'import')  this._loadImpList();
+  if (this._section === 'export')  SnaraExport.instance?.load();
+  if (this._section === 'gallery') this._loadList('gallery');
+  if (this._section === 'cache')   this._loadList('cache');
+});
+	
+  }
+
+  _bindBookChange() {
+    window.addEventListener('bookchange', () => {
+      if (this._section === 'import')  this._loadImpList();
+      if (this._section === 'export')  window.SnaraExport?.instance?.load();
+      if (this._section === 'gallery') this._loadList('gallery');
+      if (this._section === 'cache')   this._loadList('cache');
+    });
   }
 
   // ── Import preview modal ──────────────────────
@@ -215,7 +234,7 @@ export class SnaraFiles {
     this._renderTopActions(sec);
 
     if (sec === 'import')  this._loadImpList();
-    if (sec === 'export')  this._renderExport();
+    if (sec === 'export')  SnaraExport.instance?.load();
     if (sec === 'gallery') this._loadList('gallery');
     if (sec === 'cache')   this._loadList('cache');
 
@@ -396,11 +415,18 @@ export class SnaraFiles {
 
     const confirm = document.createElement('div');
     confirm.className = 'del-confirm';
+    confirm.style.cssText = `
+      position:fixed;bottom:0;left:0;width:100%;z-index:999;
+      display:flex;align-items:center;gap:8px;
+      padding:10px 16px;font-size:12px;
+      background:var(--bg-alt);border-top:1px solid var(--border);
+      box-shadow:0 -2px 12px var(--overlay);
+    `;
     confirm.innerHTML = `
       <span style="flex:1;color:var(--danger)">Delete "${_esc(filename)}"?</span>
       <button class="cfg-btn cfg-btn-ghost" style="padding:2px 8px;font-size:11px" data-action="del-no">No</button>
-	  <button class="cfg-btn" style="padding:2px 8px;font-size:11px; background: var(--danger); border: 0" data-action="del-yes">Yes, delete</button>    
-	  `;
+      <button class="cfg-btn" style="padding:2px 8px;font-size:11px;border-color:var(--danger);color:var(--danger)" data-action="del-yes">Yes, delete</button>
+    `;
     document.body.appendChild(confirm);
 
     // No — revert

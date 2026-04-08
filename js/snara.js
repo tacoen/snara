@@ -12,6 +12,7 @@ import { SnaraFiles }    from './snara/files.js';
 
 import icx               from './icons/ge-icon.js';
 import { SnaraTools } from './tools.js';
+import { SnaraExport } from './export.js';
 
 // ── Central config store (populated at boot) ──────
 export const AppConfig = {
@@ -75,7 +76,8 @@ async function boot() {
   const pref = new SnaraPref();
   const files = new SnaraFiles();
 
-
+  const exporter = new SnaraExport();
+ 
   icx.replace();
 
   // Restore active book label if config had one
@@ -157,6 +159,7 @@ window.loadDocument = (bookId, filename) => {
   window.SnaraIndex    = SnaraIndex;
 
   window.SnaraFiles = SnaraFiles;
+  window.SnaraExport = SnaraExport;
 
   window.openPref = () => pref.open();
 	 

@@ -159,6 +159,10 @@ _ensureDOM() {
     AppConfig.activeBookId    = id;
     AppConfig.activeBookTitle = title;
 
+window.dispatchEvent(new CustomEvent('bookchange', {
+  detail: { bookId: AppConfig.activeBookId, title: AppConfig.activeBookTitle }
+}));
+
     const label = document.getElementById('active-book-label');
     if (label) label.textContent = title || `Book ${id}`;
 

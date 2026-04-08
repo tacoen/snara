@@ -46,23 +46,17 @@
     </div>
 
     <!-- Export -->
-    <div id="fpanel-export" class="fpanel" hidden>
-      <div class="fpanel-hint">Select chapters to export:</div>
-      <div class="fpanel-selall">
-        <label class="fcheck-row">
-          <input type="checkbox" id="files-exp-all"> Select all
+     <div id="fpanel-export" class="fpanel" hidden>
+      <div class="fpanel-hint" style="display:flex;align-items:center;gap:8px">
+        <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:var(--f-xs)">
+          <input type="checkbox" id="files-exp-all" checked
+            style="accent-color:var(--primary);width:13px;height:13px"> Select all
         </label>
       </div>
       <ul id="files-exp-list" class="flist"></ul>
-      <div class="fpanel-footer">
-        <button class="cfg-btn cfg-btn-ghost" onclick="SnaraFiles.instance.exportSelected('md')">
-          <i data-icon="download"></i> Export .md
-        </button>
-        <button class="cfg-btn cfg-btn-ghost" onclick="SnaraFiles.instance.exportSelected('json')">
-          <i data-icon="download"></i> Export .json
-        </button>
-      </div>
+      <div id="files-exp-footer" class="fpanel-footer"></div>
     </div>
+ 
 
     <!-- Gallery -->
     <div id="fpanel-gallery" class="fpanel" hidden>
