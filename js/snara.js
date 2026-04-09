@@ -14,6 +14,10 @@ import icx               from './icons/ge-icon.js';
 import { SnaraTools } from './tools.js';
 import { SnaraExport } from './export.js';
 
+import { SnaraGallery } from './snara/gallery.js';
+
+
+
 // ── Central config store (populated at boot) ──────
 export const AppConfig = {
   apiPath:          '/api.php',
@@ -76,6 +80,7 @@ async function boot() {
   const pref = new SnaraPref();
   const files = new SnaraFiles();
 
+const gallery = new SnaraGallery();
   const exporter = new SnaraExport();
  
   icx.replace();

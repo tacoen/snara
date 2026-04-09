@@ -23,7 +23,7 @@ export class SnaraExport {
 
   constructor() {
     SnaraExport.instance = this;
-    this._chapters = [];   // [{ filename, act, title, order }]
+    this._chapters = [];   // [{ filename, act, title, order, entries }]
     this._docs     = {};   // { filename: docJson } — cache
   }
 
@@ -62,7 +62,7 @@ export class SnaraExport {
         // act.json may not exist yet — fall back to ungrouped
       }
 
-      // 3. Fetch each doc to extract first h2 as title + meta.order
+      // 3. Fetch each doc to extract title + meta.order + entry count
       this._docs     = {};
       this._chapters = [];
 
@@ -74,17 +74,24 @@ export class SnaraExport {
           const doc = await res.json();
           this._docs[filename] = doc;
 
-          const title = this._extractTitle(doc);
-          const order = parseInt(doc.meta?.order ?? 99);
-          const act   = actMap[filename] || 'Uncategorized';
+          const title   = this._extractTitle(doc);
+          const order   = parseInt(doc.meta?.order ?? 99);
+          const act     = actMap[filename] || 'Uncategorized';
+          const entries = Array.isArray(doc.article) ? doc.article.length : 0;
 
-          this._chapters.push({ filename, act, title, order });
+          this._chapters.push({ filename, act, title, order, entries });
         } catch {
-          this._chapters.push({ filename, act: actMap[filename] || 'Uncategorized', title: filename, order: 99 });
+          this._chapters.push({
+            filename,
+            act:     actMap[filename] || 'Uncategorized',
+            title:   filename,
+            order:   99,
+            entries: 0,
+          });
         }
       }));
 
-      // 4. Sort within each act by meta.order then filename
+      // 4. Sort by meta.order ASC within each act, then filename as tiebreaker
       this._chapters.sort((a, b) => {
         if (a.act !== b.act) return a.act.localeCompare(b.act);
         return a.order !== b.order ? a.order - b.order : a.filename.localeCompare(b.filename);
@@ -98,35 +105,30 @@ export class SnaraExport {
     }
   }
 
-  // ── Extract first h2 text from article ───────
+  // ── Extract chapter title from article ────────
+  // act  = h1 → skip (that's the group label, not the chapter title)
+  // chapter = h2 ✓ prefer this
+  // scene   = h3 ✓ fallback
+  // beat    = h4 ✓ last resort
+  // then fall back to filename
 
   _extractTitle(doc) {
     const article = doc.article || [];
     for (const entry of article) {
       const tmp = document.createElement('div');
       tmp.innerHTML = entry.content || '';
-      // Prefer h2, fall back to h1, h3, first text
-      const h = tmp.querySelector('h2') || tmp.querySelector('h1') || tmp.querySelector('h3');
+      const h = tmp.querySelector('h2') || tmp.querySelector('h3') || tmp.querySelector('h4');
       if (h) return h.textContent.trim();
     }
-    // Fall back to filename
     return doc.filename || '—';
   }
 
   // ── Render chapter checklist ──────────────────
 
   _renderList(ul) {
-    // Group by act, preserving order
-    const groups = [];
-    const seen   = {};
-    this._chapters.forEach(ch => {
-      if (!seen[ch.act]) { seen[ch.act] = true; groups.push({ act: ch.act, chapters: [] }); }
-      groups[groups.length - 1].chapters.push(ch);
-    });
-
-    // Re-group properly
-    const grouped = {};
+    const grouped  = {};
     const actOrder = [];
+
     this._chapters.forEach(ch => {
       if (!grouped[ch.act]) { grouped[ch.act] = []; actOrder.push(ch.act); }
       grouped[ch.act].push(ch);
@@ -143,12 +145,12 @@ export class SnaraExport {
         <li class="flist-item fexp-item" data-filename="${_esc(ch.filename)}" data-act="${_esc(ch.act)}">
           <input type="checkbox" class="fexp-cb" value="${_esc(ch.filename)}" checked
             style="accent-color:var(--primary);width:13px;height:13px;flex-shrink:0;cursor:pointer">
-          <span class="fname" style="flex:1">${_esc(ch.title)}</span>
-          <span class="fbadge" style="font-size:10px;opacity:.6">${_esc(ch.filename)}</span>
+          <span class="fname" style="flex:1">${_esc(ch.title || ch.filename)}</span>
+          <span class="fbadge">${ch.entries} entr${ch.entries === 1 ? 'y' : 'ies'}</span>
         </li>`).join('')}
     `).join('');
 
-    // Act-level checkbox toggles children
+    // Act-level checkbox toggles all its children
     ul.querySelectorAll('.fexp-act-cb').forEach(actCb => {
       actCb.addEventListener('change', () => {
         ul.querySelectorAll(`.fexp-item[data-act="${actCb.dataset.act}"] .fexp-cb`)
@@ -157,12 +159,12 @@ export class SnaraExport {
       });
     });
 
-    // Child checkbox syncs act checkbox
+    // Child checkbox syncs its act checkbox
     ul.querySelectorAll('.fexp-cb').forEach(cb => {
       cb.addEventListener('change', () => {
-        const act    = cb.closest('.fexp-item').dataset.act;
-        const actCb  = ul.querySelector(`.fexp-act-cb[data-act="${act}"]`);
-        const peers  = [...ul.querySelectorAll(`.fexp-item[data-act="${act}"] .fexp-cb`)];
+        const act   = cb.closest('.fexp-item').dataset.act;
+        const actCb = ul.querySelector(`.fexp-act-cb[data-act="${act}"]`);
+        const peers = [...ul.querySelectorAll(`.fexp-item[data-act="${act}"] .fexp-cb`)];
         if (actCb) actCb.checked = peers.every(p => p.checked);
         this._syncSelectAll();
       });
@@ -217,7 +219,7 @@ export class SnaraExport {
       return;
     }
 
-    // Follow the order from this._chapters
+    // Preserve meta.order sort from this._chapters
     const ordered = this._chapters.filter(ch => selected.includes(ch.filename));
 
     // Gather docs — use cache, fetch if missing
@@ -251,7 +253,7 @@ export class SnaraExport {
         .join('\n\n');
     });
 
-    const content  = parts.join('\n\n---\n\n');
+    const content   = parts.join('\n\n---\n\n');
     const bookTitle = AppConfig.activeBookTitle || 'export';
     _download(`${_slug(bookTitle)}.md`, content, 'text/markdown');
   }
@@ -264,7 +266,9 @@ export class SnaraExport {
     const body = ordered.map(ch => {
       const doc     = this._docs[ch.filename] || {};
       const article = doc.article || [];
-      const content = article.map(e => `<section class="entry ${_esc(e.class || '')}">${e.content || ''}</section>`).join('\n');
+      const content = article
+        .map(e => `<section class="entry ${_esc(e.class || '')}">${e.content || ''}</section>`)
+        .join('\n');
       return `<article class="chapter" id="${_esc(ch.filename)}">\n${content}\n</article>`;
     }).join('\n\n<hr>\n\n');
 
@@ -278,9 +282,9 @@ export class SnaraExport {
     body { font-family: Georgia, serif; max-width: 720px; margin: 4rem auto; padding: 0 2rem; line-height: 1.8; color: #222; }
     h1, h2, h3 { font-weight: normal; }
     .entry { margin-bottom: 1.5rem; }
-    .entry.act h1 { font-size: 2rem; border-bottom: 1px solid #ccc; padding-bottom: .5rem; }
+    .entry.act     h1 { font-size: 2rem;   border-bottom: 1px solid #ccc; padding-bottom: .5rem; }
     .entry.chapter h2 { font-size: 1.5rem; }
-    .entry.scene h3 { font-size: 1.1rem; color: #555; }
+    .entry.scene   h3 { font-size: 1.1rem; color: #555; }
     hr { border: none; border-top: 1px solid #ddd; margin: 3rem 0; }
   </style>
 </head>
@@ -294,10 +298,10 @@ ${body}
   }
 }
 
-// ── Helpers ───────────────────────────────────────
+// ── Module-private helpers ────────────────────────
 
 function _esc(str) {
-  return String(str ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;');
+  return String(str ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;');
 }
 
 function _slug(str) {

@@ -29,6 +29,8 @@ require_once __DIR__ . '/book.php';
 require_once __DIR__ . '/state.php';
 require_once __DIR__ . '/pref.php';
 require_once __DIR__ . '/import.php';
+require_once __DIR__ . '/cache.php';
+require_once __DIR__ . '/gallery.php';
 	 
 class Router {
 
@@ -219,7 +221,60 @@ class Router {
                     echo Import::read($bookId, $filename);
                     exit;					
 
-                default:
+case 'doc.setOrder':
+    self::requireMethod($method, 'POST');
+    $body     = self::body();
+    $filename = trim($body['filename'] ?? '');
+    $order    = (int)($body['order'] ?? 99);
+    $bookId   = isset($body['bookId']) ? (int)$body['bookId'] : null;
+    if (!$filename) self::error(400, 'Missing filename');
+    Document::setOrder($filename, $order, $bookId);
+    echo json_encode(['ok' => true]);
+    break;
+	
+// ── Gallery ──────────────────────────────────
+                case 'gallery.upload':
+                    self::requireMethod($method, 'POST');
+                    $bookId = (int)($_GET['bookId'] ?? $_POST['bookId'] ?? 0);
+                    if (!$bookId) self::error(400, 'Missing bookId');
+                    $result = Gallery::upload($bookId);
+                    echo json_encode(['ok' => true, 'file' => $result]);
+                    break;
+
+                case 'gallery.list':
+                    self::requireMethod($method, 'GET');
+                    $bookId = (int)self::requireParam('bookId');
+                    echo json_encode(Gallery::list($bookId));
+                    break;
+
+                case 'gallery.delete':
+                    self::requireMethod($method, 'DELETE');
+                    $bookId   = (int)self::requireParam('bookId');
+                    $filename = self::requireParam('filename');
+                    Gallery::delete($bookId, $filename);
+                    echo json_encode(['ok' => true]);
+                    break;
+
+                case 'gallery.rename':
+                    self::requireMethod($method, 'POST');
+                    $body   = self::body();
+                    $bookId = (int)($_GET['bookId'] ?? $body['bookId'] ?? 0);
+                    $from   = trim($body['from'] ?? '');
+                    $to     = trim($body['to']   ?? '');
+                    if (!$bookId || !$from || !$to) self::error(400, 'Missing bookId, from, or to');
+                    $renamed = Gallery::rename($bookId, $from, $to);
+                    echo json_encode(['ok' => true, 'filename' => $renamed['filename']]);
+                    break;
+
+                case 'gallery.autocomplete':
+                    self::requireMethod($method, 'GET');
+                    $bookId = (int)self::requireParam('bookId');
+                    echo json_encode(Gallery::autocomplete($bookId));
+                    break;
+
+
+
+default:
                     self::error(404, 'Unknown action: ' . $action);
             }
         } catch (Throwable $e) {

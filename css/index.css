@@ -307,3 +307,27 @@ span.idx-row-tool[data-state='delete'] i.delete { display: inline-flex; color: v
 	position: relative;
 	outline: none;
 }
+
+
+/* ── Drag handle ──────────────────────────────── */
+.idx-drag-handle {
+  font-size: 13px;
+  color: var(--fg-muted);
+  opacity: 0.3;
+  cursor: grab;
+  flex-shrink: 0;
+  padding: 0 2px;
+  user-select: none;
+  line-height: 1;
+}
+.idx-drag-handle:active { cursor: grabbing; }
+.idx-row:hover .idx-drag-handle { opacity: 0.6; }
+
+/* ── DnD states ────────────────────────────────── */
+.idx-row-dragging {
+  opacity: 0.4;
+}
+.idx-row-drag-over {
+  background: var(--selection) !important;
+  border-top: 2px solid var(--primary);
+}

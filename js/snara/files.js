@@ -8,6 +8,7 @@
 ─────────────────────────────────────────────────── */
 import { AppConfig }            from '../snara.js';
 import { SnaraStruct }          from './struct.js';
+import { SnaraGallery }         from './gallery.js';
 import icx                      from '../icons/ge-icon.js';
 import { openModal, closeModal } from './modal.js';
 
@@ -25,23 +26,14 @@ export class SnaraFiles {
     this._bindFileInputs();
     this._bindBookChange();
     this.switchSection('import');
-
-window.addEventListener('bookchange', () => {
-  // Reload whichever section is currently visible
-  if (this._section === 'import')  this._loadImpList();
-  if (this._section === 'export')  SnaraExport.instance?.load();
-  if (this._section === 'gallery') this._loadList('gallery');
-  if (this._section === 'cache')   this._loadList('cache');
-});
-	
   }
 
   _bindBookChange() {
     window.addEventListener('bookchange', () => {
       if (this._section === 'import')  this._loadImpList();
       if (this._section === 'export')  window.SnaraExport?.instance?.load();
-      if (this._section === 'gallery') this._loadList('gallery');
-      if (this._section === 'cache')   this._loadList('cache');
+      if (this._section === 'gallery') SnaraGallery.instance?.load();
+      if (this._section === 'cache')   this._loadCacheList();
     });
   }
 
@@ -74,7 +66,6 @@ window.addEventListener('bookchange', () => {
     openModal('files-import-modal');
     icx.delayreplace('#files-import-modal [data-icon]');
 
-    // Fetch raw text from server
     let text;
     try {
       const res = await fetch(
@@ -201,8 +192,16 @@ window.addEventListener('bookchange', () => {
       if (!res.ok || json.error) throw new Error(json.error || `HTTP ${res.status}`);
 
       closeModal();
-      // Reload the import list so the file stays visible (still in /import dir)
+
+      try {
+        await fetch(
+          `${AppConfig.apiPath}?action=import.delete&bookId=${bookId}&filename=${encodeURIComponent(srcFilename)}`,
+          { method: 'DELETE' }
+        );
+      } catch { /* non-fatal */ }
+
       this._loadImpList();
+      window.dispatchEvent(new CustomEvent('chapteradded', { detail: { bookId, filename } }));
 
     } catch (e) {
       btn.disabled  = false;
@@ -234,9 +233,9 @@ window.addEventListener('bookchange', () => {
     this._renderTopActions(sec);
 
     if (sec === 'import')  this._loadImpList();
-    if (sec === 'export')  SnaraExport.instance?.load();
-    if (sec === 'gallery') this._loadList('gallery');
-    if (sec === 'cache')   this._loadList('cache');
+    if (sec === 'export')  window.SnaraExport?.instance?.load();
+    if (sec === 'gallery') SnaraGallery.instance?.load();
+    if (sec === 'cache')   this._loadCacheList();
 
     icx.delayreplace(`#fpanel-${sec} [data-icon]`);
     icx.delayreplace('#files-topbar-actions [data-icon]');
@@ -274,33 +273,42 @@ window.addEventListener('bookchange', () => {
     wire('files-gallery-dz', 'gallery');
   }
 
-  _bindFileInputs() {
-    const wire = (id, type) => {
-      const el = document.getElementById(id);
-      if (!el) return;
-      el.addEventListener('change', e => {
-        this._uploadFiles(e.target.files, type);
-        e.target.value = '';
-      });
-    };
-    wire('files-input',     'import');
-    wire('files-img-input', 'gallery');
+_bindFileInputs() {
+  const imp = document.getElementById('files-input');
+  if (imp) {
+    imp.addEventListener('change', e => {
+      this._uploadFiles(e.target.files, 'import');
+      e.target.value = '';
+    });
   }
 
-  // ── Upload to server ──────────────────────────
+  const gal = document.getElementById('files-img-input');
+  if (gal) {
+    gal.addEventListener('change', e => {
+      SnaraGallery.instance?.uploadFiles(e.target.files);
+      e.target.value = '';
+    });
+  }
+}
 
-  async _uploadFiles(files, type) {
+ 
+
+  // ── Upload dispatcher ─────────────────────────
+
+async _uploadFiles(files, type) {
+  if (type === 'gallery') {
+    SnaraGallery.instance?.uploadFiles(files);
+    return;
+  }
+  
+    // Import
     const bookId = AppConfig.activeBookId;
     if (!bookId) { alert('No active book — open a book first.'); return; }
 
-    const allowed = type === 'import'
-      ? ['txt', 'md']
-      : ['jpg','jpeg','png','gif','webp','svg','bmp'];
-
     for (const file of files) {
       const ext = file.name.split('.').pop().toLowerCase();
-      if (!allowed.includes(ext)) {
-        alert(`"${file.name}" is not allowed here. Accepted: ${allowed.join(', ')}`);
+      if (!['txt', 'md'].includes(ext)) {
+        alert(`"${file.name}" is not allowed here. Accepted: .txt, .md`);
         continue;
       }
 
@@ -319,11 +327,10 @@ window.addEventListener('bookchange', () => {
       }
     }
 
-    // Reload list after all uploads
-    if (type === 'import') this._loadImpList();
+    this._loadImpList();
   }
 
-  // ── Import list — loaded from API ─────────────
+  // ── Import list ───────────────────────────────
 
   async _loadImpList() {
     const bookId = AppConfig.activeBookId;
@@ -375,20 +382,15 @@ window.addEventListener('bookchange', () => {
   _impListClick(e) {
     const btn = e.target.closest('[data-action]');
     if (!btn) {
-      // Re-attach since we used once:true
       document.getElementById('files-imp-list')
         ?.addEventListener('click', this._impListClick.bind(this), { once: true });
       return;
     }
 
     const { action, filename } = btn.dataset;
-    if (action === 'preview-import') {
-      this._openPreview(filename);
-    } else if (action === 'delete-import') {
-      this._deleteImportFile(filename, btn.closest('li'));
-    }
+    if (action === 'preview-import') this._openPreview(filename);
+    else if (action === 'delete-import') this._deleteImportFile(filename, btn.closest('li'));
 
-    // Re-attach listener
     document.getElementById('files-imp-list')
       ?.addEventListener('click', this._impListClick.bind(this), { once: true });
   }
@@ -399,7 +401,6 @@ window.addEventListener('bookchange', () => {
 
     const btn = li.querySelector('[data-action="delete-import"]');
 
-    // ── First click — mark row, swap icon ────────
     if (!li.classList.contains('delete')) {
       li.classList.add('delete');
       if (btn) {
@@ -409,8 +410,6 @@ window.addEventListener('bookchange', () => {
       return;
     }
 
-    // ── Second click — show inline confirmation ───
-    // Don't show twice
     if (li.querySelector('.del-confirm')) return;
 
     const confirm = document.createElement('div');
@@ -429,7 +428,6 @@ window.addEventListener('bookchange', () => {
     `;
     document.body.appendChild(confirm);
 
-    // No — revert
     confirm.querySelector('[data-action="del-no"]').addEventListener('click', () => {
       li.classList.remove('delete');
       confirm.remove();
@@ -439,7 +437,6 @@ window.addEventListener('bookchange', () => {
       }
     });
 
-    // Yes — fire DELETE
     confirm.querySelector('[data-action="del-yes"]').addEventListener('click', async () => {
       confirm.innerHTML = `<span style="color:var(--fg-muted);font-size:11px;padding:2px 4px">Deleting…</span>`;
       try {
@@ -449,6 +446,7 @@ window.addEventListener('bookchange', () => {
         );
         const json = await res.json();
         if (!res.ok || json.error) throw new Error(json.error || `HTTP ${res.status}`);
+        confirm.remove();
         li.remove();
       } catch (e) {
         alert(`Delete failed: ${e.message}`);
@@ -462,54 +460,15 @@ window.addEventListener('bookchange', () => {
     });
   }
 
-  // ── Generic list (gallery / cache) ───────────
-  // These still use in-memory for now — wire similarly when backend is ready
+  // ── Cache list (stub) ─────────────────────────
 
-  async _loadList(sec) {
-    const listIds = { gallery: 'files-gallery-list', cache: 'files-cache-list' };
-    const ul = document.getElementById(listIds[sec]);
+  async _loadCacheList() {
+    const ul = document.getElementById('files-cache-list');
     if (!ul) return;
-    ul.innerHTML = '<li class="flist-empty" style="opacity:.5">No files in this folder</li>';
+    ul.innerHTML = '<li class="flist-empty" style="opacity:.5">No cached files</li>';
   }
 
-  // ── Export list ───────────────────────────────
-
-  _renderExport() {
-    const ul = document.getElementById('files-exp-list');
-    if (!ul) return;
-
-    const chapters = AppConfig._exportChapters || [];
-    if (!chapters.length) {
-      ul.innerHTML = `<li class="flist-empty">No chapters loaded. Open a book first.</li>`;
-      return;
-    }
-
-    const grouped = {};
-    chapters.forEach(ch => { (grouped[ch.act] = grouped[ch.act] || []).push(ch); });
-
-    ul.innerHTML = Object.entries(grouped).map(([act, chs]) => `
-      <li class="flist-act-hdr">${_esc(act)}</li>
-      ${chs.map(ch => `
-        <li class="flist-item">
-          <input type="checkbox" class="fexp-cb" value="${_esc(ch.filename)}"
-            style="accent-color:var(--primary);width:13px;height:13px;flex-shrink:0">
-          <label style="flex:1;cursor:pointer;font-size:var(--f-xs)">${_esc(ch.title || ch.filename)}</label>
-          <span class="fbadge">${ch.entries ?? ''} entries</span>
-        </li>`).join('')}
-    `).join('');
-
-    document.getElementById('files-exp-all').onchange = e => {
-      ul.querySelectorAll('.fexp-cb').forEach(cb => cb.checked = e.target.checked);
-    };
-  }
-
-  exportSelected(fmt) {
-    const sel = [...document.querySelectorAll('.fexp-cb:checked')].map(c => c.value);
-    if (!sel.length) { alert('Select at least one chapter.'); return; }
-    alert(`Export ${sel.length} chapter(s) as .${fmt}:\n${sel.join(', ')}`);
-  }
-
-  // ── Delete bar helpers (import uses per-row delete now) ──
+  // ── Delete bar helpers ────────────────────────
 
   _updateDeleteBar(sec) {
     const barId = sec === 'import' ? 'files-delete-bar' : `files-delete-bar-${sec}`;
@@ -530,7 +489,8 @@ window.addEventListener('bookchange', () => {
 
   _iconFor(ext) {
     if (['jpg','jpeg','png','gif','webp','svg','bmp'].includes(ext)) return 'photo';
-    if (ext === 'md')   return 'activity-heartbeat';
+    if (['mp4','webm','mov','ogg','m4v'].includes(ext))              return 'video';
+    if (ext === 'md')   return 'markdown';
     if (ext === 'json') return 'checkup-list';
     return 'file-text';
   }
@@ -538,7 +498,7 @@ window.addEventListener('bookchange', () => {
 
 // ── Module-private helpers ────────────────────────
 function _esc(str) {
-  return String(str ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;');
+  return String(str ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;');
 }
 function _fmtSize(bytes) {
   if (!bytes) return '';

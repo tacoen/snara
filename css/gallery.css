@@ -1,0 +1,138 @@
+/* ── Gallery grid ─────────────────────────────────
+   Add this block to css/files.css
+─────────────────────────────────────────────────── */
+
+/* Scroll wrapper — this scrolls, not the grid */
+.gallery-scroll {
+  flex: 1;
+  overflow-y: auto;
+  min-height: 0;
+}
+
+.gallery-grid {
+  columns: 4;
+  column-gap: 6px;
+  padding: 6px;
+}
+
+/* Collapse to fewer columns on narrow panels */
+@media (max-width: 600px) {
+  .gallery-grid { columns: 2; }
+}
+
+.gallery-card {
+  break-inside: avoid;
+  position: relative;
+  margin-bottom: 6px;
+  border-radius: 6px;
+  overflow: hidden;
+  background: var(--bg-alt);
+  border: 1px solid var(--border);
+  cursor: default;
+  transition: box-shadow 0.15s;
+}
+
+.gallery-card:hover {
+  box-shadow: 0 2px 12px var(--overlay);
+}
+
+/* Keep aspect ratio — images fill full width, height auto */
+.gallery-card img,
+.gallery-card video {
+  display: block;
+  width: 100%;
+  height: auto;
+  object-fit: cover;
+}
+
+/* Overlay bar — hidden until hover */
+.gallery-bar {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: var(--s-md) var(--s-xs) var(--s-xs) var(--s-md);
+  background: linear-gradient(0deg, rgba(0,0,0) 0%, transparent 100%);
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+
+.gallery-card:hover .gallery-bar {
+  opacity: 1;
+}
+
+.gallery-name {
+  flex: 1;
+  font-size: 10px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  color: #fff;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+}
+
+.gallery-tools {
+  display: flex;
+  gap: 2px;
+  flex-shrink: 0;
+}
+
+.gtool {
+  background: rgba(255,255,255,0.15);
+  border: none;
+  border-radius: 4px;
+  width: 22px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: #fff;
+  transition: background 0.1s;
+  padding: 0;
+}
+
+.gtool:hover { background: rgba(255,255,255,0.3); }
+.gtool svg   { width: 12px; height: 12px; }
+
+/* Deleting state — dim the card */
+.gallery-card.gallery-deleting {
+  opacity: 0.45;
+  pointer-events: none;
+}
+
+/* Rename box — overlays the card */
+.gallery-rename-box {
+  position: absolute;
+  inset-block-end: 0;
+  background: rgba(0,0,0,0.72);
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px;
+  z-index: 10;
+  height: 50%;
+  /* bottom: 0; */
+  width: calc(100% - 16px);
+}
+
+.gallery-rename-input {
+  font-size: 11px !important;
+  padding: 4px 7px !important;
+  background: var(--bg-main) !important;
+  max-height: 1.3rem;
+  display: flex;
+  margin-top: 16px;
+}
+
+.gallery-rename-actions {
+  display: flex;
+  gap: 4px;
+  justify-content: flex-end;
+}

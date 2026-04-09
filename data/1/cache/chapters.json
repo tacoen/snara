@@ -1,0 +1,45 @@
+{
+    "built": 1775693666,
+    "chapters": [
+        {
+            "filename": "testing-doc",
+            "title": "testing-doc",
+            "mtime": 1775692918,
+            "entries": 9,
+            "act": "Dokumen Sumber",
+            "order": 0
+        },
+        {
+            "filename": "cobajuga",
+            "title": "cobajuga",
+            "mtime": 1775692918,
+            "entries": 9,
+            "act": "Dokumen Sumber",
+            "order": 1
+        },
+        {
+            "filename": "wei-c1",
+            "title": "wei-c1",
+            "mtime": 1775693642,
+            "entries": 4,
+            "act": "Act 1",
+            "order": 99
+        },
+        {
+            "filename": "wei-c2",
+            "title": "wei-c2",
+            "mtime": 1775693664,
+            "entries": 8,
+            "act": "Act 1",
+            "order": 99
+        },
+        {
+            "filename": "wei-c6",
+            "title": "wei-c6",
+            "mtime": 1775692975,
+            "entries": 7,
+            "act": "Act 2",
+            "order": 99
+        }
+    ]
+}

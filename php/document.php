@@ -74,7 +74,10 @@ class Document {
     // Rebuild act.json for this book
     if ($bookId) {
       self::rebuildActIndex($bookId);
+      Cache::clearChapters($bookId);   // ← ADD THIS LINE
     }
+ 
+ 
   }
 
   public static function delete(string $filename, ?int $bookId = null): void {
@@ -84,8 +87,19 @@ class Document {
     // Rebuild act.json after deletion
     if ($bookId) {
       self::rebuildActIndex($bookId);
+      Cache::clearChapters($bookId);   // ← ADD THIS LINE
     }
+ 
   }
+  
+public static function setOrder(string $filename, int $order, ?int $bookId = null): void {
+  $path = self::path($filename, $bookId);
+  if (!file_exists($path)) throw new RuntimeException("Document not found: $filename");
+  $data = json_decode(file_get_contents($path), true);
+  if (!is_array($data)) throw new RuntimeException("Corrupt document: $filename");
+  $data['meta']['order'] = $order;
+  file_put_contents($path, json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+}  
 
   // ── Act index ─────────────────────────────────
   // Scans all docs in the book dir, finds first class:"act" entry,
@@ -138,6 +152,7 @@ class Document {
       json_encode($result, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE)
     );
   }
+
 
   // ── Helpers ───────────────────────────────────
 

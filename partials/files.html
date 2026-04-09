@@ -58,22 +58,21 @@
     </div>
  
 
-    <!-- Gallery -->
-    <div id="fpanel-gallery" class="fpanel" hidden>
-      <div id="files-gallery-dz" class="fmini-dz" onclick="SnaraFiles.instance._triggerInput('files-img-input')">
-        <i data-icon="photo"></i>
-        <p>Drop images or click to upload</p>
-      </div>
-      <input type="file" id="files-img-input" accept="image/*" multiple hidden>
-      <ul id="files-gallery-list" class="flist"></ul>
-      <div id="files-delete-bar-gallery" class="fdelete-bar" hidden>
-        <p id="files-delete-count-gallery"></p>
-        <div class="fdelete-actions">
-          <button class="cfg-btn cfg-btn-ghost" onclick="SnaraFiles.instance.clearDeletes('gallery')">Cancel</button>
-          <button class="cfg-btn cfg-btn-danger" onclick="SnaraFiles.instance.applyDeletes('gallery')">Delete marked</button>
-        </div>
-      </div>
-    </div>
+   <!-- Gallery -->
+<div id="fpanel-gallery" class="fpanel" hidden>
+  <div id="files-gallery-dz" class="fmini-dz"
+       onclick="SnaraFiles.instance._triggerInput('files-img-input')">
+    <i data-icon="photo"></i>
+    <p>Drop images &amp; videos here, or click to browse</p>
+  </div>
+  <input type="file" id="files-img-input"
+         accept="image/*,video/mp4,video/webm,video/ogg,video/quicktime,.m4v"
+         multiple hidden>
+
+  <div class="gallery-scroll">
+    <div id="gallery-grid" class="gallery-grid"></div>
+  </div>
+</div>
 
     <!-- Cache -->
     <div id="fpanel-cache" class="fpanel" hidden>

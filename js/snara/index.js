@@ -264,10 +264,12 @@ window.dispatchEvent(new CustomEvent('bookchange', {
       for (const ch of group.chapters) {
         globalIdx++;
         html += `
-          <div class="idx-row" data-filename="${esc(ch.filename)}"
-               data-book-id="${esc(String(this.activeBookId))}"
-               role="button" tabindex="0">
-            <span class="idx-row-num">${globalIdx}</span>
+<div class="idx-row" data-filename="${esc(ch.filename)}"
+     data-book-id="${esc(String(this.activeBookId))}"
+     data-order="${ch.order}"
+     role="button" tabindex="0" draggable="true">
+  <span class="idx-drag-handle" title="Drag to reorder">⠿</span>
+  <span class="idx-row-num">${globalIdx - 1}</span>
             <span class="idx-row-main">
               <span class="idx-row-title">${esc(ch.title || ch.filename)}</span>
               <span class="idx-row-sub">${fmtDate(ch.mtime)}${ch.order !== 99 ? ` · #${ch.order}` : ''}</span>
@@ -288,6 +290,71 @@ window.dispatchEvent(new CustomEvent('bookchange', {
   // ── Bind chapter rows ─────────────────────────
   // Accepts the already-loaded states map — no second fetch needed.
 
+_bindDnd(modal, bookId) {
+  const body = modal.querySelector('.idx-body');
+  let dragSrc = null;
+
+  const rows = () => [...body.querySelectorAll('.idx-row:not([hidden])')];
+
+  body.querySelectorAll('.idx-row').forEach(row => {
+    row.addEventListener('dragstart', e => {
+      dragSrc = row;
+      row.classList.add('idx-row-dragging');
+      e.dataTransfer.effectAllowed = 'move';
+    });
+
+    row.addEventListener('dragend', () => {
+      dragSrc?.classList.remove('idx-row-dragging');
+      body.querySelectorAll('.idx-row').forEach(r => r.classList.remove('idx-row-drag-over'));
+      dragSrc = null;
+    });
+
+    row.addEventListener('dragover', e => {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'move';
+      if (row === dragSrc) return;
+      body.querySelectorAll('.idx-row').forEach(r => r.classList.remove('idx-row-drag-over'));
+      row.classList.add('idx-row-drag-over');
+    });
+
+    row.addEventListener('drop', e => {
+      e.preventDefault();
+      if (!dragSrc || dragSrc === row) return;
+      row.classList.remove('idx-row-drag-over');
+
+      // Reorder DOM
+      const allRows = rows();
+      const fromIdx = allRows.indexOf(dragSrc);
+      const toIdx   = allRows.indexOf(row);
+
+      if (fromIdx < toIdx) row.after(dragSrc);
+      else                 row.before(dragSrc);
+
+      // Renumber and persist
+      this._renumberAndSave(modal, bookId);
+    });
+  });
+}
+
+_renumberAndSave(modal, bookId) {
+  const rows = [...modal.querySelectorAll('.idx-body .idx-row:not([hidden])')];
+  rows.forEach((row, i) => {
+    const numEl = row.querySelector('.idx-row-num');
+    if (numEl) numEl.textContent = i;           // 0-based
+    row.dataset.order = i;
+
+    const filename = row.dataset.filename;
+    if (!filename) return;
+
+    // Patch meta.order via lightweight endpoint
+    fetch(AppConfig.apiPath + '?action=doc.setOrder', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify({ bookId, filename, order: i }),
+    }).catch(() => {});
+  });
+}
+
   _bindChapterRows(modal, states = {}) {
     const bookId = this.activeBookId;
 
@@ -299,6 +366,8 @@ window.dispatchEvent(new CustomEvent('bookchange', {
         tool.dataset.state = states[filename];
       }
     });
+
+	this._bindDnd(modal, bookId);
 
     icx.delayreplace('#chapter-index-modal [data-icon]');
 

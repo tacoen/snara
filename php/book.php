@@ -79,32 +79,38 @@ class Book {
   //   - order: from meta.order (default 99)
   // Sorted by order ASC, then filename ASC.
 
-  public static function chapters(int $id): array {
+public static function chapters(int $id): array {
     $dir = self::bookDir($id);
     if (!is_dir($dir)) return [];
     Config::ensureBookDirs($id);
-
-    // Load act index: filename → act title
-    $resolved = Config::resolveDefaults($id);
+ 
+    // ── Serve from cache if fresh ─────────────────
+    $cached = Cache::getChapters($id);
+    if ($cached !== null) return $cached;
+ 
+    // ── Cache miss — build from disk ──────────────
+    $resolved   = Config::resolveDefaults($id);
     $actDefault = $resolved['act'] ?? 'None';
-
+ 
     $actMap = [];
     foreach (Document::readActIndex($id) as $entry) {
       $actMap[$entry['filename']] = $entry['act'] ?? $actDefault;
     }
-
-    $files = glob($dir . '/*.json') ?: [];
-
+ 
+    $files    = glob($dir . '/*.json') ?: [];
     $chapters = [];
-
+ 
     foreach ($files as $path) {
+      // Skip anything in subdirectories (conf/, cache/, etc.)
+      if (dirname($path) !== realpath($dir)) continue;
+ 
       $filename = basename($path, '.json');
       $mtime    = filemtime($path);
       $title    = $filename;
       $entries  = 0;
       $order    = 99;
       $act      = $actMap[$filename] ?? $actDefault;
-
+ 
       $raw = @file_get_contents($path);
       if ($raw) {
         $data = json_decode($raw, true);
@@ -113,13 +119,12 @@ class Book {
           if (isset($data['article']) && is_array($data['article'])) {
             $entries = count($data['article']);
           }
-          // Read order from meta
           if (isset($data['meta']['order'])) {
             $order = (int) $data['meta']['order'];
           }
         }
       }
-
+ 
       $chapters[] = [
         'filename' => $filename,
         'title'    => $title,
@@ -129,13 +134,15 @@ class Book {
         'order'    => $order,
       ];
     }
-
-    // Sort by order ASC, then filename ASC as tiebreaker
+ 
     usort($chapters, function($a, $b) {
       if ($a['order'] !== $b['order']) return $a['order'] <=> $b['order'];
       return strcmp($a['filename'], $b['filename']);
     });
-
+ 
+    // ── Write to cache ────────────────────────────
+    Cache::putChapters($id, $chapters);
+ 
     return $chapters;
   }
 
