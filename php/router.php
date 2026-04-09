@@ -272,7 +272,18 @@ case 'doc.setOrder':
                     echo json_encode(Gallery::autocomplete($bookId));
                     break;
 
-
+                case 'cache.list':
+                    self::requireMethod($method, 'GET');
+                    $bookId = (int) self::requireParam('bookId');
+                    echo json_encode(Cache::list($bookId));
+                    break;
+ 
+                case 'cache.rebuild':
+                    self::requireMethod($method, 'POST');
+                    $bookId = (int) self::requireParam('bookId');
+                    echo json_encode(Cache::rebuild($bookId));
+                    break;
+					
 
 default:
                     self::error(404, 'Unknown action: ' . $action);

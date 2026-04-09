@@ -1,18 +1,8 @@
 import { AppConfig } from '../snara.js';
 import icx           from '../icons/ge-icon.js';
 import { openModal, closeModal } from './modal.js';
+import { esc, fmtDate } from '../helpers.js';
 
-// Remove the local ensureModal(), openModal(), closeModal() functions entirely.
-
-function esc(str) {
-  return String(str ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;');
-}
-
-function fmtDate(ts) {
-  if (!ts) return '—';
-  const d = new Date(ts * 1000);
-  return d.toLocaleDateString(undefined, { year:'numeric', month:'short', day:'numeric' });
-}
 
 function ensureModal(id) {
   if (document.getElementById(id)) return document.getElementById(id);

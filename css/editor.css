@@ -7,7 +7,7 @@
 .entries:not([hidden]) {display: flex;padding: 0 var(--s-md) var(--s-lg) 2px;}
 
 .entries:empty::before {
-  content: 'Your story will appear here…';
+  content: 'Your story will appear hereâ€¦';
   color: var(--fg-muted);
   opacity: 0.7;
   font-style: italic;
@@ -17,9 +17,9 @@
 
 .entry {
   position: relative;
-  padding-right: var(--s-md);
-  padding-bottom: var(--s-xl);
-  padding-left: var(--s-md);
+  padding: var(--s-md);
+  /* padding-bottom: var(--s-xl); */
+  /* padding-left: var(--s-md); */
   border-left: 3px solid var(--border);
   outline: none;
   font-size: 0.9375rem;
@@ -35,7 +35,7 @@
 .entry:focus { background: var(--bg-alt); }
 
 .entry.beat    { border-left-color: var(--tag-draft-fg);   padding-left: calc(4 * var(--s-md)); }
-.entry.scene   { border-left-color: var(--tag-scene-fg);   padding-left: calc(3 * var(--s-md)); }
+.entry.scene   {border-left-color: var(--tag-scene-fg);padding-left: calc(3 * var(--s-md));}
 .entry.chapter { border-left-color: var(--tag-chapter-fg); padding-left: calc(2 * var(--s-md)); }
 .entry.act     { border-left-color: var(--tag-act-fg);     padding-left: var(--s-md); }
 

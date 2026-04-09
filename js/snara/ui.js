@@ -7,6 +7,7 @@ import { SnaraTool }   from './tool.js';
 import { AppConfig }   from '../snara.js';
 import { SnaraEditor } from './core.js';
 import icx             from '../icons/ge-icon.js';
+import { esc } from '../helpers.js';
 
 export class SnaraUI {
 
@@ -184,9 +185,9 @@ export class SnaraUI {
         const row = document.createElement('div');
         row.className = 'meta-field';
         row.innerHTML = `
-          <span class="field-key" contenteditable spellcheck="false">${_esc(key)}</span>
+          <span class="field-key" contenteditable spellcheck="false">${esc(key)}</span>
           <span class="field-sep">:</span>
-          <span class="field-val" contenteditable spellcheck="false">${_esc(val)}</span>
+          <span class="field-val" contenteditable spellcheck="false">${esc(val)}</span>
           <button class="field-remove" onclick="removeField(this)" title="Remove field">✕</button>
         `;
         metaFields.appendChild(row);
@@ -236,7 +237,3 @@ export class SnaraUI {
   }
 }
 
-// ── Module-private escape helper ──────────────────
-function _esc(str) {
-  return String(str ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;');
-}

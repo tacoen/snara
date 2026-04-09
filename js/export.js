@@ -16,6 +16,7 @@
 import { AppConfig } from './snara.js';
 import { SnaraTool } from './snara/tool.js';
 import icx           from './icons/ge-icon.js';
+import { esc, slug, download } from './helpers.js';
 
 export class SnaraExport {
 
@@ -101,7 +102,7 @@ export class SnaraExport {
       this._renderFooter(footer);
 
     } catch (e) {
-      ul.innerHTML = `<li class="flist-empty" style="color:var(--danger)">Error: ${_esc(e.message)}</li>`;
+      ul.innerHTML = `<li class="flist-empty" style="color:var(--danger)">Error: ${esc(e.message)}</li>`;
     }
   }
 
@@ -136,16 +137,16 @@ export class SnaraExport {
 
     ul.innerHTML = actOrder.map(act => `
       <li class="flist-act-hdr" style="display:flex;align-items:center;gap:6px">
-        <input type="checkbox" class="fexp-act-cb" data-act="${_esc(act)}" checked
+        <input type="checkbox" class="fexp-act-cb" data-act="${esc(act)}" checked
           style="accent-color:var(--primary);width:13px;height:13px;cursor:pointer"
           title="Toggle all in this act">
-        <span>${_esc(act)}</span>
+        <span>${esc(act)}</span>
       </li>
       ${grouped[act].map(ch => `
-        <li class="flist-item fexp-item" data-filename="${_esc(ch.filename)}" data-act="${_esc(ch.act)}">
-          <input type="checkbox" class="fexp-cb" value="${_esc(ch.filename)}" checked
+        <li class="flist-item fexp-item" data-filename="${esc(ch.filename)}" data-act="${esc(ch.act)}">
+          <input type="checkbox" class="fexp-cb" value="${esc(ch.filename)}" checked
             style="accent-color:var(--primary);width:13px;height:13px;flex-shrink:0;cursor:pointer">
-          <span class="fname" style="flex:1">${_esc(ch.title || ch.filename)}</span>
+          <span class="fname" style="flex:1">${esc(ch.title || ch.filename)}</span>
           <span class="fbadge">${ch.entries} entr${ch.entries === 1 ? 'y' : 'ies'}</span>
         </li>`).join('')}
     `).join('');
@@ -255,7 +256,7 @@ export class SnaraExport {
 
     const content   = parts.join('\n\n---\n\n');
     const bookTitle = AppConfig.activeBookTitle || 'export';
-    _download(`${_slug(bookTitle)}.md`, content, 'text/markdown');
+    download(`${slug(bookTitle)}.md`, content, 'text/markdown');
   }
 
   // ── HTML export ───────────────────────────────
@@ -267,9 +268,9 @@ export class SnaraExport {
       const doc     = this._docs[ch.filename] || {};
       const article = doc.article || [];
       const content = article
-        .map(e => `<section class="entry ${_esc(e.class || '')}">${e.content || ''}</section>`)
+        .map(e => `<section class="entry ${esc(e.class || '')}">${e.content || ''}</section>`)
         .join('\n');
-      return `<article class="chapter" id="${_esc(ch.filename)}">\n${content}\n</article>`;
+      return `<article class="chapter" id="${esc(ch.filename)}">\n${content}\n</article>`;
     }).join('\n\n<hr>\n\n');
 
     const html = `<!DOCTYPE html>
@@ -277,7 +278,7 @@ export class SnaraExport {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>${_esc(bookTitle)}</title>
+  <title>${esc(bookTitle)}</title>
   <style>
     body { font-family: Georgia, serif; max-width: 720px; margin: 4rem auto; padding: 0 2rem; line-height: 1.8; color: #222; }
     h1, h2, h3 { font-weight: normal; }
@@ -289,36 +290,11 @@ export class SnaraExport {
   </style>
 </head>
 <body>
-  <h1>${_esc(bookTitle)}</h1>
+  <h1>${esc(bookTitle)}</h1>
 ${body}
 </body>
 </html>`;
 
-    _download(`${_slug(bookTitle)}.html`, html, 'text/html');
+    download(`${slug(bookTitle)}.html`, html, 'text/html');
   }
-}
-
-// ── Module-private helpers ────────────────────────
-
-function _esc(str) {
-  return String(str ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;');
-}
-
-function _slug(str) {
-  return String(str ?? 'export')
-    .toLowerCase()
-    .replace(/[^\w\s-]/g, '')
-    .trim()
-    .replace(/[\s_]+/g, '-')
-    .slice(0, 60) || 'export';
-}
-
-function _download(filename, content, mime) {
-  const blob = new Blob([content], { type: mime + ';charset=utf-8' });
-  const url  = URL.createObjectURL(blob);
-  const a    = document.createElement('a');
-  a.href     = url;
-  a.download = filename;
-  a.click();
-  setTimeout(() => URL.revokeObjectURL(url), 2000);
 }

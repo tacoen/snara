@@ -5,37 +5,33 @@
      Defaults — per-app/book defaults (default.json)
    Depends on: AppConfig, AppDefaults, SnaraUI, icx
 ─────────────────────────────────────────────────── */
+
+import { SnaraComponent }         from './component.js';
 import { AppConfig, AppDefaults } from '../snara.js';
 import { SnaraUI }                from './ui.js';
 import icx                        from '../icons/ge-icon.js';
-import { openModal, closeModal }  from './modal.js';
+import { esc, splitCsv } from '../helpers.js';
 
-export class SnaraSettings {
-
-  static instance = null;
+export class SnaraSettings extends SnaraComponent {
 
   constructor() {
-    SnaraSettings.instance = this;
-    this.modal      = document.getElementById('settings-modal');
-    this._activeTab = 'general';
-    this._bindClose();
+    super('settings-modal', { defaultTab: 'general' });
   }
 
-  // ── Open / Close ──────────────────────────────
+  // ── DOM is static in partials/settings.html — nothing to build ──
 
-  open()  { this._render(); openModal('settings-modal'); }
-  close() { closeModal('settings-modal'); }
-
-  _bindClose() {
-    document.addEventListener('keydown', e => {
-      if (e.key === 'Escape') closeModal('settings-modal');
-    });
+  _ensureDOM() {
+    const el = document.getElementById(this.modalId);
+    if (!el) return;
+    if (el.dataset.defaultTab) this._activeTab = el.dataset.defaultTab;
   }
 
-  // ── Render ────────────────────────────────────
+  // ── Render — called by inherited open() on every open ───────────
 
   _render() {
     const body = document.getElementById('settings-body');
+    if (!body) return;
+
     body.innerHTML = `
       <div class="cfg-tabs">
         <button class="cfg-tab${this._activeTab === 'general'  ? ' active' : ''}" data-tab="general">General</button>
@@ -54,12 +50,15 @@ export class SnaraSettings {
     icx.delayreplace('#settings-body [data-icon]');
   }
 
+  // ── Tab switching ────────────────────────────────────────────────
+
   _switchTab(tab) {
     this._activeTab = tab;
-    document.querySelectorAll('.cfg-tab').forEach(b =>
+    document.querySelectorAll('#settings-body .cfg-tab').forEach(b =>
       b.classList.toggle('active', b.dataset.tab === tab)
     );
     const content = document.getElementById('cfg-tab-content');
+    if (!content) return;
     content.innerHTML = tab === 'general' ? this._renderGeneral() : this._renderDefaults();
     this._bindSegmented();
     this._bindToggle();
@@ -73,7 +72,7 @@ export class SnaraSettings {
     });
   }
 
-  // ── General tab ───────────────────────────────
+  // ── General tab ──────────────────────────────────────────────────
 
   _renderGeneral() {
     const c = AppConfig;
@@ -121,7 +120,7 @@ export class SnaraSettings {
     `;
   }
 
-  // ── Defaults tab ──────────────────────────────
+  // ── Defaults tab ─────────────────────────────────────────────────
 
   _renderDefaults() {
     const d = AppDefaults;
@@ -171,7 +170,7 @@ export class SnaraSettings {
     `;
   }
 
-  // ── Heading map row ───────────────────────────
+  // ── Heading map row ──────────────────────────────────────────────
 
   _hmapRow({ prefix = '', cls = '' } = {}, i = Date.now()) {
     return `
@@ -183,7 +182,7 @@ export class SnaraSettings {
       </div>`;
   }
 
-  // ── Control bindings ──────────────────────────
+  // ── Control bindings ─────────────────────────────────────────────
 
   _bindSegmented() {
     document.querySelectorAll('#settings-body .cfg-segmented').forEach(group => {
@@ -222,7 +221,7 @@ export class SnaraSettings {
     });
   }
 
-  // ── Save — always writes both tabs ───────────
+  // ── Save — writes both tabs ──────────────────────────────────────
 
   async save() {
     const btn = document.getElementById('cfg-save-btn');
@@ -256,7 +255,6 @@ export class SnaraSettings {
       if (prefix || cls) headingMap.push({ prefix, cls });
     });
 
-    // Only write known config keys — never runtime state
     const updated = {
       apiPath:    document.getElementById('cfg-apiPath')?.value  || AppConfig.apiPath,
       dataPath:   document.getElementById('cfg-dataPath')?.value || AppConfig.dataPath,
@@ -267,7 +265,6 @@ export class SnaraSettings {
 
     Object.assign(AppConfig, updated);
 
-    // Resolve and apply theme immediately via SnaraUI — no SnaraTool needed here
     const resolved = theme === 'system'
       ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
       : theme;
@@ -308,12 +305,4 @@ export class SnaraSettings {
       body:    JSON.stringify({ defaults: updated }),
     });
   }
-}
-
-// ── Helpers ───────────────────────────────────────
-function esc(str) {
-  return String(str ?? '').replace(/"/g, '&quot;').replace(/</g, '&lt;');
-}
-function splitCsv(str) {
-  return (str || '').split(',').map(s => s.trim()).filter(Boolean);
 }

@@ -15,6 +15,7 @@
 import { AppConfig } from '../snara.js';
 import icx           from '../icons/ge-icon.js';
 import { openModal, closeModal } from './modal.js';
+import { esc } from '../helpers.js';
 
 // ── Defaults (mirrors css/vars.css exactly) ───────
 
@@ -285,11 +286,6 @@ function _tagGroupLines(tags, ...groups) {
 }
 
 // ── Misc helpers ──────────────────────────────────
-
-function esc(str) {
-  return String(str ?? '')
-    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;');
-}
 
 function toHex(value) {
   if (!value) return null;

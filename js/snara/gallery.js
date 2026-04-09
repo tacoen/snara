@@ -6,6 +6,7 @@
 ─────────────────────────────────────────────────── */
 import { AppConfig } from '../snara.js';
 import icx           from '../icons/ge-icon.js';
+import { esc } from '../helpers.js';
 
 export class SnaraGallery {
 
@@ -49,7 +50,7 @@ export class SnaraGallery {
       icx.delayreplace('#gallery-grid [data-icon]');
 
     } catch (e) {
-      grid.innerHTML = `<p class="flist-empty" style="color:var(--danger)">Error: ${_esc(e.message)}</p>`;
+      grid.innerHTML = `<p class="flist-empty" style="color:var(--danger)">Error: ${esc(e.message)}</p>`;
     }
   }
 
@@ -86,7 +87,7 @@ export class SnaraGallery {
     const bar = document.createElement('div');
     bar.className = 'gallery-bar';
     bar.innerHTML = `
-      <span class="gallery-name" title="${_esc(f.filename)}">${_esc(f.filename)}</span>
+      <span class="gallery-name" title="${esc(f.filename)}">${esc(f.filename)}</span>
       <div class="gallery-tools">
         <button class="gtool" data-action="rename" title="Rename"><i data-icon="pencil"></i></button>
         <button class="gtool" data-action="delete" title="Delete"><i data-icon="trash"></i></button>
@@ -118,7 +119,7 @@ export class SnaraGallery {
     const box = document.createElement('div');
     box.className = 'gallery-rename-box';
     box.innerHTML = `
-      <input class="gallery-rename-input cfg-input" value="${_esc(basename)}"
+      <input class="gallery-rename-input cfg-input" value="${esc(basename)}"
         placeholder="new name…" autocomplete="off" spellcheck="false" list="gallery-ac-list">
       <datalist id="gallery-ac-list"></datalist>
       <div class="gallery-rename-actions">
@@ -191,7 +192,7 @@ export class SnaraGallery {
       : this._terms.slice(0, 20);
 
     datalist.innerHTML = matches
-      .map(t => `<option value="${_esc(t)}">`)
+      .map(t => `<option value="${esc(t)}">`)
       .join('');
   }
 
@@ -214,7 +215,7 @@ export class SnaraGallery {
       const bar = document.createElement('div');
       bar.className = 'del-confirm';
       bar.innerHTML = `
-        <span style="flex:1;color:var(--danger)">Delete "${_esc(filename)}"?</span>
+        <span style="flex:1;color:var(--danger)">Delete "${esc(filename)}"?</span>
         <button class="cfg-btn cfg-btn-ghost" style="padding:2px 8px;font-size:11px" data-action="del-no">No</button>
         <button class="cfg-btn" style="padding:2px 8px;font-size:11px;border-color:var(--danger);color:var(--danger)" data-action="del-yes">Yes, delete</button>
       `;
@@ -293,7 +294,3 @@ export class SnaraGallery {
   }
 }
 
-// ── Module-private helpers ────────────────────────
-function _esc(str) {
-  return String(str ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;');
-}
