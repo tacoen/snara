@@ -86,8 +86,8 @@ async function boot() {
     if (label) label.textContent = AppConfig.activeBookTitle || `Book ${AppConfig.activeBookId}`;
   }
 
-  // ── 3. Define window.switchArea (real logic) ──
-  // Must be defined BEFORE the router wraps it.
+  // ── 3. Define window.switchArea ───────────────
+  // Must exist BEFORE the router wraps it below.
   window.switchArea = (area) => {
     const areas = {
       editor: document.getElementById('editor-area'),
@@ -114,18 +114,17 @@ async function boot() {
     if (map[tab]) window.switchArea(map[tab]);
   };
 
-  // ── 4. Define window.loadDocument (real logic) ─
-  // Must be defined BEFORE the router wraps it.
+  // ── 4. Define window.loadDocument ─────────────
+  // Must exist BEFORE the router wraps it below.
   window.loadDocument = (bookId, filename) => {
     ui.loadDocument(bookId, filename).then?.(() => tools.refresh());
     setTimeout(() => tools.refresh(), 400);
   };
 
-  // ── 5. Init router and wrap the real functions ─
-  // Order matters: real functions must exist first,
-  // then the router captures them via _orig*.
+  // ── 5. Init router, then wrap real functions ───
   const router = new SnaraRouter();
 
+  // Wrap switchArea so navigation also updates the URL
   const _origSwitchArea = window.switchArea;
   window.switchArea = (area) => {
     _origSwitchArea(area);
@@ -133,6 +132,7 @@ async function boot() {
     if (bookId) router.navigate(SnaraRouter.bookPath(bookId, area));
   };
 
+  // Wrap SnaraFiles.switchSection so file section changes update the URL
   const filesInst = SnaraFiles.instance;
   if (filesInst) {
     const _origSection = filesInst.switchSection.bind(filesInst);
@@ -143,6 +143,7 @@ async function boot() {
     };
   }
 
+  // Wrap loadDocument so opening a file updates the URL
   const _origLoad = window.loadDocument;
   window.loadDocument = (bookId, filename) => {
     _origLoad(bookId, filename);
@@ -150,15 +151,14 @@ async function boot() {
   };
 
   // ── 6. All other window globals ───────────────
-  // Defined once, after router is ready.
 
   // Editor
-  window.submitEntry  = ()     => editor.submit();
-  window.setTag       = tag    => editor.setTag(tag);
-  window.fmt          = cmd    => editor.fmt(cmd);
-  window.wrapMd       = prefix => editor.wrapMd(prefix);
-  window.wrapInline   = (b, a) => editor.wrapInline(b, a);
-  window.saveDocument = ()     => ui.saveDocument();
+  window.submitEntry  = ()      => editor.submit();
+  window.setTag       = tag     => editor.setTag(tag);
+  window.fmt          = cmd     => editor.fmt(cmd);
+  window.wrapMd       = prefix  => editor.wrapMd(prefix);
+  window.wrapInline   = (b, a)  => editor.wrapInline(b, a);
+  window.saveDocument = ()      => ui.saveDocument();
 
   // UI
   window.setEntryClass = cls => ui.setEntryClass(cls);
@@ -172,9 +172,19 @@ async function boot() {
   window.Meta       = () => window.switchArea('meta');
   window.FilesIndex = () => window.switchArea('files');
 
-  // Settings + pref — with router (defined once, no duplicate)
-  window.openSettings = () => { settings.open(); router.navigate('settings'); };
-  window.openPref     = () => { pref.open();     router.navigate('pref');     };
+  // ── CRITICAL: openSettings and openPref must call the module
+  // method DIRECTLY — never router.navigate().
+  //
+  // Why: router._apply('settings') already calls window.openSettings().
+  // If openSettings() then calls router.navigate('settings'), the chain
+  // becomes infinite:
+  //   navigate() → _apply() → openSettings() → navigate() → ∞
+  //
+  // To track settings/pref in the URL, call navigate() from the
+  // trigger element (e.g. a nav button onclick="navigate('settings')")
+  // NOT from inside these globals.
+  window.openSettings = () => settings.open();
+  window.openPref     = () => pref.open();
   window.settingsInst = settings;
 
   // Index + files
@@ -193,17 +203,17 @@ async function boot() {
   });
 
   // ── 8. Book change → update URL + title ───────
-window.addEventListener('bookchange', async (e) => {
+  window.addEventListener('bookchange', async (e) => {
     const { bookId } = e.detail;
     if (!bookId) return;
-	
-	try {
+
+    try {
       const res = await fetch(
         `${AppConfig.apiPath}?action=editorpref.get&bookId=${bookId}`
       );
       if (res.ok) SnaraSettings.applyEditorPrefs(await res.json());
     } catch { /* ignore */ }
-	
+
     const area = document.querySelector('.nav-tab-btn.active-tab')?.dataset.area || 'editor';
     if (!location.search.startsWith(`?r=book/${bookId}`)) {
       router.navigate(SnaraRouter.bookPath(bookId, area));
@@ -212,22 +222,18 @@ window.addEventListener('bookchange', async (e) => {
     }
   });
 
-
   // Apply per-book editor prefs on boot
   if (AppConfig.activeBookId) {
     try {
       const epRes = await fetch(
         `${AppConfig.apiPath}?action=editorpref.get&bookId=${AppConfig.activeBookId}`
       );
-      if (epRes.ok) {
-        const editorPrefs = await epRes.json();
-        SnaraSettings.applyEditorPrefs(editorPrefs);
-      }
-    } catch { /* non-fatal — defaults from vars.css apply */ }
+      if (epRes.ok) SnaraSettings.applyEditorPrefs(await epRes.json());
+    } catch { /* non-fatal */ }
   }
-  
+
   // ── 9. Boot router last ───────────────────────
-  // Reads ?r= (or localStorage) and applies state.
+  // All window.* globals must be defined above before this line.
   router.boot();
 }
 

@@ -2,10 +2,8 @@
    js/snara/router.js — SnaraRouter
 
    Query-string based routing — no .htaccess needed.
-   Works on Apache, Nginx, PHP built-in server, anything.
 
-   URL scheme (all on same page, no reload):
-     /                          → restore from localStorage
+   URL scheme:
      /?r=book/1                 → book 1, editor
      /?r=book/1/editor          → book 1, editor area
      /?r=book/1/meta            → book 1, meta area
@@ -18,13 +16,6 @@
      /?r=book/1/edit/filename   → book 1, open document
      /?r=settings               → settings modal
      /?r=pref                   → pref modal
-
-   Document <title> is also updated on every navigation:
-     Snara
-     Snara — Book Title
-     Snara — Book Title: filename
-     Snara — Settings
-     Snara — Preferences
 ─────────────────────────────────────────────────── */
 
 import { AppConfig } from '../snara.js';
@@ -35,6 +26,11 @@ const APP_NAME = 'Snara';
 const AREAS    = ['editor', 'meta', 'kanban', 'files'];
 const SECTIONS = ['import', 'export', 'gallery', 'cache'];
 
+// Routes that open modals — never persist to localStorage.
+// Restoring them on the next load would auto-open a modal
+// before the user does anything.
+const MODAL_ROUTES = new Set(['settings', 'pref']);
+
 export class SnaraRouter {
 
   static instance = null;
@@ -42,30 +38,31 @@ export class SnaraRouter {
   constructor() {
     SnaraRouter.instance = this;
 
-    // Browser back / forward — re-read ?r= from the new URL
     window.addEventListener('popstate', () => {
       this._apply(this._readParam());
     });
 
-    // Global helper so any module can navigate without importing the router
+    // Global so any module can navigate without importing the router.
+    // IMPORTANT: window.openSettings and window.openPref must NOT
+    // call window.navigate() — that would create an infinite loop
+    // through _apply(). See snara.js for the correct wiring.
     window.navigate = (route) => this.navigate(route);
   }
 
-  // ── Boot ──────────────────────────────────────────────────
-  // Called once, after snara.js finishes creating all instances.
+  // ── Boot ──────────────────────────────────────
+  // Called once, at the very end of snara.js boot(),
+  // after ALL window.* globals are defined.
 
   boot() {
     const route = this._readParam();
 
     if (!route) {
-      // Bare "/" — try to restore from localStorage
       const saved = this._loadSaved();
       if (saved) {
         this._pushState(saved);
         this._apply(saved);
         return;
       }
-      // Nothing saved — just set default title
       this._setTitle();
       return;
     }
@@ -73,8 +70,7 @@ export class SnaraRouter {
     this._apply(route);
   }
 
-  // ── Navigate ──────────────────────────────────────────────
-  // Single entry point. Call this instead of switchArea() etc.
+  // ── Navigate ──────────────────────────────────
 
   navigate(route) {
     this._pushState(route);
@@ -82,17 +78,17 @@ export class SnaraRouter {
     this._apply(route);
   }
 
-  // ── Parse + dispatch ──────────────────────────────────────
+  // ── Parse + dispatch ──────────────────────────
 
   _apply(route) {
     if (!route) return;
 
     const parts = route.replace(/^\//, '').split('/');
-    // parts: ['book','1','files','gallery'] etc.
 
     // /?r=settings
     if (parts[0] === 'settings') {
       this._setTitle('Settings');
+      // Calls settings.open() directly in snara.js — no navigate() inside
       window.openSettings?.();
       return;
     }
@@ -100,15 +96,21 @@ export class SnaraRouter {
     // /?r=pref
     if (parts[0] === 'pref') {
       this._setTitle('Preferences');
+      // Same: calls pref.open() directly — no navigate() inside
       window.openPref?.();
       return;
     }
 
+    // Any page-based route — close any open modal first.
+    // Prevents a modal staying open when the user navigates
+    // back/forward through the browser history.
+    window.closeModal?.();
+
     // /?r=book/:id[/:area[/:sub]]
     if (parts[0] === 'book' && parts[1]) {
-      const bookId  = parts[1];
-      const area    = parts[2] || 'editor';
-      const sub     = parts[3] || null;
+      const bookId = parts[1];
+      const area   = parts[2] || 'editor';
+      const sub    = parts[3] || null;
 
       this._activateBook(bookId);
 
@@ -141,42 +143,39 @@ export class SnaraRouter {
         return;
       }
 
-      // Unknown area fallback
+      // Unknown area — fallback
       window.switchArea?.('editor');
       this._setTitle();
       return;
     }
   }
 
-  // ── Document <title> ──────────────────────────────────────
-  // subtitle = 'Settings' | 'Preferences' | 'import' | filename | null
+  // ── Document <title> ──────────────────────────
 
   _setTitle(subtitle = null, detail = null) {
     const bookTitle = AppConfig.activeBookTitle || null;
     let title = APP_NAME;
 
     if (subtitle) {
-      // Fixed labels like "Settings", "Preferences"
       title = `${APP_NAME} — ${subtitle}`;
     } else if (bookTitle && detail) {
-      // Book active + chapter/section detail
       title = `${APP_NAME} — ${bookTitle}: ${detail}`;
     } else if (bookTitle) {
-      // Book active, no detail
       title = `${APP_NAME} — ${bookTitle}`;
     }
 
     document.title = title;
   }
 
-  // ── Book activation ───────────────────────────────────────
+  // ── Book activation ───────────────────────────
 
   _activateBook(bookId) {
     if (String(AppConfig.activeBookId) === String(bookId)) return;
 
     const idx = window.SnaraIndex?.instance;
     if (idx && typeof idx._setActiveBook === 'function') {
-      const currentTitle = document.getElementById('active-book-label')?.textContent;
+      const label = document.getElementById('active-book-label');
+      const currentTitle = label?.textContent?.trim();
       const title = (currentTitle && currentTitle !== '—')
         ? currentTitle
         : `Book ${bookId}`;
@@ -185,36 +184,51 @@ export class SnaraRouter {
       AppConfig.activeBookId    = bookId;
       AppConfig.activeBookTitle = `Book ${bookId}`;
       window.dispatchEvent(new CustomEvent('bookchange', {
-        detail: { bookId, title: AppConfig.activeBookTitle }
+        detail: { bookId, title: AppConfig.activeBookTitle },
       }));
     }
   }
 
-  // ── Query string helpers ──────────────────────────────────
+  // ── Query string helpers ──────────────────────
 
   _readParam() {
+    // URLSearchParams.get() auto-decodes — handles raw and encoded values
     return new URLSearchParams(location.search).get('r') || '';
   }
 
+  // FIX: do NOT encodeURIComponent the whole route.
+  // Slashes are valid inside query-string values and don't need encoding.
+  // The old version produced ugly ?r=book%2F1%2Feditor URLs and also
+  // broke the location.search comparison so pushState fired on every call.
   _pushState(route) {
-    const url = route ? `?r=${encodeURIComponent(route)}` : '/';
-    if (location.search !== `?r=${encodeURIComponent(route)}`) {
-      history.pushState(null, '', url);
-    }
+    const current = new URLSearchParams(location.search).get('r') || '';
+    if (current === route) return;   // already here — no duplicate history entry
+    const url = route ? `?r=${route}` : '/';
+    history.pushState(null, '', url);
   }
 
-  // ── localStorage ──────────────────────────────────────────
+  // ── localStorage ──────────────────────────────
 
+  // FIX: never persist modal routes — they'd auto-open a modal on
+  // every fresh page load, before the user has done anything.
   _save(route) {
+    const base = route.split('/')[0];
+    if (MODAL_ROUTES.has(base)) return;
     try { localStorage.setItem(LS_KEY, route); } catch { /* quota */ }
   }
 
   _loadSaved() {
-    try { return localStorage.getItem(LS_KEY) || ''; } catch { return ''; }
+    try {
+      const saved = localStorage.getItem(LS_KEY) || '';
+      // Defensive: clear any stale modal route stored by an older version
+      const base = saved.split('/')[0];
+      return MODAL_ROUTES.has(base) ? '' : saved;
+    } catch {
+      return '';
+    }
   }
 
-  // ── Static path builders ──────────────────────────────────
-  // Use these to generate route strings consistently.
+  // ── Static path builders ──────────────────────
 
   static bookPath(bookId, area = 'editor', sub = null) {
     let r = `book/${bookId}/${area}`;

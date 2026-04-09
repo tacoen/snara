@@ -7,7 +7,7 @@
 .entries:not([hidden]) {display: flex;padding: 0 var(--s-md) var(--s-lg) 2px;}
 
 .entries:empty::before {
-  content: 'Your story will appear hereâ€¦';
+  content: 'Your story will appear hereÃ¢â‚¬Â¦';
   color: var(--fg-muted);
   opacity: 0.7;
   font-style: italic;
@@ -22,7 +22,7 @@
   /* padding-left: var(--s-md); */
   border-left: 3px solid var(--border);
   outline: none;
-  font-family: var(--font-serif);
+  /* font-family: var(--font-serif); */
   font-size: 1rem;
   line-height: 1.5;
   color: var(--fg-main);
@@ -84,7 +84,7 @@
 body.entry-edit #editor { height: 72px; }
 
 
-/* ─────────────────────────────────────────────────
+/* â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
    ADD these rules to css/editor.css
    They replace the hardcoded border-left-color and
    add the background + font-family from EditorPref.
@@ -92,21 +92,21 @@ body.entry-edit #editor { height: 72px; }
    Find the existing .entry.act / .chapter / .scene
    / .beat rules and REPLACE their border-left-color
    with var(--entry-*-border). Add background too.
-─────────────────────────────────────────────────── */
+â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 
-/* ── Font — applied to the full entries container ── */
+/* â”€â”€ Font â€” applied to the full entries container â”€â”€ */
 #article .entries {
   font-family: var(--entry-font);
 }
 
-/* ── Replace/extend existing entry tag rules ──────── */
+/* â”€â”€ Replace/extend existing entry tag rules â”€â”€â”€â”€â”€â”€â”€â”€ */
 /* BEFORE (in your current editor.css):
    .entry.beat    { border-left-color: var(--tag-draft-fg);   ... }
    .entry.scene   { border-left-color: var(--tag-scene-fg);   ... }
    .entry.chapter { border-left-color: var(--tag-chapter-fg); ... }
    .entry.act     { border-left-color: var(--tag-act-fg);     ... }
 
-   AFTER — keep the padding rules, swap the colors: */
+   AFTER â€” keep the padding rules, swap the colors: */
 
 .entry.act {
   border-left-color: var(--entry-act-border);
@@ -132,7 +132,7 @@ body.entry-edit #editor { height: 72px; }
   padding-left:      calc(4 * var(--s-md));
 }
 
-/* ── Focused entry: ensure bg is still visible ────── */
+/* â”€â”€ Focused entry: ensure bg is still visible â”€â”€â”€â”€â”€â”€ */
 .entry:focus {
   background: var(--bg-alt);  /* overrides entry-*-bg on focus so it stays readable */
 }
