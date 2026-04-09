@@ -147,7 +147,7 @@ async function boot() {
   const _origLoad = window.loadDocument;
   window.loadDocument = (bookId, filename) => {
     _origLoad(bookId, filename);
-    if (bookId && filename) router.navigate(SnaraRouter.editPath(bookId, filename));
+    // if (bookId && filename) router.navigate(SnaraRouter.editPath(bookId, filename));
   };
 
   // ── 6. All other window globals ───────────────
@@ -188,8 +188,13 @@ async function boot() {
   window.settingsInst = settings;
 
   // Index + files
-  window.bookIndex    = () => idx.openBookIndex();
-  window.chapterIndex = () => idx.openChapterIndex();
+  //window.bookIndex    = () => idx.openBookIndex();
+  //window.chapterIndex = () => idx.openChapterIndex();
+  
+	
+window.bookIndex    = () => router.navigate('book-index');
+window.chapterIndex = () => router.navigate('chapter-index');
+  
   window.SnaraIndex   = SnaraIndex;
   window.SnaraFiles   = SnaraFiles;
   window.SnaraExport  = SnaraExport;

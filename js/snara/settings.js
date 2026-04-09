@@ -1,57 +1,57 @@
 /* ─────────────────────────────────────────────────
    snara/settings.js — SnaraSettings
-   Two-tab config modal:
+   Three-tab config modal:
      General  — app/infra keys  (config.json)
-     Defaults — per-app/book defaults (default.json)
+     Defaults — per-book defaults (default.json)
+     Editor   — font + entry tag colors + article
+                area appearance (conf/editor.json)
    Depends on: AppConfig, AppDefaults, SnaraUI, icx
 ─────────────────────────────────────────────────── */
+
+import { SnaraComponent }         from './component.js';
 import { AppConfig, AppDefaults } from '../snara.js';
 import { SnaraUI }                from './ui.js';
 import icx                        from '../icons/ge-icon.js';
-import { openModal, closeModal }  from './modal.js';
+import { esc, splitCsv }          from '../helpers.js';
 
-export class SnaraSettings {
-
-  static instance     = null;
-  // FIX: one-time flag so _bindClose() never stacks a second keydown listener
-  // on the document. Previously, every constructor call (even accidental ones)
-  // added another Escape handler — each pressing Escape fired closeModal()
-  // N times, compounding with other listeners.
-  static _escapeBound = false;
+export class SnaraSettings extends SnaraComponent {
 
   constructor() {
-    SnaraSettings.instance = this;
-    this.modal      = document.getElementById('settings-modal');
-    this._activeTab = 'general';
-    this._bindClose();
+    super('settings-modal', { defaultTab: 'general' });
+    this._editorPrefs = null;
   }
 
-  // ── Open / Close ──────────────────────────────
+  // ── DOM is static in partials/settings.html ──────────────────────
 
-  open()  { this._render(); openModal('settings-modal'); }
-  close() { closeModal('settings-modal'); }
-
-  // FIX: guarded — listener is added exactly once, ever.
-  _bindClose() {
-    if (SnaraSettings._escapeBound) return;
-    SnaraSettings._escapeBound = true;
-
-    document.addEventListener('keydown', e => {
-      if (e.key === 'Escape') closeModal('settings-modal');
-    });
+  _ensureDOM() {
+    const el = document.getElementById(this.modalId);
+    if (!el) return;
+    if (el.dataset.defaultTab) this._activeTab = el.dataset.defaultTab;
   }
 
-  // ── Render ────────────────────────────────────
+  // ── Open — load editor prefs first, then render ──────────────────
+
+  async open() {
+    await this._loadEditorPrefs();
+    this._render();
+    const { openModal } = await import('./modal.js');
+    openModal(this.modalId);
+  }
+
+  // ── Render — called on every open ────────────────────────────────
 
   _render() {
     const body = document.getElementById('settings-body');
+    if (!body) return;
+
     body.innerHTML = `
       <div class="cfg-tabs">
         <button class="cfg-tab${this._activeTab === 'general'  ? ' active' : ''}" data-tab="general">General</button>
         <button class="cfg-tab${this._activeTab === 'defaults' ? ' active' : ''}" data-tab="defaults">Defaults</button>
+        <button class="cfg-tab${this._activeTab === 'editor'   ? ' active' : ''}" data-tab="editor">Editor</button>
       </div>
       <div class="cfg-tab-content" id="cfg-tab-content">
-        ${this._activeTab === 'general' ? this._renderGeneral() : this._renderDefaults()}
+        ${this._renderTab(this._activeTab)}
       </div>
     `;
 
@@ -63,13 +63,23 @@ export class SnaraSettings {
     icx.delayreplace('#settings-body [data-icon]');
   }
 
+  _renderTab(tab) {
+    if (tab === 'general')  return this._renderGeneral();
+    if (tab === 'defaults') return this._renderDefaults();
+    if (tab === 'editor')   return this._renderEditor();
+    return '';
+  }
+
+  // ── Tab switching ─────────────────────────────────────────────────
+
   _switchTab(tab) {
     this._activeTab = tab;
-    document.querySelectorAll('.cfg-tab').forEach(b =>
+    document.querySelectorAll('#settings-body .cfg-tab').forEach(b =>
       b.classList.toggle('active', b.dataset.tab === tab)
     );
     const content = document.getElementById('cfg-tab-content');
-    content.innerHTML = tab === 'general' ? this._renderGeneral() : this._renderDefaults();
+    if (!content) return;
+    content.innerHTML = this._renderTab(tab);
     this._bindSegmented();
     this._bindToggle();
     if (tab === 'general') { this._bindHmapAdd(); this._bindHmapRemoves(); }
@@ -82,7 +92,7 @@ export class SnaraSettings {
     });
   }
 
-  // ── General tab ───────────────────────────────
+  // ── General tab ───────────────────────────────────────────────────
 
   _renderGeneral() {
     const c = AppConfig;
@@ -130,7 +140,7 @@ export class SnaraSettings {
     `;
   }
 
-  // ── Defaults tab ──────────────────────────────
+  // ── Defaults tab ──────────────────────────────────────────────────
 
   _renderDefaults() {
     const d = AppDefaults;
@@ -180,7 +190,164 @@ export class SnaraSettings {
     `;
   }
 
-  // ── Heading map row ───────────────────────────
+  // ── Editor tab ────────────────────────────────────────────────────
+
+  _renderEditor() {
+    const p    = this._editorPrefs || {};
+    const font = p.font || 'var(--font-sans)';
+
+    const tagDefs = [
+      { id: 'act',     label: 'Act',     bg: p.act?.bg,     border: p.act?.border     },
+      { id: 'chapter', label: 'Chapter', bg: p.chapter?.bg, border: p.chapter?.border },
+      { id: 'scene',   label: 'Scene',   bg: p.scene?.bg,   border: p.scene?.border   },
+      { id: 'beat',    label: 'Beat',    bg: p.beat?.bg,    border: p.beat?.border     },
+    ];
+
+    // ── Article area — color-theory options ──────────────────────────
+    // Primary   = act     (amber/golden)
+    // Secondary = chapter (coral/peach)
+    // Tertiary  = scene   (mint green)
+    const art   = p.article ?? {};
+    const artBg = art.bg     || 'transparent';
+    const artBd = art.border || 'var(--tag-chapter-bd)';
+
+    const artBgOptions = [
+      { val: 'transparent',           label: 'None'      },
+      { val: 'var(--tag-act-bg)',     label: 'Primary'   },
+      { val: 'var(--tag-chapter-bg)', label: 'Secondary' },
+      { val: 'var(--tag-scene-bg)',   label: 'Tertiary'  },
+    ];
+
+    const artBdOptions = [
+      { val: 'var(--border)',         label: 'Subtle'    },
+      { val: 'var(--tag-act-bd)',     label: 'Primary'   },
+      { val: 'var(--tag-chapter-bd)', label: 'Secondary' },
+      { val: 'var(--tag-scene-bd)',   label: 'Tertiary'  },
+    ];
+
+    return `
+      <section class="cfg-section">
+        <h3 class="cfg-heading">Typography
+          <span class="cfg-hint">font family for #article .entries</span>
+        </h3>
+        <div class="cfg-row">
+          <label class="cfg-label">Font</label>
+          <div class="cfg-segmented" id="cfg-entry-font">
+            ${[
+              { val: 'var(--font-sans)',  label: 'Sans'  },
+              { val: 'var(--font-serif)', label: 'Serif' },
+              { val: 'var(--font-mono)',  label: 'Mono'  },
+            ].map(f =>
+              `<button class="cfg-seg${font === f.val ? ' active' : ''}" data-val="${f.val}">${f.label}</button>`
+            ).join('')}
+          </div>
+        </div>
+        <div class="cfg-row">
+          <label class="cfg-label"></label>
+          <span id="cfg-font-preview" style="font-family:${font};font-size:0.9375rem;color:var(--fg-muted);line-height:1.6">
+            The quick brown fox jumps over the lazy dog.
+          </span>
+        </div>
+      </section>
+
+      <section class="cfg-section">
+        <h3 class="cfg-heading">Entry colors
+          <span class="cfg-hint">background &amp; left border per tag</span>
+        </h3>
+        ${tagDefs.map(t => this._renderTagColorRow(t)).join('')}
+      </section>
+
+      <section class="cfg-section">
+        <h3 class="cfg-heading">Article area
+          <span class="cfg-hint">background &amp; left border of #article — color theory</span>
+        </h3>
+        <div style="padding:var(--s-sm) 0">
+          <div class="cfg-row">
+            <span class="cfg-label" style="display:flex;align-items:center;gap:6px;font-weight:500;color:var(--fg-main)">
+              <span style="display:inline-block;width:10px;height:10px;border-radius:2px;
+                background:var(--tag-chapter-bg);
+                border:1.5px solid var(--tag-chapter-bd)">
+              </span>
+              Article
+            </span>
+          </div>
+          <div class="cfg-row">
+            <label class="cfg-label" style="font-size:10px;opacity:.7">Background</label>
+            <div class="cfg-segmented cfg-article-bg">
+              ${artBgOptions.map(o =>
+                `<button class="cfg-seg${artBg === o.val ? ' active' : ''}" data-val="${o.val}">${o.label}</button>`
+              ).join('')}
+            </div>
+          </div>
+          <div class="cfg-row" style="margin-top:4px">
+            <label class="cfg-label" style="font-size:10px;opacity:.7">Border</label>
+            <div class="cfg-segmented cfg-article-bd">
+              ${artBdOptions.map(o =>
+                `<button class="cfg-seg${artBd === o.val ? ' active' : ''}" data-val="${o.val}">${o.label}</button>`
+              ).join('')}
+            </div>
+          </div>
+        </div>
+      </section>
+    `;
+  }
+
+  // ── Tag color row ─────────────────────────────────────────────────
+
+  _renderTagColorRow({ id, label, bg, border }) {
+    const bgOptions = [
+      { val: 'transparent',          label: 'None'  },
+      { val: `var(--tag-${id}-bg)`,  label: 'Tint'  },
+      { val: `var(--tag-${id}-bd)`,  label: 'Muted' },
+    ];
+
+    const bdOptions = id === 'beat'
+      ? [
+          { val: 'var(--tag-draft-fg)', label: 'Draft'  },
+          { val: 'var(--tag-beat-bd)',  label: 'Accent' },
+          { val: 'var(--border)',       label: 'Subtle' },
+        ]
+      : [
+          { val: `var(--tag-${id}-fg)`, label: 'Primary'   },
+          { val: `var(--tag-${id}-bd)`, label: 'Secondary' },
+          { val: 'var(--border)',        label: 'Subtle'    },
+        ];
+
+    const defaultBd = id === 'beat' ? 'var(--tag-draft-fg)' : `var(--tag-${id}-fg)`;
+    const curBg = bg     || 'transparent';
+    const curBd = border || defaultBd;
+
+    return `
+      <div style="padding:var(--s-sm) 0;border-bottom:1px solid var(--border)">
+        <div class="cfg-row" style="margin-bottom:var(--s-xs)">
+          <span class="cfg-label" style="display:flex;align-items:center;gap:6px;font-weight:500;color:var(--fg-main)">
+            <span style="display:inline-block;width:10px;height:10px;border-radius:2px;
+              background:var(--tag-${id}-bg);
+              border:1.5px solid ${id === 'beat' ? 'var(--tag-draft-fg)' : `var(--tag-${id}-fg)`}">
+            </span>
+            ${label}
+          </span>
+        </div>
+        <div class="cfg-row">
+          <label class="cfg-label" style="font-size:10px;opacity:.7">Background</label>
+          <div class="cfg-segmented cfg-entry-bg" data-tag="${id}">
+            ${bgOptions.map(o =>
+              `<button class="cfg-seg${curBg === o.val ? ' active' : ''}" data-val="${o.val}">${o.label}</button>`
+            ).join('')}
+          </div>
+        </div>
+        <div class="cfg-row" style="margin-top:4px">
+          <label class="cfg-label" style="font-size:10px;opacity:.7">Border</label>
+          <div class="cfg-segmented cfg-entry-bd" data-tag="${id}">
+            ${bdOptions.map(o =>
+              `<button class="cfg-seg${curBd === o.val ? ' active' : ''}" data-val="${o.val}">${o.label}</button>`
+            ).join('')}
+          </div>
+        </div>
+      </div>`;
+  }
+
+  // ── Heading map row ───────────────────────────────────────────────
 
   _hmapRow({ prefix = '', cls = '' } = {}, i = Date.now()) {
     return `
@@ -192,7 +359,40 @@ export class SnaraSettings {
       </div>`;
   }
 
-  // ── Control bindings ──────────────────────────
+  // ── Snapshot editor prefs from current DOM ────────────────────────
+  // Called on every segmented click — NOT at save time.
+  // Guard: if Editor tab not rendered, fontGroup is null → returns
+  // early without mutating _editorPrefs (safe across all tabs).
+
+  _snapshotEditorPrefs() {
+    const fontGroup = document.getElementById('cfg-entry-font');
+    if (!fontGroup) return;
+
+    const font = fontGroup.querySelector('.cfg-seg.active')?.dataset.val || 'var(--font-sans)';
+
+    // Entry tag bg + border
+    const tags = {};
+    document.querySelectorAll('.cfg-entry-bg[data-tag]').forEach(bgGroup => {
+      const tag     = bgGroup.dataset.tag;
+      const bg      = bgGroup.querySelector('.cfg-seg.active')?.dataset.val || 'transparent';
+      const bdGroup = document.querySelector(`.cfg-entry-bd[data-tag="${tag}"]`);
+      const border  = bdGroup?.querySelector('.cfg-seg.active')?.dataset.val
+        || `var(--tag-${tag}-fg)`;
+      tags[tag] = { bg, border };
+    });
+
+    // Article container bg + border (color-theory)
+    const artBgGroup = document.querySelector('.cfg-article-bg');
+    const artBdGroup = document.querySelector('.cfg-article-bd');
+    const article = {
+      bg:     artBgGroup?.querySelector('.cfg-seg.active')?.dataset.val ?? 'transparent',
+      border: artBdGroup?.querySelector('.cfg-seg.active')?.dataset.val ?? 'var(--tag-chapter-bd)',
+    };
+
+    this._editorPrefs = { font, ...tags, article };
+  }
+
+  // ── Bind segmented button groups ──────────────────────────────────
 
   _bindSegmented() {
     document.querySelectorAll('#settings-body .cfg-segmented').forEach(group => {
@@ -201,9 +401,42 @@ export class SnaraSettings {
         if (!btn) return;
         group.querySelectorAll('.cfg-seg').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
+
+        // Live font preview
+        if (group.id === 'cfg-entry-font') {
+          const preview = document.getElementById('cfg-font-preview');
+          if (preview) preview.style.fontFamily = btn.dataset.val;
+        }
+
+        // Live preview — entry tag bg
+        if (group.classList.contains('cfg-entry-bg')) {
+          const tag = group.dataset.tag;
+          if (tag) document.documentElement.style.setProperty(`--entry-${tag}-bg`, btn.dataset.val);
+        }
+
+        // Live preview — entry tag border
+        if (group.classList.contains('cfg-entry-bd')) {
+          const tag = group.dataset.tag;
+          if (tag) document.documentElement.style.setProperty(`--entry-${tag}-border`, btn.dataset.val);
+        }
+
+        // Live preview — article background
+        if (group.classList.contains('cfg-article-bg')) {
+          document.documentElement.style.setProperty('--article-bg', btn.dataset.val);
+        }
+
+        // Live preview — article border
+        if (group.classList.contains('cfg-article-bd')) {
+          document.documentElement.style.setProperty('--article-border', btn.dataset.val);
+        }
+
+        // Snapshot editor state to memory on every change
+        this._snapshotEditorPrefs();
       });
     });
   }
+
+  // ── Bind toggle (autosave) ────────────────────────────────────────
 
   _bindToggle() {
     document.getElementById('cfg-autosave')?.addEventListener('click', function () {
@@ -211,6 +444,8 @@ export class SnaraSettings {
       this.setAttribute('aria-pressed', on);
     });
   }
+
+  // ── Bind heading map add / remove ─────────────────────────────────
 
   _bindHmapAdd() {
     document.getElementById('cfg-hmap-add')?.addEventListener('click', () => {
@@ -231,7 +466,7 @@ export class SnaraSettings {
     });
   }
 
-  // ── Save — always writes both tabs ───────────
+  // ── Save — writes all three tabs ─────────────────────────────────
 
   async save() {
     const btn = document.getElementById('cfg-save-btn');
@@ -242,6 +477,7 @@ export class SnaraSettings {
       await Promise.all([
         this._saveGeneral(),
         this._saveDefaults(),
+        this._saveEditor(),
       ]);
       btn.textContent = 'saved ✓';
     } catch {
@@ -254,6 +490,8 @@ export class SnaraSettings {
       this.close();
     }, 900);
   }
+
+  // ── Save: General tab ─────────────────────────────────────────────
 
   async _saveGeneral() {
     const theme = document.querySelector('#cfg-theme .cfg-seg.active')?.dataset.val || 'light';
@@ -287,6 +525,8 @@ export class SnaraSettings {
     });
   }
 
+  // ── Save: Defaults tab ────────────────────────────────────────────
+
   async _saveDefaults() {
     const defaultTag = document.querySelector('#cfg-defaultTag .cfg-seg.active')?.dataset.val
       || AppDefaults.defaultTag;
@@ -315,12 +555,62 @@ export class SnaraSettings {
       body:    JSON.stringify({ defaults: updated }),
     });
   }
-}
 
-// ── Helpers ───────────────────────────────────────
-function esc(str) {
-  return String(str ?? '').replace(/"/g, '&quot;').replace(/</g, '&lt;');
-}
-function splitCsv(str) {
-  return (str || '').split(',').map(s => s.trim()).filter(Boolean);
+  // ── Save: Editor tab ──────────────────────────────────────────────
+  // Original guard: snapshot fires on click via _bindSegmented(),
+  // not here. _editorPrefs is always populated by _loadEditorPrefs()
+  // on open(), so the !_editorPrefs guard is a safety net only.
+
+  async _saveEditor() {
+    const bookId = AppConfig.activeBookId;
+    if (!bookId || !this._editorPrefs) return;
+
+    SnaraSettings.applyEditorPrefs(this._editorPrefs);
+
+    await fetch(AppConfig.apiPath + `?action=editorpref.set&bookId=${encodeURIComponent(bookId)}`, {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify(this._editorPrefs),
+    });
+  }
+
+  // ── Load editor prefs from server ─────────────────────────────────
+
+  async _loadEditorPrefs() {
+    const bookId = AppConfig.activeBookId;
+    if (!bookId) { this._editorPrefs = {}; return; }
+    try {
+      const res = await fetch(`${AppConfig.apiPath}?action=editorpref.get&bookId=${bookId}`);
+      if (res.ok) this._editorPrefs = await res.json();
+      else        this._editorPrefs = {};
+    } catch {
+      this._editorPrefs = {};
+    }
+  }
+
+  // ── Static: apply all CSS variables to :root ─────────────────────
+  // Called on boot (snara.js) and immediately after _saveEditor().
+
+  static applyEditorPrefs(prefs) {
+    if (!prefs) return;
+    const r = document.documentElement;
+
+    // Font family for #article .entries
+    if (prefs.font) r.style.setProperty('--entry-font', prefs.font);
+
+    // Entry tag bg + border — original loop, unchanged
+    for (const tag of ['act', 'chapter', 'scene', 'beat']) {
+      const t = prefs[tag];
+      if (!t) continue;
+      if (t.bg)     r.style.setProperty(`--entry-${tag}-bg`,     t.bg);
+      if (t.border) r.style.setProperty(`--entry-${tag}-border`,  t.border);
+    }
+
+    // Article container — additive, skipped if key absent (old prefs)
+    const a = prefs.article;
+    if (a) {
+      if (a.bg)     r.style.setProperty('--article-bg',     a.bg);
+      if (a.border) r.style.setProperty('--article-border', a.border);
+    }
+  }
 }

@@ -31,6 +31,10 @@
 
   --entry-beat-bg:        transparent;
   --entry-beat-border:    var(--tag-draft-fg);
+
+	--article-bg:     transparent;
+	--article-border: var(--tag-chapter-bd); 
+  
 }  
   
 }

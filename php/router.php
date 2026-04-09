@@ -13,27 +13,48 @@
      GET  ?action=doc.list
      GET  ?action=doc.get&filename=name
      POST ?action=doc.save
+     POST ?action=doc.setOrder
      DELETE ?action=doc.delete&filename=name
 
      GET  ?action=book.index
      GET  ?action=book.chapters&id=$bookId
      POST ?action=book.create          ← {title}
      POST ?action=book.setActive       ← {bookId}
+
+     GET  ?action=state.get&bookId=$n
+     POST ?action=state.set            ← {bookId, filename, state}
+
+     GET  ?action=pref.get
+     POST ?action=pref.set             ← {root:{}, light:{}, dark:{}}
+
+     GET  ?action=editorpref.get&bookId=$n
+     POST ?action=editorpref.set&bookId=$n  ← editor prefs shape
+
+     GET  ?action=import.list&bookId=$n
+     POST ?action=import.upload&bookId=$n
+     GET  ?action=import.read&bookId=$n&filename=name
+     DELETE ?action=import.delete&bookId=$n&filename=name
+
+     GET  ?action=gallery.list&bookId=$n
+     POST ?action=gallery.upload&bookId=$n
+     DELETE ?action=gallery.delete&bookId=$n&filename=name
+     POST ?action=gallery.rename&bookId=$n  ← {from, to}
+     GET  ?action=gallery.autocomplete&bookId=$n
+
+     GET  ?action=cache.list&bookId=$n
+     POST ?action=cache.rebuild&bookId=$n
 ─────────────────────────────────────────────────── */
 
 require_once __DIR__ . '/config.php';
 require_once __DIR__ . '/document.php';
 require_once __DIR__ . '/book.php';
-
-// ── Add this require near the top of router.php, alongside the others ──
 require_once __DIR__ . '/state.php';
 require_once __DIR__ . '/pref.php';
 require_once __DIR__ . '/import.php';
 require_once __DIR__ . '/cache.php';
 require_once __DIR__ . '/gallery.php';
-
 require_once __DIR__ . '/editor-pref.php';
-	 
+
 class Router {
 
     public static function dispatch(): void {
@@ -74,7 +95,7 @@ class Router {
 
                 case 'default.set':
                     self::requireMethod($method, 'POST');
-                    $body = self::body();
+                    $body     = self::body();
                     $defaults = $body['defaults'] ?? $body;
                     Config::setGlobalDefaults($defaults);
                     echo json_encode(['ok' => true]);
@@ -89,8 +110,8 @@ class Router {
 
                 case 'bookdefault.set':
                     self::requireMethod($method, 'POST');
-                    $body     = self::body();
-                    $bookId   = isset($_GET['bookId'])
+                    $body   = self::body();
+                    $bookId = isset($_GET['bookId'])
                         ? (int)$_GET['bookId']
                         : (int)($body['bookId'] ?? 0);
                     if (!$bookId) self::error(400, 'Missing bookId');
@@ -114,7 +135,7 @@ class Router {
 
                 case 'doc.save':
                     self::requireMethod($method, 'POST');
-                    $body   = self::body();
+                    $body = self::body();
                     if (empty($body['filename'])) self::error(400, 'Missing filename');
                     $bookId = isset($body['bookId']) ? (int)$body['bookId'] : null;
                     Document::save($body['filename'], $body, $bookId);
@@ -125,6 +146,17 @@ class Router {
                     self::requireMethod($method, 'DELETE');
                     $bookId = isset($_GET['bookId']) ? (int)$_GET['bookId'] : null;
                     Document::delete(self::requireParam('filename'), $bookId);
+                    echo json_encode(['ok' => true]);
+                    break;
+
+                case 'doc.setOrder':
+                    self::requireMethod($method, 'POST');
+                    $body     = self::body();
+                    $filename = trim($body['filename'] ?? '');
+                    $order    = (int)($body['order'] ?? 99);
+                    $bookId   = isset($body['bookId']) ? (int)$body['bookId'] : null;
+                    if (!$filename) self::error(400, 'Missing filename');
+                    Document::setOrder($filename, $order, $bookId);
                     echo json_encode(['ok' => true]);
                     break;
 
@@ -157,9 +189,7 @@ class Router {
                     echo json_encode(['ok' => true]);
                     break;
 
-// ── Paste these two cases into the switch block in Router::dispatch() ──
-// (e.g. right after the 'book.setActive' case, before the default)
-
+                // ── Chapter state ────────────────────────────
                 case 'state.get':
                     self::requireMethod($method, 'GET');
                     $bookId = (int) self::requireParam('bookId');
@@ -177,11 +207,12 @@ class Router {
                     echo json_encode(['ok' => true]);
                     break;
 
+                // ── Theme CSS variables ──────────────────────
                 case 'pref.get':
                     self::requireMethod($method, 'GET');
                     echo json_encode(['vars' => Pref::get()]);
                     break;
- 
+
                 case 'pref.set':
                     self::requireMethod($method, 'POST');
                     $body = self::body();
@@ -189,52 +220,60 @@ class Router {
                     echo json_encode(['ok' => true]);
                     break;
 
+                // ── Editor preferences (per-book) ────────────
+                // Stored in data/$bookId/conf/editor.json.
+                // Returns defaults if the file does not exist yet —
+                // never 404, the check is inside EditorPref::get().
+                case 'editorpref.get':
+                    self::requireMethod($method, 'GET');
+                    $bookId = (int) self::requireParam('bookId');
+                    echo json_encode(EditorPref::get($bookId));
+                    break;
+
+                case 'editorpref.set':
+                    self::requireMethod($method, 'POST');
+                    $bookId = isset($_GET['bookId'])
+                        ? (int)$_GET['bookId']
+                        : (int)(self::body()['bookId'] ?? 0);
+                    if (!$bookId) self::error(400, 'Missing bookId');
+                    EditorPref::set($bookId, self::body());
+                    echo json_encode(['ok' => true]);
+                    break;
 
                 // ── Import staging ───────────────────────────
                 case 'import.upload':
-                    // multipart POST — do NOT use self::body() (that reads php://input)
+                    // multipart POST — do NOT use self::body() (reads php://input)
                     self::requireMethod($method, 'POST');
                     $bookId = (int)($_GET['bookId'] ?? $_POST['bookId'] ?? 0);
                     if (!$bookId) self::error(400, 'Missing bookId');
                     $result = Import::upload($bookId);
                     echo json_encode(['ok' => true, 'file' => $result]);
                     break;
- 
+
                 case 'import.list':
                     self::requireMethod($method, 'GET');
-                    $bookId = (int)self::requireParam('bookId');
+                    $bookId = (int) self::requireParam('bookId');
                     echo json_encode(Import::list($bookId));
                     break;
- 
+
                 case 'import.delete':
                     self::requireMethod($method, 'DELETE');
-                    $bookId   = (int)self::requireParam('bookId');
+                    $bookId   = (int) self::requireParam('bookId');
                     $filename = self::requireParam('filename');
                     Import::delete($bookId, $filename);
                     echo json_encode(['ok' => true]);
                     break;
- 
+
                 case 'import.read':
                     self::requireMethod($method, 'GET');
-                    $bookId   = (int)self::requireParam('bookId');
+                    $bookId   = (int) self::requireParam('bookId');
                     $filename = self::requireParam('filename');
                     // Return raw text — override content-type for this one action
                     header('Content-Type: text/plain; charset=utf-8');
                     echo Import::read($bookId, $filename);
-                    exit;					
+                    exit;
 
-case 'doc.setOrder':
-    self::requireMethod($method, 'POST');
-    $body     = self::body();
-    $filename = trim($body['filename'] ?? '');
-    $order    = (int)($body['order'] ?? 99);
-    $bookId   = isset($body['bookId']) ? (int)$body['bookId'] : null;
-    if (!$filename) self::error(400, 'Missing filename');
-    Document::setOrder($filename, $order, $bookId);
-    echo json_encode(['ok' => true]);
-    break;
-	
-// ── Gallery ──────────────────────────────────
+                // ── Gallery ──────────────────────────────────
                 case 'gallery.upload':
                     self::requireMethod($method, 'POST');
                     $bookId = (int)($_GET['bookId'] ?? $_POST['bookId'] ?? 0);
@@ -245,13 +284,13 @@ case 'doc.setOrder':
 
                 case 'gallery.list':
                     self::requireMethod($method, 'GET');
-                    $bookId = (int)self::requireParam('bookId');
+                    $bookId = (int) self::requireParam('bookId');
                     echo json_encode(Gallery::list($bookId));
                     break;
 
                 case 'gallery.delete':
                     self::requireMethod($method, 'DELETE');
-                    $bookId   = (int)self::requireParam('bookId');
+                    $bookId   = (int) self::requireParam('bookId');
                     $filename = self::requireParam('filename');
                     Gallery::delete($bookId, $filename);
                     echo json_encode(['ok' => true]);
@@ -270,31 +309,31 @@ case 'doc.setOrder':
 
                 case 'gallery.autocomplete':
                     self::requireMethod($method, 'GET');
-                    $bookId = (int)self::requireParam('bookId');
+                    $bookId = (int) self::requireParam('bookId');
                     echo json_encode(Gallery::autocomplete($bookId));
                     break;
 
+                // ── Cache ────────────────────────────────────
                 case 'cache.list':
                     self::requireMethod($method, 'GET');
                     $bookId = (int) self::requireParam('bookId');
                     echo json_encode(Cache::list($bookId));
                     break;
- 
+
                 case 'cache.rebuild':
                     self::requireMethod($method, 'POST');
                     $bookId = (int) self::requireParam('bookId');
                     echo json_encode(Cache::rebuild($bookId));
                     break;
-					
 
-default:
+                // ── Unknown ──────────────────────────────────
+                default:
                     self::error(404, 'Unknown action: ' . $action);
             }
         } catch (Throwable $e) {
             self::error(500, $e->getMessage());
         }
     }
-
 
     // ── Helpers ───────────────────────────────────
 

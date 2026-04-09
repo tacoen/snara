@@ -5,6 +5,17 @@ RewriteRule ^favicon\.ico$ - [R=204,L]
     AddDefaultCharset UTF-8
 </FilesMatch>
 
-<FilesMatch "\.js|\.css|\.html|\.json$">
+# Force UTF-8 for all text-based files (including CSS, JS, JSON)
+<IfModule mod_mime.c>
+    AddDefaultCharset UTF-8
+    AddCharset UTF-8 .css .js .json .htm .html .txt
+</IfModule>
+
+<FilesMatch "\.css$">
+    Header set Content-Type "text/css; charset=UTF-8"
+</FilesMatch>
+
+# Your no-cache headers (fixed regex)
+<FilesMatch "\.(js|css|html|json)$">
     Header set Cache-Control "no-store, no-cache, must-revalidate, max-age=0"
 </FilesMatch>

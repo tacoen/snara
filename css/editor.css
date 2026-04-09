@@ -83,30 +83,15 @@
 
 body.entry-edit #editor { height: 72px; }
 
+#article {
+  background:       var(--bg-main);
+  border-left: 1px solid var(--border);
+  transition:       background 0.25s ease, border-color 0.25s ease;
+}
 
-/* â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-   ADD these rules to css/editor.css
-   They replace the hardcoded border-left-color and
-   add the background + font-family from EditorPref.
-
-   Find the existing .entry.act / .chapter / .scene
-   / .beat rules and REPLACE their border-left-color
-   with var(--entry-*-border). Add background too.
-â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
-
-/* â”€â”€ Font â€” applied to the full entries container â”€â”€ */
 #article .entries {
   font-family: var(--entry-font);
 }
-
-/* â”€â”€ Replace/extend existing entry tag rules â”€â”€â”€â”€â”€â”€â”€â”€ */
-/* BEFORE (in your current editor.css):
-   .entry.beat    { border-left-color: var(--tag-draft-fg);   ... }
-   .entry.scene   { border-left-color: var(--tag-scene-fg);   ... }
-   .entry.chapter { border-left-color: var(--tag-chapter-fg); ... }
-   .entry.act     { border-left-color: var(--tag-act-fg);     ... }
-
-   AFTER â€” keep the padding rules, swap the colors: */
 
 .entry.act {
   border-left-color: var(--entry-act-border);
@@ -132,7 +117,6 @@ body.entry-edit #editor { height: 72px; }
   padding-left:      calc(4 * var(--s-md));
 }
 
-/* â”€â”€ Focused entry: ensure bg is still visible â”€â”€â”€â”€â”€â”€ */
 .entry:focus {
   background: var(--bg-alt);  /* overrides entry-*-bg on focus so it stays readable */
 }
