@@ -1,0 +1,13 @@
+{
+    "defaults": {
+        "act": "None",
+        "defaultTag": "beat",
+        "autosave": true,
+        "autosaveInterval": 30,
+        "metaFields": [
+            "characters",
+            "settings",
+            "prompts"
+        ]
+    }
+}
