@@ -4,20 +4,37 @@ All notable changes to **Snara** will be documented in this file.
 
 This project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html) and the changelog format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+---
+
 ## [Unreleased]
 
 ### Added
-- Full in-app **Preferences / Settings** management panel
-- **Automatic Table of Contents (Auto TOC)** – dynamically generated from document headings (Act → Chapter → Scene → Beat)
+- **Files Workspace** — four-section file manager replacing the old single-tab Files view:
+  - **Import** section — drag-and-drop upload for `.txt` / `.md` files, inline preview modal with parsed structure, per-file delete with confirmation bar
+  - **Export** section — chapter checklist grouped by act, select-all toggle, export as Markdown (`.md`) or HTML (`.html`); PDF and EPUB planned
+  - **Gallery** section — 4-column masonry media grid for images and videos per book; hover-to-play on video cards; rename with meta-driven autocomplete; delete with confirmation
+  - **Cache** section — system cache management stub
+- **SnaraExport** (`js/export.js`) — standalone export module with act-grouped chapter selection, Markdown and HTML export with clean print-ready template
+- **SnaraGallery** (`js/snara/gallery.js`) — media management module with upload, rename, delete, and autocomplete from document metadata
+- **Multi-area navigation** via `switchArea()` — Editor, Meta, Files, and Kanban areas with sidebar nav button active states and `aside` TOC visibility sync
+- **Kanban** area scaffold (`partials/kanban.html`, `kanban-area` in layout) — placeholder for upcoming kanban feature
+- **`SnaraPref`** — live CSS variable editor in the Preferences panel covering root, light, dark, and per-tag (beat/scene/chapter/act) token groups
+- **`default.get` / `default.set`** API actions for persisting editor defaults (`defaultTag`, `autosave`, `autosaveInterval`, `metaFields`, `act`)
+- **Import preview modal** — parses staged files through `SnaraStruct.split()` before committing
+- **`bookchange` event** — broadcast on active book switch so all file sections reload automatically
+- **Gallery and import API endpoints**: `gallery.list`, `import.read`, `import.delete`
 
 ### Changed
-- Major layout and CSS refactoring for improved consistency
-- Re-applied and polished overall UI layout ("Snara 1 / Snara 2" iterations)
-- Better code organization and modularity
+- Navigation restructured: nav buttons now use `data-area` attributes and drive `switchArea()` instead of legacy `switchTab()`
+- `SnaraFiles` expanded into a full tabbed workspace with `switchSection()`, section-specific top-bar actions, and dropzone wiring for both import and gallery
+- `SnaraUI.switchTab()` wrapped to stay in sync with `switchArea()` for backwards compatibility
+- `AppConfig` and `AppDefaults` now loaded in parallel at boot via `Promise.all`
+- Icon replacement (`icx.replace` / `icx.delayreplace`) applied consistently across all dynamic panels and modals
 
 ### Fixed
-- Overlay positioning and z-index issues
-- Various styling and visual polish improvements
+- Gallery and import panels now correctly reload on book change via the `bookchange` event
+- Export footer icons replaced after dynamic render
+- File upload inputs cleared after selection to allow re-uploading the same file
 
 ---
 
@@ -63,4 +80,3 @@ This project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html) 
 **Snara is in active early development.**  
 New features and improvements are being added frequently.  
 Check back often or watch the repository for updates!
-
