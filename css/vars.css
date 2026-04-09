@@ -10,6 +10,29 @@
   --f-xs: 0.75rem;
   --f-sm: 1rem;
   --f-md: 1.25rem;
+  
+  --font-sans: system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, 'Courier New', monospace;
+  --font-serif: Georgia, 'Times New Roman', serif;
+  
+  /* ── Editor entry appearance ──────────────────── */
+  /* Controlled by EditorPref — set at runtime via JS */
+
+  --entry-font:           var(--font-sans);
+
+  --entry-act-bg:         transparent;
+  --entry-act-border:     var(--tag-act-fg);
+
+  --entry-chapter-bg:     transparent;
+  --entry-chapter-border: var(--tag-chapter-fg);
+
+  --entry-scene-bg:       transparent;
+  --entry-scene-border:   var(--tag-scene-fg);
+
+  --entry-beat-bg:        transparent;
+  --entry-beat-border:    var(--tag-draft-fg);
+}  
+  
 }
 
 :root,

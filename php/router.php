@@ -31,6 +31,8 @@ require_once __DIR__ . '/pref.php';
 require_once __DIR__ . '/import.php';
 require_once __DIR__ . '/cache.php';
 require_once __DIR__ . '/gallery.php';
+
+require_once __DIR__ . '/editor-pref.php';
 	 
 class Router {
 

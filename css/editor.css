@@ -22,8 +22,9 @@
   /* padding-left: var(--s-md); */
   border-left: 3px solid var(--border);
   outline: none;
-  font-size: 0.9375rem;
-  line-height: 1.8;
+  font-family: var(--font-serif);
+  font-size: 1rem;
+  line-height: 1.5;
   color: var(--fg-main);
   cursor: text;
   word-break: break-word;
@@ -81,3 +82,57 @@
 }
 
 body.entry-edit #editor { height: 72px; }
+
+
+/* ─────────────────────────────────────────────────
+   ADD these rules to css/editor.css
+   They replace the hardcoded border-left-color and
+   add the background + font-family from EditorPref.
+
+   Find the existing .entry.act / .chapter / .scene
+   / .beat rules and REPLACE their border-left-color
+   with var(--entry-*-border). Add background too.
+─────────────────────────────────────────────────── */
+
+/* ── Font — applied to the full entries container ── */
+#article .entries {
+  font-family: var(--entry-font);
+}
+
+/* ── Replace/extend existing entry tag rules ──────── */
+/* BEFORE (in your current editor.css):
+   .entry.beat    { border-left-color: var(--tag-draft-fg);   ... }
+   .entry.scene   { border-left-color: var(--tag-scene-fg);   ... }
+   .entry.chapter { border-left-color: var(--tag-chapter-fg); ... }
+   .entry.act     { border-left-color: var(--tag-act-fg);     ... }
+
+   AFTER — keep the padding rules, swap the colors: */
+
+.entry.act {
+  border-left-color: var(--entry-act-border);
+  background:        var(--entry-act-bg);
+  padding-left:      var(--s-md);
+}
+
+.entry.chapter {
+  border-left-color: var(--entry-chapter-border);
+  background:        var(--entry-chapter-bg);
+  padding-left:      calc(2 * var(--s-md));
+}
+
+.entry.scene {
+  border-left-color: var(--entry-scene-border);
+  background:        var(--entry-scene-bg);
+  padding-left:      calc(3 * var(--s-md));
+}
+
+.entry.beat {
+  border-left-color: var(--entry-beat-border);
+  background:        var(--entry-beat-bg);
+  padding-left:      calc(4 * var(--s-md));
+}
+
+/* ── Focused entry: ensure bg is still visible ────── */
+.entry:focus {
+  background: var(--bg-alt);  /* overrides entry-*-bg on focus so it stays readable */
+}

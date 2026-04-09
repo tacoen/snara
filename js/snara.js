@@ -193,9 +193,17 @@ async function boot() {
   });
 
   // ── 8. Book change → update URL + title ───────
-  window.addEventListener('bookchange', (e) => {
+window.addEventListener('bookchange', async (e) => {
     const { bookId } = e.detail;
     if (!bookId) return;
+	
+	try {
+      const res = await fetch(
+        `${AppConfig.apiPath}?action=editorpref.get&bookId=${bookId}`
+      );
+      if (res.ok) SnaraSettings.applyEditorPrefs(await res.json());
+    } catch { /* ignore */ }
+	
     const area = document.querySelector('.nav-tab-btn.active-tab')?.dataset.area || 'editor';
     if (!location.search.startsWith(`?r=book/${bookId}`)) {
       router.navigate(SnaraRouter.bookPath(bookId, area));
@@ -204,6 +212,20 @@ async function boot() {
     }
   });
 
+
+  // Apply per-book editor prefs on boot
+  if (AppConfig.activeBookId) {
+    try {
+      const epRes = await fetch(
+        `${AppConfig.apiPath}?action=editorpref.get&bookId=${AppConfig.activeBookId}`
+      );
+      if (epRes.ok) {
+        const editorPrefs = await epRes.json();
+        SnaraSettings.applyEditorPrefs(editorPrefs);
+      }
+    } catch { /* non-fatal — defaults from vars.css apply */ }
+  }
+  
   // ── 9. Boot router last ───────────────────────
   // Reads ?r= (or localStorage) and applies state.
   router.boot();

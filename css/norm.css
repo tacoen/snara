@@ -10,7 +10,7 @@
 }
 
 html {
-  font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+  font-family: var(--font-sans);
   font-size: 100%;
   line-height: 1.5;
   background: var(--bg-alt);
