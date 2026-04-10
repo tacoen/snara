@@ -1,43 +1,41 @@
 /* ─────────────────────────────────────────────────
    js/snara/router.js — SnaraRouter
 
-   Query-string based routing — no .htaccess needed.
-   Works on Apache, Nginx, PHP built-in server, anything.
+   Flat query-string routing. No path segments.
+   No .htaccess needed. Works everywhere.
 
-   URL scheme (all on same page, no reload):
-     /                        → restore from localStorage
-     /?r=book/1               → book 1, editor
-     /?r=book/1/editor        → book 1, editor area
-     /?r=book/1/meta          → book 1, meta area
-     /?r=book/1/kanban        → book 1, kanban area
-     /?r=book/1/files         → book 1, files (always import internally)
-     /?r=book/1/editor/file   → book 1, open document
-     /?r=settings             → settings modal
-     /?r=pref                 → pref modal
-     /?=book                  → book index modal
-     /?=chapter               → chapter index modal
+   URL scheme:
+     /                              → restore from localStorage
+     ?p=editor&bid=1&file=chapter1  → book 1, editor, file open
+     ?p=editor&bid=1                → book 1, editor, no file
+     ?p=meta&bid=1                  → book 1, meta area
+     ?p=kanban&bid=1                → book 1, kanban area
+     ?p=import&bid=1                → book 1, files › import
+     ?p=export&bid=1                → book 1, files › export
+     ?p=gallery&bid=1               → book 1, files › gallery
+     ?p=cache&bid=1                 → book 1, files › cache
+     ?p=books                       → book index modal
+     ?p=chapters                    → chapter index modal
+     ?p=configuration               → settings modal
+     ?p=pref                        → pref modal
 
-   NOTE: /?r=book/1/files/import|export|gallery|cache are
-   intentionally NOT supported in the URL. The files area
-   always lands on import; sub-sections are internal state only.
+   localStorage keys:
+     page             — last page name
+     bookid           — last active book id
+     editor-filename  — last open filename (editor only)
 
-   Document <title> is updated on every navigation:
-     Snara
-     Snara — Book Title
-     Snara — Book Title: filename
-     Snara — Settings
-     Snara — Preferences
+   Loop prevention:
+     _rawSwitch and _rawLoad are the PRE-WRAP originals.
+     _dispatch always calls those — never window.switchArea
+     or window.loadDocument — so the wrappers never fire
+     from inside the router.
 ─────────────────────────────────────────────────── */
 
 import { AppConfig } from '../snara.js';
 
-const LS_KEY   = 'snara:lastRoute';
-const APP_NAME = 'Snara';
-const AREAS    = ['editor', 'meta', 'kanban', 'files'];
-
-// Strips /files/anything → /files — single source of truth
-const normalise = (route) =>
-  route.replace(/^(book\/[^/]+\/files)(\/\S+)?$/, '$1');
+const APP_NAME      = 'Snara';
+const FILE_SECTIONS = ['import', 'export', 'gallery', 'cache'];
+const BOOK_AREAS    = ['editor', 'meta', 'kanban'];
 
 export class SnaraRouter {
 
@@ -45,186 +43,172 @@ export class SnaraRouter {
 
   constructor() {
     SnaraRouter.instance = this;
-    this._applying = false;
+    this._busy      = false;
+    this._rawSwitch = null; // set by snara.js before boot()
+    this._rawLoad   = null; // set by snara.js before boot()
 
-    // Browser back / forward — re-read ?r= from the new URL
-    window.addEventListener('popstate', () => {
-      this._apply(this._readParam());
-    });
-
-    // Global helper so any module can navigate without importing the router
-    window.navigate = (route) => this.navigate(route);
+    window.addEventListener('popstate', () => this._dispatch(this._read()));
+    window.navigate = (page, bookId = null, file = null) => this.go(page, bookId, file);
   }
 
-  // ── Boot ──────────────────────────────────────────────────
-  // Called once, after snara.js finishes creating all instances.
+  // ── Register raw pre-wrap functions ───────────
+  // Call these from snara.js BEFORE wrapping.
+
+  registerRawSwitch(fn) { this._rawSwitch = fn; }
+  registerRawLoad(fn)   { this._rawLoad   = fn; }
+
+  // ── Boot ──────────────────────────────────────
 
   boot() {
-    const route = this._readParam();
+    const params = this._read();
 
-    if (!route) {
-      const saved = this._loadSaved();
-      if (saved) {
-        this._pushState(saved);
-        this._applyOnBoot(saved);
-        return;
-      }
-      this._setTitle();
+    if (!params.p) {
+      const page = this._ls('page');
+      const bid  = this._ls('bookid');
+      const file = this._ls('editor-filename');
+      if (page) { this.go(page, bid || null, file || null); return; }
+      this._title();
       return;
     }
 
-    this._applyOnBoot(route);
+    this._dispatch(params);
   }
 
-  // ── Navigate (guarded) ────────────────────────────────────
-  // Single public entry point — always normalises before saving.
+  // ── Public entry point ────────────────────────
 
-  navigate(route) {
-    if (this._applying) return;
-    this._applying = true;
-    const clean = normalise(route);
-    this._pushState(clean);
-    this._save(clean);
-    this._apply(clean);
-    this._applying = false;
+  go(page, bookId = null, file = null) {
+    if (this._busy) return;
+    this._busy = true;
+    this._push(page, bookId, file);
+    this._persist(page, bookId, file);
+    this._dispatch({ p: page, bid: bookId, file });
+    this._busy = false;
   }
 
-  // ── Boot-time apply ───────────────────────────────────────
-  // Handles direct links and page refreshes.
-  // Opens a document immediately if the URL contains a filename.
+  // ── Core dispatcher ───────────────────────────
+  // ONLY uses this._rawSwitch and this._rawLoad.
+  // Never calls window.switchArea or window.loadDocument.
 
-  _applyOnBoot(route) {
-    const clean = normalise(route);
-    const parts = clean.replace(/^\//, '').split('/');
+  _dispatch({ p, bid, file }) {
+    if (!p) return;
 
-    // Direct link: /?r=book/1/editor/filename
-    if (parts[0] === 'book' && parts[1] && parts[2] === 'editor' && parts[3]) {
-      const bookId   = parts[1];
-      const filename = decodeURIComponent(parts[3]);
-
-      this._activateBook(bookId);
-
-      this._applying = true;
-      window.switchArea?.('editor');
-      this._applying = false;
-
-      setTimeout(() => window.loadDocument?.(bookId, filename), 0);
-      this._setTitleForFile(filename);
-      return;
-    }
-
-    this._apply(clean);
-  }
-
-  // ── Parse + dispatch ──────────────────────────────────────
-
-  _apply(route) {
-    if (!route) return;
-
-    const parts = route.replace(/^\//, '').split('/');
-
-    // ── Index modals (special query-string: ?=book / ?=chapter)
-    if (parts[0] === 'book-index') {
-      this._setTitle('Books');
+    // ── Modals (no bookid) ────────────────────
+    if (p === 'books') {
+      this._title('Books');
       window.SnaraIndex?.instance?.openBookIndex();
       return;
     }
-    if (parts[0] === 'chapter-index') {
-      this._setTitle('Chapters');
+    if (p === 'chapters') {
+      this._title('Chapters');
       window.SnaraIndex?.instance?.openChapterIndex();
       return;
     }
-
-    // ── Config modals
-    if (parts[0] === 'settings') {
-      this._setTitle('Settings');
+    if (p === 'configuration') {
+      this._title('Settings');
       window.openSettings?.();
       return;
     }
-    if (parts[0] === 'pref') {
-      this._setTitle('Preferences');
+    if (p === 'pref') {
+      this._title('Preferences');
       window.openPref?.();
       return;
     }
 
-    // ── Book routes: /?r=book/:id[/:area[/:sub]]
-    if (parts[0] === 'book' && parts[1]) {
-      const bookId = parts[1];
-      const area   = parts[2] || 'editor';   // default area = editor
-      const sub    = parts[3] || null;
+    // ── Pages that need a bookid ──────────────
+    const bookId = bid || AppConfig.activeBookId;
+    if (!bookId) { this._title(); return; }
 
-      this._activateBook(bookId);
+    this._activateBook(bookId);
 
-      // Files — sub-sections are internal state, never in the URL
-      if (area === 'files') {
-        window.switchArea?.('files');
-        setTimeout(() => {
-          window.SnaraFiles?.instance?.switchSection?.('import');
-        }, 0);
-        this._setTitle();
-        return;
-      }
-
-      // Editor with open document: /?r=book/1/editor/filename
-      if (area === 'editor' && sub) {
-        const filename = decodeURIComponent(sub);
-        window.switchArea?.('editor');
-        this._setTitleForFile(filename);
-        return;
-      }
-
-      // All other known areas (editor, meta, kanban)
-      if (AREAS.includes(area)) {
-        window.switchArea?.(area);
-        this._setTitle();
-        return;
-      }
-
-      // Unknown area — fall back to editor
-      window.switchArea?.('editor');
-      this._setTitle();
+    // Files sections
+    if (FILE_SECTIONS.includes(p)) {
+      this._rawSwitch?.('files');
+      setTimeout(() => window.SnaraFiles?.instance?.switchSection?.(p), 0);
+      this._title();
       return;
     }
 
-    // Bare fallback
-    this._setTitle();
-  }
-
-  // ── Document <title> ──────────────────────────────────────
-
-  _setTitle(subtitle = null) {
-    const bookTitle = AppConfig.activeBookTitle || null;
-    let title = APP_NAME;
-
-    if (subtitle) {
-      title = `${APP_NAME} — ${subtitle}`;
-    } else if (bookTitle) {
-      title = `${APP_NAME} — ${bookTitle}`;
+    // Editor
+    if (p === 'editor') {
+      this._rawSwitch?.('editor');
+      if (file) {
+        setTimeout(() => this._rawLoad?.(bookId, file), 0);
+        this._titleFile(file);
+      } else {
+        this._title();
+      }
+      return;
     }
 
-    document.title = title;
+    // Meta / Kanban
+    if (BOOK_AREAS.includes(p)) {
+      this._rawSwitch?.(p);
+      this._title();
+      return;
+    }
+
+    // Unknown fallback
+    this._title();
   }
 
-  _setTitleForFile(filename) {
-    const bookTitle = AppConfig.activeBookTitle;
-    document.title = bookTitle
-      ? `${APP_NAME} — ${bookTitle}: ${filename}`
+  // ── localStorage ──────────────────────────────
+
+  _persist(page, bookId, file) {
+    try {
+      if (page)   localStorage.setItem('page',   page);
+      if (bookId) localStorage.setItem('bookid', String(bookId));
+      if (page === 'editor') localStorage.setItem('editor-filename', file ?? '');
+    } catch { /* quota */ }
+  }
+
+  _ls(key) {
+    try { return localStorage.getItem(key) || ''; } catch { return ''; }
+  }
+
+  // ── URL ───────────────────────────────────────
+
+  _read() {
+    const qs = new URLSearchParams(location.search);
+    return {
+      p:    qs.get('p')    || '',
+      bid:  qs.get('bid')  || '',
+      file: qs.get('file') || '',
+    };
+  }
+
+  _push(page, bookId, file) {
+    const qs = new URLSearchParams();
+    if (page)   qs.set('p',   page);
+    if (bookId) qs.set('bid', String(bookId));
+    if (file)   qs.set('file', file);
+    const url = qs.toString() ? `?${qs}` : '/';
+    if (location.search !== url) history.pushState(null, '', url);
+  }
+
+  // ── Title ─────────────────────────────────────
+
+  _title(subtitle = null) {
+    const book = AppConfig.activeBookTitle || null;
+    document.title = subtitle
+      ? `${APP_NAME} — ${subtitle}`
+      : book ? `${APP_NAME} — ${book}` : APP_NAME;
+  }
+
+  _titleFile(filename) {
+    const book = AppConfig.activeBookTitle;
+    document.title = book
+      ? `${APP_NAME} — ${book} : ${filename}`
       : `${APP_NAME} — ${filename}`;
   }
 
-  // ── Book activation ───────────────────────────────────────
-  // No-ops if the book is already active (avoids redundant bookchange events).
+  // ── Book activation ───────────────────────────
 
   _activateBook(bookId) {
     if (String(AppConfig.activeBookId) === String(bookId)) return;
-
     const idx = window.SnaraIndex?.instance;
-    if (idx && typeof idx._setActiveBook === 'function') {
-      const currentLabel = document.getElementById('active-book-label')?.textContent;
-      const title = (currentLabel && currentLabel !== '—')
-        ? currentLabel
-        : `Book ${bookId}`;
-      idx._setActiveBook(bookId, title);
+    if (idx?._setActiveBook) {
+      const label = document.getElementById('active-book-label')?.textContent;
+      idx._setActiveBook(bookId, (label && label !== '—') ? label : `Book ${bookId}`);
     } else {
       AppConfig.activeBookId    = bookId;
       AppConfig.activeBookTitle = `Book ${bookId}`;
@@ -234,54 +218,12 @@ export class SnaraRouter {
     }
   }
 
-  // ── Query-string helpers ──────────────────────────────────
+  // ── Static helpers ────────────────────────────
 
-  _readParam() {
-    const qs   = new URLSearchParams(location.search);
-    const bare = qs.get('');
-    if (bare === 'book')    return 'book-index';
-    if (bare === 'chapter') return 'chapter-index';
-    return qs.get('r') || '';
-  }
-
-  _pushState(route) {
-    if (route === 'book-index') {
-      if (location.search !== '?=book')    history.pushState(null, '', '?=book');
-      return;
-    }
-    if (route === 'chapter-index') {
-      if (location.search !== '?=chapter') history.pushState(null, '', '?=chapter');
-      return;
-    }
-    const url = `?r=${encodeURIComponent(route)}`;
-    if (location.search !== url) history.pushState(null, '', url);
-  }
-
-  // ── localStorage ──────────────────────────────────────────
-
-  _save(route) {
-    try { localStorage.setItem(LS_KEY, route); } catch {}
-  }
-
-  _loadSaved() {
-    try { return localStorage.getItem(LS_KEY) || ''; } catch { return ''; }
-  }
-
-  // ── Static path builders ──────────────────────────────────
-
-  static bookPath(bookId, area = 'editor', sub = null) {
-    if (area === 'editor' && sub == null) return `book/${bookId}`;
-    let r = `book/${bookId}/${area}`;
-    if (sub != null) r += `/${encodeURIComponent(sub)}`;
-    return r;
-  }
-
-  static filesPath(bookId) {
-    // Always returns the clean /files path — no sub-section
-    return `book/${bookId}/files`;
-  }
-
-  static editorPath(bookId, filename) {
-    return `book/${bookId}/editor/${encodeURIComponent(filename)}`;
+  static pageFor(area) {
+    // switchArea names → page names
+    // 'files' maps to 'import' as the default landing section
+    const map = { editor: 'editor', meta: 'meta', kanban: 'kanban', files: 'import' };
+    return map[area] ?? area;
   }
 }

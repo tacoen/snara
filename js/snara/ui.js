@@ -8,7 +8,7 @@ import { AppConfig }   from '../snara.js';
 import { SnaraEditor } from './core.js';
 import icx             from '../icons/ge-icon.js';
 import { esc } from '../helpers.js';
-
+ 
 export class SnaraUI {
 
   static instance = null;
@@ -114,7 +114,7 @@ export class SnaraUI {
     });
 
     const payload = { filename, bookId, meta, article };
-
+	
     if (btn) { btn.disabled = true; btn.classList.add('saving'); }
 
     try {
@@ -159,11 +159,33 @@ export class SnaraUI {
     }
   }
 
-  _renderDocument(data) {
-    const fnEl = document.getElementById('filename');
-    if (fnEl) fnEl.innerText = data.filename ?? '';
 
-    this.entriesEl.innerHTML = '';
+
+_renderDocument(data) {
+	
+  const fnEl = document.getElementById('filename');
+  if (fnEl) fnEl.innerText = data.filename ?? '';
+
+  // Store data-attributes on #article
+  if (this.article) {
+    this.article.dataset.filename = data.filename ?? '';
+    this.article.dataset.bookid   = AppConfig.activeBookId ?? '';
+  }
+
+  // Persist to localStorage
+  try {
+    localStorage.setItem('page', 'editor');
+    localStorage.setItem('editor-filename', data.filename ?? '');
+    localStorage.setItem('bookid',   String(AppConfig.activeBookId ?? ''));
+  } catch { /* quota */ }
+
+  // Page title
+  const bookTitle = AppConfig.activeBookTitle;
+  document.title = data.filename
+    ? (bookTitle ? `Snara — ${bookTitle} : ${data.filename}` : `Snara — ${data.filename}`)
+    : 'Snara';
+
+  this.entriesEl.innerHTML = '';
 
     const article = Array.isArray(data.article) ? data.article : [];
     article.forEach(item => {
