@@ -405,7 +405,7 @@ close() { closeModal('pref-modal'); console.log('closepref'); }
     this.modal.innerHTML = `
       <div class="modal-header">
         <span class="modal-title"><i data-icon="adjustments-horizontal"></i> Theme Variables</span>
-		<button class="cfg-btn cfg-btn-ghost" id="pref-cancel">Cancel</button>		
+		<button class="cfg-btn cfg-btn-ghost" id="pref-close">Cancel</button>		
       </div>
 
       <div class="cfg-tabs pref-tabs">
