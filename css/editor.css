@@ -4,10 +4,10 @@
   padding: 0 0 var(--s-xl) 0;
 }
 
-.entries:not([hidden]) {display: flex;padding: 0 var(--s-md) var(--s-lg) 2px;}
+.entries:not([hidden]) {display: flex;padding: 0 var(--s-md) var(--s-lg) 0;}
 
 .entries:empty::before {
-  content: 'Your story will appear hereÃ¢â‚¬Â¦';
+  content: 'Your story will appear here ---';
   color: var(--fg-muted);
   opacity: 0.7;
   font-style: italic;

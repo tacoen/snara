@@ -25,6 +25,7 @@ import { AppConfig, AppDefaults } from '../snara.js';
 import { SnaraUI }                from './ui.js';
 import icx                        from '../icons/ge-icon.js';
 import { esc, splitCsv }          from '../helpers.js';
+import { _modalHeader, _modalFooter } from './modal.js';
 
 // ── Resolve any CSS color value → #rrggbb ─────────────────────────────
 // Appends a throw-away element to <body> so the full cascade applies,

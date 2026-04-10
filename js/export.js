@@ -17,6 +17,8 @@ import { AppConfig } from './snara.js';
 import { SnaraTool } from './snara/tool.js';
 import icx           from './icons/ge-icon.js';
 import { esc, slug, download } from './helpers.js';
+import { _modalFooter } from './snara/modal.js';
+
 
 export class SnaraExport {
 
@@ -192,6 +194,8 @@ export class SnaraExport {
 
   _renderFooter(footer) {
     if (!footer) return;
+    // Export panel has no Cancel/Save — use additionalHTML only, then
+    // render a footer-shaped div directly (no standard Save button here).
     footer.innerHTML = `
       <button class="cfg-btn cfg-btn-ghost" onclick="SnaraExport.instance.exportAs('md')">
         <i data-icon="download"></i> Markdown
@@ -208,7 +212,8 @@ export class SnaraExport {
     `;
     icx.delayreplace('#files-exp-footer [data-icon]');
   }
-
+  
+  
   // ── Export ────────────────────────────────────
 
   async exportAs(fmt) {

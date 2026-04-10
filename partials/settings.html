@@ -4,7 +4,7 @@
     <span class="modal-title" id="settings-title">
       <i data-icon="settings-cog"></i> Settings
     </span>
-    <button class="modal-close" onclick="window.settingsInst?.close()" title="Close">
+    <button class="modal-close" id="modal-close" onclick="window.settingsInst?.close()" title="Close">
       <i data-icon="x"></i>
     </button>
   </div>
@@ -14,7 +14,7 @@
   </div>
 
   <div class="modal-footer">
-    <button class="modal-close" data-action="close">close</button>
-    <button class="cfg-btn cfg-btn-primary" id="cfg-save-btn" onclick="window.settingsInst?.save()">save</button>
+    <button class="cfg-btn cfg-btn-ghost" id="modal-cancel" onclick="window.settingsInst?.close()">Cancel</button>
+    <button class="cfg-btn cfg-btn-primary" id="modal-save" onclick="window.settingsInst?.save()">Save</button>
   </div>
 </div>

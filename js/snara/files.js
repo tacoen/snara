@@ -20,30 +20,30 @@ import { AppConfig }                      from '../snara.js';
 import { SnaraStruct }                    from './struct.js';
 import { SnaraGallery }                   from './gallery.js';
 import icx                                from '../icons/ge-icon.js';
-import { openModal }                      from './modal.js';
+import { openModal,_modalHeader, _modalFooter } from './modal.js';
 import { esc, fmtDate, fmtSize, iconFor } from '../helpers.js';
 
 export class SnaraFiles extends SnaraComponent {
 
-constructor() {
-  super('files-import-modal');
-  this._dragSrc       = null;
-  this._section       = 'import';
-  this._switching     = false;
-  this._initialized   = false;
-  this._bookChangeBound = false;
-}
+  constructor() {
+    super('files-import-modal');
+    this._dragSrc         = null;
+    this._section         = 'import';
+    this._switching       = false;
+    this._initialized     = false;
+    this._bookChangeBound = false;
+  }
 
-_init() {
-  this._switching        = false;             // ← must exist before switchSection
-  this._initialized      = false;
-  this._bookChangeBound  = false;
-  super._init();
-  this._bindDropzones();
-  this._bindFileInputs();
-  this._bindBookChange();                     // ← now idempotent
-  this.switchSection('import');
-}
+  _init() {
+    this._switching       = false;   // ← must exist before switchSection
+    this._initialized     = false;
+    this._bookChangeBound = false;
+    super._init();
+    this._bindDropzones();
+    this._bindFileInputs();
+    this._bindBookChange();          // ← now idempotent
+    this.switchSection('import');
+  }
 
   _ensureDOM() {
     if (document.getElementById('files-import-modal')) return;
@@ -58,54 +58,54 @@ _init() {
 
   // ── Book change ───────────────────────────────────────────
 
-// AFTER — bind once, guard against stacking
-_bindBookChange() {
-  if (this._bookChangeBound) return;          // ← prevent duplicate listeners
-  this._bookChangeBound = true;
-  window.addEventListener('bookchange', () => {
-    if (this._switching) return;              // ← re-entrancy guard
-    this._reloadSection();
-  });
-}
+  // AFTER — bind once, guard against stacking
+  _bindBookChange() {
+    if (this._bookChangeBound) return;   // ← prevent duplicate listeners
+    this._bookChangeBound = true;
+    window.addEventListener('bookchange', () => {
+      if (this._switching) return;       // ← re-entrancy guard
+      this._reloadSection();
+    });
+  }
 
-_reloadSection() {
-  const sec = this._section;
-  if (sec === 'import')  this._loadImpList();
-  if (sec === 'export')  window.SnaraExport?.instance?.load();
-  if (sec === 'gallery') SnaraGallery.instance?.load();
-  if (sec === 'cache')   this._loadCacheList();
-}
+  _reloadSection() {
+    const sec = this._section;
+    if (sec === 'import')  this._loadImpList();
+    if (sec === 'export')  window.SnaraExport?.instance?.load();
+    if (sec === 'gallery') SnaraGallery.instance?.load();
+    if (sec === 'cache')   this._loadCacheList();
+  }
+
   // ── Section switching ─────────────────────────────────────
 
-// AFTER
-switchSection(sec) {
-  if (this._switching) return;               // ← re-entrancy guard
-  if (this._section === sec && this._initialized) return; // ← no-op if same section
-  this._switching = true;
+  switchSection(sec) {
+    if (this._switching) return;                              // ← re-entrancy guard
+    if (this._section === sec && this._initialized) return;  // ← no-op if same section
+    this._switching = true;
 
-  this._section = sec;
+    this._section = sec;
 
-  document.querySelectorAll('.fnav-item').forEach(b =>
-    b.classList.toggle('active', b.dataset.section === sec)
-  );
-  document.querySelectorAll('.fpanel').forEach(p => {
-    p.hidden = p.id !== `fpanel-${sec}`;
-  });
+    document.querySelectorAll('.fnav-item').forEach(b =>
+      b.classList.toggle('active', b.dataset.section === sec)
+    );
+    document.querySelectorAll('.fpanel').forEach(p => {
+      p.hidden = p.id !== `fpanel-${sec}`;
+    });
 
-  const titles = { import: 'Import', export: 'Export', gallery: 'Gallery', cache: 'Cache' };
-  const titleEl = document.getElementById('files-section-title');
-  if (titleEl) titleEl.textContent = titles[sec] || sec;
+    const titles = { import: 'Import', export: 'Export', gallery: 'Gallery', cache: 'Cache' };
+    const titleEl = document.getElementById('files-section-title');
+    if (titleEl) titleEl.textContent = titles[sec] || sec;
 
-  this._renderTopActions(sec);
-  this._reloadSection();                     // ← centralised, not duplicated
+    this._renderTopActions(sec);
+    this._reloadSection();   // ← centralised, not duplicated
 
-  icx.delayreplace(`#fpanel-${sec} [data-icon]`);
-  icx.delayreplace('#files-topbar-actions [data-icon]');
+    icx.delayreplace(`#fpanel-${sec} [data-icon]`);
+    icx.delayreplace('#files-topbar-actions [data-icon]');
 
-  this._initialized = true;
-  this._switching   = false;
-}
-    
+    this._initialized = true;
+    this._switching   = false;
+  }
+
   _renderTopActions(sec) {
     const el = document.getElementById('files-topbar-actions');
     if (!el) return;
@@ -265,13 +265,12 @@ switchSection(sec) {
 
     const modal = document.getElementById('files-import-modal');
     modal.innerHTML = `
-      <div class="modal-header">
-        <span class="modal-title"><i data-icon="file-text"></i> Preview — ${esc(filename)}</span>
-        <button class="modal-close" data-action="close"><i data-icon="x"></i></button>
-      </div>
+      ${_modalHeader(`<i data-icon="file-text"></i> Preview — ${esc(filename)}`)}
       <div class="modal-body" style="display:flex;align-items:center;justify-content:center;padding:2rem">
         <span style="font-size:var(--f-xs);color:var(--fg-muted)">Parsing file…</span>
       </div>`;
+    // wire close button produced by _modalHeader
+    modal.querySelector('#modal-close').dataset.action = 'close';
     openModal('files-import-modal');
     icx.delayreplace('#files-import-modal [data-icon]');
 
@@ -299,10 +298,7 @@ switchSection(sec) {
       .toLowerCase();
 
     modal.innerHTML = `
-      <div class="modal-header">
-        <span class="modal-title"><i data-icon="file-text"></i> Preview — ${esc(filename)}</span>
-        <button class="modal-close" data-action="close"><i data-icon="x"></i></button>
-      </div>
+      ${_modalHeader(`<i data-icon="file-text"></i> Preview — ${esc(filename)}`)}
       <div class="modal-body" style="padding:var(--s-md);overflow-y:auto;display:flex;flex-direction:column;gap:var(--s-sm)">
         <div class="cfg-row">
           <label class="cfg-label" style="flex-shrink:0">Save as</label>
@@ -329,12 +325,15 @@ switchSection(sec) {
             </div>`).join('')}
         </div>
       </div>
-      <div class="modal-footer">
-        <button class="cfg-btn cfg-btn-ghost" data-action="close">Cancel</button>
+      ${_modalFooter(`
         <button class="cfg-btn cfg-btn-primary" id="imp-confirm-btn">
           <i data-icon="download"></i> Import
         </button>
-      </div>`;
+      `)}`;
+
+    // Wire standard close targets produced by _modalHeader / _modalFooter
+    modal.querySelector('#modal-close').dataset.action  = 'close';
+    modal.querySelector('#modal-cancel').dataset.action = 'close';
 
     icx.delayreplace('#files-import-modal [data-icon]');
     modal._blocks   = blocks;
@@ -355,18 +354,20 @@ switchSection(sec) {
     });
   }
 
+  // ── Preview error state ───────────────────────────────────
+
   _showPreviewError(modal, msg) {
     modal.innerHTML = `
-      <div class="modal-header">
-        <span class="modal-title">Import error</span>
-        <button class="modal-close" data-action="close"><i data-icon="x"></i></button>
-      </div>
+      ${_modalHeader('Import error')}
       <div class="modal-body" style="padding:var(--s-lg);color:var(--danger);font-size:var(--f-xs)">${esc(msg)}</div>
       <div class="modal-footer">
         <button class="cfg-btn cfg-btn-ghost" data-action="close">Close</button>
       </div>`;
+    modal.querySelector('#modal-close').dataset.action = 'close';
     icx.delayreplace('#files-import-modal [data-icon]');
   }
+
+  // ── Confirm import ────────────────────────────────────────
 
   async _confirmImport(modal, srcFilename) {
     const bookId   = AppConfig.activeBookId;
@@ -492,7 +493,7 @@ switchSection(sec) {
 
   // ── Cache list ────────────────────────────────────────────
 
- async _loadCacheList() {
+  async _loadCacheList() {
     const bookId = AppConfig.activeBookId;
     const ul     = document.getElementById('files-cache-list');
     if (!ul) return;
@@ -544,8 +545,8 @@ switchSection(sec) {
     } catch (e) {
       ul.innerHTML = `<li class="flist-empty" style="color:var(--danger)">Error: ${esc(e.message)}</li>`;
     }
-  }                          // ← this is the only closing brace needed
-  
+  }
+
   // ── Rebuild cache ─────────────────────────────────────────
 
   async rebuildCache() {

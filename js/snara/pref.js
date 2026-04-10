@@ -16,6 +16,7 @@ import { AppConfig } from '../snara.js';
 import icx           from '../icons/ge-icon.js';
 import { openModal, closeModal } from './modal.js';
 import { esc } from '../helpers.js';
+import { _modalHeader, _modalFooter } from './modal.js';
 
 // ── Defaults (mirrors css/vars.css exactly) ───────
 
@@ -397,37 +398,36 @@ close() { closeModal('pref-modal'); console.log('closepref'); }
   }
 
 
-
   // ── Render shell ──────────────────────────────
 
   _render() {
     const t = this._activeTab;
+
     this.modal.innerHTML = `
-      <div class="modal-header">
-        <span class="modal-title"><i data-icon="adjustments-horizontal"></i> Theme Variables</span>
-		<button class="cfg-btn cfg-btn-ghost" id="pref-close">Cancel</button>		
-      </div>
+      ${_modalHeader(
+        '<i data-icon="adjustments-horizontal"></i> Theme Variables',
+        'pref-close'
+      )}
 
       <div class="cfg-tabs pref-tabs">
-        <button class="cfg-tab${t==='light'?' active':''}" data-tab="light">☀ Light</button>
-        <button class="cfg-tab${t==='dark' ?' active':''}" data-tab="dark">☾ Dark</button>
-        <button class="cfg-tab${t==='root' ?' active':''}" data-tab="root">Spacing &amp; Type</button>
+        <button class="cfg-tab${t==='light' ? ' active' : ''}" data-tab="light">☀ Light</button>
+        <button class="cfg-tab${t==='dark'  ? ' active' : ''}" data-tab="dark">☾ Dark</button>
+        <button class="cfg-tab${t==='root'  ? ' active' : ''}" data-tab="root">Spacing &amp; Type</button>
       </div>
 
       <div class="pref-body modal-body" id="pref-body">
         ${this._renderTabBody(t)}
       </div>
 
-      <div class="modal-footer pref-footer">
+      ${_modalFooter(`
         <button class="cfg-btn pref-reset-btn" id="pref-reset">Reset</button>
         <button class="cfg-btn cfg-btn-ghost pref-export-btn" id="pref-export">
           <i data-icon="download"></i> Export vars.css
         </button>
-        <button class="cfg-btn cfg-btn-ghost" id="pref-cancel">Cancel</button>
-        <button class="cfg-btn cfg-btn-primary" id="pref-save">Save</button>
-      </div>
+      `)}
     `;
 
+    // ── Bind tab switching ─────────────────────
     this.modal.querySelectorAll('.cfg-tab[data-tab]').forEach(btn => {
       btn.addEventListener('click', () => {
         this._snapshotTab();
@@ -441,16 +441,17 @@ close() { closeModal('pref-modal'); console.log('closepref'); }
       });
     });
 
-    this.modal.querySelector('#pref-close').addEventListener('click',  () => this.close());
-    this.modal.querySelector('#pref-cancel').addEventListener('click', () => this.close());
-    this.modal.querySelector('#pref-save').addEventListener('click',   () => this.save());
-    this.modal.querySelector('#pref-reset').addEventListener('click',  () => this._resetCurrentTab());
-    this.modal.querySelector('#pref-export').addEventListener('click', () => this.exportCss());
+    // ── Bind modal buttons ─────────────────────
+    this.modal.querySelector('#pref-close').addEventListener('click',   () => this.close());
+    this.modal.querySelector('#modal-cancel').addEventListener('click', () => this.close());
+    this.modal.querySelector('#modal-save').addEventListener('click',   () => this.save());
+    this.modal.querySelector('#pref-reset').addEventListener('click',   () => this._resetCurrentTab());
+    this.modal.querySelector('#pref-export').addEventListener('click',  () => this.exportCss());
 
     this._bindInputs();
     icx.delayreplace('#pref-modal [data-icon]');
   }
-
+  
   // ── Tab body HTML ─────────────────────────────
 
   _renderTabBody(tab) {

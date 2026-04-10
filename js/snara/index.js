@@ -141,6 +141,60 @@ _ensureDOM() {
     }
   }
 
+async _createChapter(modal) {
+  const input = modal.querySelector('#idx-new-chapter-file');
+  const raw   = input?.value.trim();
+  if (!raw) { input?.focus(); return; }
+
+  // Slugify: lowercase, spaces → dashes, strip unsafe chars
+  const filename = raw
+    .toLowerCase()
+    .replace(/\s+/g, '-')
+    .replace(/[^a-z0-9\-_]/g, '')
+    .replace(/-+/g, '-')
+    .slice(0, 80);
+
+  if (!filename) { input?.focus(); return; }
+
+  const bookId = this.activeBookId;
+  const btn    = modal.querySelector('#idx-new-chapter');
+  btn.disabled    = true;
+  btn.textContent = 'creating…';
+
+  try {
+    const res  = await fetch(AppConfig.apiPath + '?action=doc.save', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify({ filename, bookId, meta: {}, article: [] }),
+    });
+    const data = await res.json();
+    if (!res.ok || data.error) throw new Error(data.error || `HTTP ${res.status}`);
+
+    input.value     = '';
+    btn.disabled    = false;
+    btn.textContent = 'Create';
+
+    // Reload list to show the new chapter
+    const [chapRes, states] = await Promise.all([
+      fetch(AppConfig.apiPath + `?action=book.chapters&id=${encodeURIComponent(bookId)}`),
+      this._loadStates(bookId),
+    ]);
+    const chapters = await chapRes.json();
+    const surviving = chapters.filter(ch => states[ch.filename] !== 'delete');
+    modal.querySelector('.idx-body').innerHTML = this._chapterListHTML(surviving);
+    this._bindChapterRows(modal, states);
+    icx.delayreplace('#chapter-index-modal [data-icon]');
+
+  } catch(e) {
+    btn.disabled    = false;
+    btn.textContent = 'Create';
+    console.error('[snara] chapter create failed:', e);
+    input.insertAdjacentHTML('afterend',
+      `<span style="color:var(--danger);font-size:11px;margin-top:2px">${esc(e.message)}</span>`);
+    setTimeout(() => modal.querySelector('.idx-toolbar span[style]')?.remove(), 3000);
+  }
+}
+
   _setActiveBook(id, title) {
     const switching = this.activeBookId != id;
 
@@ -182,6 +236,12 @@ window.dispatchEvent(new CustomEvent('bookchange', {
     modal.innerHTML = this._shell('chapter-index-modal', `${title}`,
       `<p class="idx-empty idx-loading">Loading chapters…</p>`);
     openModal('chapter-index-modal');
+	
+	modal.querySelector('#idx-new-chapter')?.addEventListener('click', () => this._createChapter(modal));	
+
+modal.querySelector('#idx-new-chapter-file')?.addEventListener('keydown', e => {
+  if (e.key === 'Enter') this._createChapter(modal);
+});
 
     try {
       // Fetch chapters and persisted states in parallel
@@ -432,13 +492,15 @@ _renumberAndSave(modal, bookId) {
         </button>
       </div>
       <div class="idx-toolbar">
-        <input class="cfg-input idx-search" placeholder="Filter…" id="idx-search-${id}"
-               oninput="SnaraIndex.instance._filter(this,'${id}')">
         ${id === 'book-index-modal' ? `
         <div class="idx-create-row">
           <input class="cfg-input" id="idx-new-book-title" placeholder="New book title…">
           <button class="cfg-btn cfg-btn-primary" id="idx-new-book">Create</button>
-        </div>` : ''}
+        </div>` : `
+        <div class="idx-create-row">
+          <input class="cfg-input" id="idx-new-chapter-file" placeholder="New file…">
+		  <button class="cfg-btn cfg-btn-primary" id="idx-new-chapter">Create</button>
+        </div>`}
       </div>
         <div class="idx-body modal-body">
           ${bodyHTML}

@@ -46,3 +46,30 @@ export function closeModal(id) {
 // onclick="openModal('x')" strings in HTML templates work.
 window.openModal  = openModal;
 window.closeModal = closeModal;
+
+/**
+ * Standard modal header. titleHTML may contain icons (<i data-icon>).
+ * closeId defaults to 'modal-close' — override when multiple modals
+ * share the same DOM scope and you need a unique selector.
+ */
+export function _modalHeader(titleHTML, closeId = 'modal-close') {
+  return `
+    <div class="modal-header">
+      <span class="modal-title">${titleHTML}</span>
+      <button class="modal-close" id="${closeId}" title="Close"><i data-icon="x"></i></button>
+    </div>`;
+}
+
+/**
+ * Standard modal footer.
+ * Order: additionalHTML → Cancel → Save
+ * additionalHTML: any extra buttons (export buttons, reset, etc.)
+ */
+export function _modalFooter(additionalHTML = '') {
+  return `
+    <div class="modal-footer">
+      ${additionalHTML.trim()}
+      <button class="cfg-btn cfg-btn-ghost" id="modal-cancel">Cancel</button>
+      <button class="cfg-btn cfg-btn-primary" id="modal-save">Save</button>
+    </div>`;
+}
