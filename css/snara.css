@@ -1,4 +1,3 @@
-/* ── Header layout groups ──────────────────────── */
 
 #theme-toggle,
 #settings-btn {
@@ -10,7 +9,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 14px;
+  font-size: var(--f-sm);
   cursor: pointer;
   color: var(--fg-muted);
   flex-shrink: 0;
@@ -30,8 +29,6 @@
   margin-bottom: var(--s-xs);
 }
 
-
-
 .header-left {
   display: flex;
   align-items: center;
@@ -41,7 +38,7 @@
 }
 
 .filename {
-  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+font-family: var(--font-mono);
   font-size: var(--f-xs);
   color: var(--fg-muted);
   display: flex;
@@ -73,7 +70,7 @@
 #save-btn {
   background: none;
   border: none;
-  /* border-radius: 6px; */
+
   cursor: pointer;
   color: var(--fg-muted);
   display: flex;
@@ -81,7 +78,7 @@
   gap: var(--s-xs);
   padding: 3px var(--s-sm);
   margin-right: var(--s-sm);
-  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+font-family: var(--font-mono);
   font-size: var(--f-xs);
   flex-shrink: 0;
   transition: background 0.15s, color 0.15s, border-color 0.15s;
@@ -91,7 +88,7 @@
 #save-btn:hover {
   background: var(--bg-hover);
   color: var(--fg-main);
-  /* border-color: var(--fg-muted); */
+
 }
 
 #save-btn:disabled {
@@ -126,7 +123,6 @@ html[theme="dark"] #save-btn.saved {
   to   { opacity: 1; }
 }
 
-
 .tabmenu {
   display: flex;
   list-style: none;
@@ -134,7 +130,7 @@ html[theme="dark"] #save-btn.saved {
 }
 
 .tabmenu li {
-  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+font-family: var(--font-mono);
   font-size: var(--f-xs);
   text-transform: uppercase;
   letter-spacing: 0.07em;
@@ -156,7 +152,6 @@ html[theme="dark"] #save-btn.saved {
   border-bottom-color: var(--primary);
 }
 
- 
 #meta,
 .meta {
   display: flex;
@@ -164,7 +159,7 @@ html[theme="dark"] #save-btn.saved {
   gap: var(--s-lg);
   padding: var(--s-xl);
 }
- 
+
 .meta-fields {
   display: flex;
   flex-direction: column;
@@ -180,7 +175,7 @@ html[theme="dark"] #save-btn.saved {
 .meta-field:first-child { border-top: 1px solid var(--border); }
 
 .field-key {
-  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+font-family: var(--font-mono);
   font-size: var(--f-xs);
   color: var(--fg-muted);
   outline: none;
@@ -197,7 +192,7 @@ html[theme="dark"] #save-btn.saved {
 }
 
 .field-sep {
-  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+font-family: var(--font-mono);
   font-size: var(--f-xs);
   color: var(--fg-muted);
   padding: 0 var(--s-sm) 0 var(--s-xs);
@@ -247,7 +242,7 @@ html[theme="dark"] #save-btn.saved {
   border: 1px dashed var(--border);
   border-radius: 6px;
   padding: var(--s-sm) var(--s-md);
-  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+font-family: var(--font-mono);
   font-size: var(--f-xs);
   color: var(--fg-muted);
   cursor: pointer;
@@ -263,7 +258,6 @@ html[theme="dark"] #save-btn.saved {
   border-color: var(--fg-muted);
   background: var(--bg-hover);
 }
-
 
 .editor-area {
   border-top: 1px solid var(--border);
@@ -289,7 +283,7 @@ html[theme="dark"] #save-btn.saved {
   border-radius: 5px;
   padding: 2px var(--s-sm);
   font-size: var(--f-xs);
-  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+font-family: var(--font-mono);
   cursor: pointer;
   color: var(--fg-muted);
   transition: all 0.15s;
@@ -314,7 +308,7 @@ html[theme="dark"] #save-btn.saved {
 }
 
 .hint {
-  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+font-family: var(--font-mono);
   font-size: 10px;
   color: var(--fg-muted);
   opacity: 0.6;
@@ -334,11 +328,11 @@ html[theme="dark"] #save-btn.saved {
 
 .submit-btn {
   background: var(--primary);
-  color: #fff;
+  color: var(--bg-main);;
   border: none;
   border-radius: 6px;
   padding: var(--s-xs) var(--s-md);
-  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+font-family: var(--font-mono);
   font-size: var(--f-xs);
   letter-spacing: 0.05em;
   cursor: pointer;

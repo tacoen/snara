@@ -1,25 +1,19 @@
-/* â”€â”€ Pref modal â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 
 .pref-modal {
   width: min(620px, calc(100vw - 32px));
   max-height: 88dvh;
 }
 
-/* Body: no extra padding â€” sections provide their own */
 .pref-body {
   padding: 0;
   gap: 0;
 }
 
-/* â”€â”€ Tab strip sits between header and body â”€â”€â”€â”€â”€â”€â”€ */
-
 .pref-tabs {
   border-bottom: 1px solid var(--border);
   padding: 0 var(--s-sm);
-  /* flex-shrink: 0; */
-}
 
-/* â”€â”€ Sections â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+}
 
 .pref-section {
   padding: var(--s-md) var(--s-lg);
@@ -33,16 +27,12 @@
   margin-bottom: var(--s-xs);
 }
 
-/* â”€â”€ Row â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
-
 .pref-row {
   gap: var(--s-sm);
   flex-wrap: nowrap;
   align-items: center;
   min-height: 34px;
 }
-
-/* â”€â”€ Label â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 
 .pref-var-label {
   width: 90px;
@@ -51,10 +41,8 @@
   color: var(--fg-muted);
 }
 
-/* â”€â”€ Var name badge â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
-
 .pref-var-name {
-  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+font-family: var(--font-mono);
   font-size: 10px;
   color: var(--fg-muted);
   background: var(--bg-alt);
@@ -64,13 +52,11 @@
   white-space: nowrap;
   flex-shrink: 0;
   opacity: 0.75;
-  /* fixed width so rows align */
+
   width: 168px;
   overflow: hidden;
   text-overflow: ellipsis;
 }
-
-/* â”€â”€ Color swatch â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 
 .pref-color {
   width: 34px;
@@ -86,16 +72,12 @@
 .pref-color::-webkit-color-swatch-wrapper { padding: 0; }
 .pref-color::-webkit-color-swatch         { border: none; border-radius: 3px; }
 
-/* â”€â”€ Text input (companion or standalone) â”€â”€â”€â”€â”€â”€â”€â”€ */
-
 .pref-text {
   flex: 1;
-  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+font-family: var(--font-mono);
   font-size: var(--f-xs);
   min-width: 0;
 }
-
-/* â”€â”€ Footer â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 
 .modal-footer,
 .pref-footer {
@@ -105,7 +87,6 @@
   justify-content: flex-end;
 }
 
-/* Reset button pushed left, danger-styled */
 .pref-reset-btn {
   margin-right: auto;
   background: none;
@@ -114,7 +95,7 @@
   opacity: 0.7;
   border-radius: 6px;
   padding: var(--s-xs) var(--s-md);
-  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+font-family: var(--font-mono);
   font-size: var(--f-xs);
   letter-spacing: 0.04em;
   cursor: pointer;
@@ -122,14 +103,11 @@
 }
 .pref-reset-btn:hover { opacity: 1; background: rgba(207,34,46,.07); }
 
-/* Export button */
 .pref-export-btn {
   display: flex;
   align-items: center;
   gap: var(--s-xs);
 }
-
-/* â”€â”€ Nav button #pref-btn â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 
 #pref-btn {
   background: none;

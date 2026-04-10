@@ -1,5 +1,5 @@
 @layer base {
-	
+
 :root {
   --s-xs: 0.25rem;
   --s-sm: 0.5rem;
@@ -10,13 +10,10 @@
   --f-xs: 0.75rem;
   --f-sm: 1rem;
   --f-md: 1.25rem;
-  
+
   --font-sans: system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
   --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, 'Courier New', monospace;
   --font-serif: Georgia, 'Times New Roman', serif;
-  
-  /* ── Editor entry appearance ──────────────────── */
-  /* Controlled by EditorPref — set at runtime via JS */
 
   --entry-font:           var(--font-sans);
 
@@ -33,10 +30,8 @@
   --entry-beat-border:    var(--tag-draft-fg);
 
 	--article-bg:     transparent;
-	--article-border: var(--tag-chapter-bd); 
-  
-}  
-  
+	--article-border: var(--tag-chapter-bd);
+
 }
 
 :root,
@@ -71,7 +66,10 @@ html[theme="light"] {
   --tag-act-bg:     #fbca33;
   --tag-act-fg:     #aa6600;
   --tag-act-bd:     #ed93b1;
-  
+
+  --success-bg:  #dafbe1;
+  --success-fg:  #2da44e;
+
 }
 
 html[theme="dark"] {
@@ -88,7 +86,7 @@ html[theme="dark"] {
   --overlay:    rgba(0, 0, 0, 0.75);
   --selection:  rgba(56, 139, 253, 0.15);
   --sel-border: #388bfd;
-  
+
   --tag-beat-bg:    #eeedfe;
   --tag-beat-fg:    #0f6e56;
   --tag-beat-bd:    #afa9ec;
@@ -105,7 +103,9 @@ html[theme="dark"] {
   --tag-act-bg:     #fbca33;
   --tag-act-fg:     #aa6600;
   --tag-act-bd:     #ed93b1;
-  
+
+  --success-bg:  rgba(45, 164, 78, 0.12);
+  --success-fg:  #3fb950;
 }
 
 ::-webkit-scrollbar {
@@ -124,6 +124,5 @@ html[theme="dark"] {
 .entry::-webkit-scrollbar-thumb:hover {
   background: var(--bg-hover);
 }
-
 
 }

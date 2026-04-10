@@ -18,11 +18,10 @@
 .entry {
   position: relative;
   padding: var(--s-md);
-  /* padding-bottom: var(--s-xl); */
-  /* padding-left: var(--s-md); */
+
   border-left: 3px solid var(--border);
   outline: none;
-  /* font-family: var(--font-serif); */
+
   font-size: 1rem;
   line-height: 1.5;
   color: var(--fg-main);
@@ -56,7 +55,7 @@
 .entry ul,
 .entry ol           { padding-left: var(--s-xl); margin: 0.4em 0; }
 .entry li           { margin-bottom: 0.2em; }
-.entry code         { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.8125rem; background: var(--bg-alt); padding: 1px 5px; border-radius: 3px; }
+.entry code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: var(--f-xs); background: var(--bg-alt); padding: 1px 5px; border-radius: 3px; }
 .entry pre          { background: var(--bg-alt); padding: var(--s-sm) var(--s-md); border-radius: 6px; overflow-x: auto; margin: var(--s-sm) 0; border: 1px solid var(--border); }
 .entry pre code     { background: none; padding: 0; }
 
@@ -65,14 +64,13 @@
   overflow-y: auto;
   outline: none;
   padding: var(--s-sm) var(--s-lg);
-  font-size: 0.9375rem;
+  font-size: var(--f-sm);
   line-height: 1.8;
   color: var(--fg-main);
   caret-color: var(--primary);
   white-space: pre-wrap;
   word-break: break-word;
 }
-
 #editor:empty::before {
   content: attr(data-placeholder);
   color: var(--fg-muted);
@@ -118,5 +116,5 @@ body.entry-edit #editor { height: 72px; }
 }
 
 .entry:focus {
-  background: var(--bg-alt);  /* overrides entry-*-bg on focus so it stays readable */
+  background: var(--bg-alt);
 }

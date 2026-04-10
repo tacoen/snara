@@ -1,4 +1,3 @@
-/* ── TOC side panel ────────────────────────────── */
 
 aside.side-panel {
   padding: 0;
@@ -7,7 +6,7 @@ aside.side-panel {
 }
 
 .toc-label {
-  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+font-family: var(--font-mono);
   font-size: 10px;
   font-weight: 600;
   text-transform: uppercase;
@@ -22,7 +21,7 @@ aside.side-panel {
 }
 
 .toc-empty {
-  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+font-family: var(--font-mono);
   font-size: var(--f-xs);
   color: var(--fg-muted);
   opacity: 0.4;
@@ -40,7 +39,7 @@ aside.side-panel {
   display: block;
   color: var(--fg-muted);
   text-decoration: none;
-  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+font-family: var(--font-mono);
   font-size: var(--f-xs);
   line-height: 1.4;
   padding: 3px var(--s-md);
@@ -56,18 +55,16 @@ aside.side-panel {
   background: var(--bg-hover);
 }
 
-/* Depth indentation */
 .toc-act     a { padding-left: var(--s-md);                        border-left-color: var(--tag-act-fg);     color: var(--fg-main); font-weight: 500; }
-.toc-chapter a { padding-left: calc(var(--s-md) + 10px);           border-left-color: var(--tag-chapter-fg); }
-.toc-scene   a { padding-left: calc(var(--s-md) + 20px);           border-left-color: var(--tag-scene-fg); }
-.toc-beat    a { padding-left: calc(var(--s-md) + 30px);           border-left-color: var(--border);         font-size: 11px; opacity: 0.7; }
+.toc-chapter a { padding-left: calc(var(--s-md) * 2);           border-left-color: var(--tag-chapter-fg); }
+.toc-scene   a { padding-left: calc(var(--s-md) * 3);           border-left-color: var(--tag-scene-fg); }
+.toc-beat    a { padding-left: calc(var(--s-md) * 4);           border-left-color: var(--border);         font-size: var(--f-xs); opacity: 0.7; }
 
 .toc-act     a:hover { border-left-color: var(--tag-act-fg); }
 .toc-chapter a:hover { border-left-color: var(--tag-chapter-fg); }
 .toc-scene   a:hover { border-left-color: var(--tag-scene-fg); }
 .toc-beat    a:hover { border-left-color: var(--fg-muted); opacity: 1; }
 
-/* Active/highlighted entry (set by scroll spy if desired) */
 .toc-item.toc-active a {
   color: var(--fg-main);
   background: var(--selection);

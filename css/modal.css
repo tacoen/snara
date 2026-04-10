@@ -1,7 +1,5 @@
 body.modal-open { overflow: hidden; }
 
-
-/* overlay */
 #app-overlay {
   position: fixed;
   inset: 0;
@@ -10,19 +8,15 @@ body.modal-open { overflow: hidden; }
   cursor: default;
   display: flex;
   padding:  var(--s-lg);
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 320'%3E%3Cpath fill='%23111133' fill-opacity='0.1' d='M0,160L48,176C96,192,192,224,288,213.3C384,203,480,149,576,144C672,139,768,181,864,181.3C960,181,1056,139,1152,122.7C1248,107,1344,117,1392,122.7L1440,128L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z'%3E%3Canimate attributeName='d' dur='4s' repeatCount='indefinite' values='M0,160L48,176C96,192,192,224,288,213.3C384,203,480,149,576,144C672,139,768,181,864,181.3C960,181,1056,139,1152,122.7C1248,107,1344,117,1392,122.7L1440,128L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z; M0,64L48,80C96,96,192,128,288,128C384,128,480,96,576,106.7C672,117,768,171,864,170.7C960,171,1056,117,1152,106.7C1248,96,1344,128,1392,144L1440,160L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z; M0,160L48,176C96,192,192,224,288,213.3C384,203,480,149,576,144C672,139,768,181,864,181.3C960,181,1056,139,1152,122.7C1248,107,1344,117,1392,122.7L1440,128L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z'%3E%3C/animate%3E%3C/path%3E%3C/svg%3E"),url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 320'%3E%3Cpath fill='%2fffff6' fill-opacity='0.2' d='M0,160L48,176C96,192,192,224,288,213.3C384,203,480,149,576,144C672,139,768,181,864,181.3C960,181,1056,139,1152,122.7C1248,107,1344,117,1392,122.7L1440,128L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z'%3E%3Canimate attributeName='d' dur='15s' repeatCount='indefinite' values='M0,160L48,176C96,192,192,224,288,213.3C384,203,480,149,576,144C672,139,768,181,864,181.3C960,181,1056,139,1152,122.7C1248,107,1344,117,1392,122.7L1440,128L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z; M0,64L48,80C96,96,192,128,288,128C384,128,480,96,576,106.7C672,117,768,171,864,170.7C960,171,1056,117,1152,106.7C1248,96,1344,128,1392,144L1440,160L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z; M0,160L48,176C96,192,192,224,288,213.3C384,203,480,149,576,144C672,139,768,181,864,181.3C960,181,1056,139,1152,122.7C1248,107,1344,117,1392,122.7L1440,128L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z'%3E%3C/animate%3E%3C/path%3E%3C/svg%3E"),
-                    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 320'%3E%3Cpath fill='%23233244' fill-opacity='0.3' transform='scale(-1, 1)' transform-origin='center'  d='M0,160L48,176C96,192,192,224,288,213.3C384,203,480,149,576,144C672,139,768,181,864,181.3C960,181,1056,139,1152,122.7C1248,107,1344,117,1392,122.7L1440,128L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z'%3E%3Canimate attributeName='d' dur='8s' repeatCount='indefinite' values='M0,160L48,176C96,192,192,224,288,213.3C384,203,480,149,576,144C672,139,768,181,864,181.3C960,181,1056,139,1152,122.7C1248,107,1344,117,1392,122.7L1440,128L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z; M0,64L48,80C96,96,192,128,288,128C384,128,480,96,576,106.7C672,117,768,171,864,170.7C960,171,1056,117,1152,106.7C1248,96,1344,128,1392,144L1440,160L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z; M0,160L48,176C96,192,192,224,288,213.3C384,203,480,149,576,144C672,139,768,181,864,181.3C960,181,1056,139,1152,122.7C1248,107,1344,117,1392,122.7L1440,128L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z'%3E%3C/animate%3E%3C/path%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http:
+                    url("data:image/svg+xml,%3Csvg xmlns='http:
   background-position: bottom;
   background-repeat: no-repeat;
-  background-size: cover;  
+  background-size: cover;
 }
 
-/* modals default hidden via [hidden]; when shown: */
 .app-modal {
-  /* position: fixed; */
-  /* top: 50%; */
-  /* left: 50%; */
-  /* transform: translate(-50%, -50%); */
+
   width: min(520px, calc(100vw - 32px));
   max-height: 90dvh;
   background: var(--bg-alt);
@@ -33,44 +27,6 @@ body.modal-open { overflow: hidden; }
   flex-direction: column;
   z-index: 1001;
 }
-
-/*
-#app-overlay,
-.app-overlay {
-  position: fixed;
-  inset: 0;
-  background: var(--overlay);
-  z-index: 1000;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.2s;
-}
-
-.app-overlay.open {
-  opacity: 1;
-  pointer-events: all;
-}
-
-.app-modal {
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -46%);
-  width: min(520px, calc(100vw - 32px));
-  max-height: 80dvh;
-  background: var(--bg-main);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  box-shadow: 0 8px 32px var(--overlay);
-  display: flex;
-  flex-direction: column;
-  z-index: 1001;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.18s, transform 0.18s;
-}
-
-*/
 
 .app-modal.open {
   opacity: 1;
@@ -95,7 +51,7 @@ body.modal-open { overflow: hidden; }
 }
 
 .modal-title {
-  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+font-family: var(--font-mono);
   font-size: var(--f-xs);
   text-transform: uppercase;
   letter-spacing: 0.08em;
@@ -138,10 +94,8 @@ body.modal-open { overflow: hidden; }
 .modal-body::-webkit-scrollbar { width: 4px; }
 .modal-body::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
 
-
-
 .cfg-loading {
-  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+font-family: var(--font-mono);
   font-size: var(--f-xs);
   color: var(--fg-muted);
   opacity: 0.5;
@@ -155,7 +109,7 @@ body.modal-open { overflow: hidden; }
 }
 
 .cfg-heading {
-  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+font-family: var(--font-mono);
   font-size: 10px;
   font-weight: 600;
   text-transform: uppercase;
@@ -184,7 +138,7 @@ body.modal-open { overflow: hidden; }
 }
 
 .cfg-label {
-  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+font-family: var(--font-mono);
   font-size: var(--f-xs);
   color: var(--fg-muted);
   flex-shrink: 0;
@@ -196,7 +150,7 @@ body.modal-open { overflow: hidden; }
   border: 1px solid var(--border);
   border-radius: 5px;
   padding: 4px var(--s-sm);
-  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+font-family: var(--font-mono);
   font-size: var(--f-xs);
   color: var(--fg-main);
   outline: none;
@@ -223,7 +177,7 @@ body.modal-open { overflow: hidden; }
   border: none;
   border-radius: 4px;
   padding: 2px var(--s-sm);
-  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+font-family: var(--font-mono);
   font-size: var(--f-xs);
   color: var(--fg-muted);
   cursor: pointer;
@@ -261,7 +215,7 @@ body.modal-open { overflow: hidden; }
   left: 2px;
   width: 16px;
   height: 16px;
-  background: #fff;
+  background: var(--bg-main);;
   border-radius: 50%;
   transition: transform 0.2s;
   pointer-events: none;
@@ -283,11 +237,11 @@ body.modal-open { overflow: hidden; }
 
 .cfg-hmap-prefix {
   flex: 0 0 120px;
-  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+font-family: var(--font-mono);
 }
 
 .cfg-arrow {
-  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+font-family: var(--font-mono);
   font-size: var(--f-xs);
   color: var(--fg-muted);
   opacity: 0.5;
@@ -321,7 +275,7 @@ body.modal-open { overflow: hidden; }
   border: 1px dashed var(--border);
   border-radius: 5px;
   padding: 4px var(--s-sm);
-  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+font-family: var(--font-mono);
   font-size: var(--f-xs);
   color: var(--fg-muted);
   cursor: pointer;
@@ -349,13 +303,12 @@ body.modal-open { overflow: hidden; }
   display: flex;
   gap: 0;
   border-bottom: 1px solid var(--border);
-  /* flex-shrink: 0; */
+
   padding: 0 var(--s-lg);
   flex-direction: row-reverse;
   flex-wrap: nowrap;
   justify-content: flex-end;
 }
-
 
 #settings-body .cfg-tabs {
   flex-direction: row;
@@ -366,7 +319,7 @@ body.modal-open { overflow: hidden; }
   border: none;
   border-bottom: 2px solid transparent;
   padding: var(--s-sm) var(--s-md);
-  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+font-family: var(--font-mono);
   font-size: var(--f-xs);
   text-transform: uppercase;
   letter-spacing: 0.07em;
@@ -406,5 +359,5 @@ body.modal-open { overflow: hidden; }
 
 .cfg-color-row {
 	padding:var(--s-sm) 0;border-bottom:1px solid var(--border);
-	
+
 }

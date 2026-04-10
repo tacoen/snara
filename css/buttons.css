@@ -1,14 +1,10 @@
-/* buttons.css — Consolidated buttons + icons + interactions */
-/* Fully obeys vars.css (spacing, fonts, colors, themes) */
 
-
-/* === BASE BUTTON (text + icon buttons) === */
 .btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: var(--s-xs);
-  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+font-family: var(--font-mono);
   font-size: var(--f-xs);
   cursor: pointer;
   transition: all 0.15s ease;
@@ -23,7 +19,6 @@
   cursor: default;
 }
 
-/* === ICON-ONLY BUTTONS (28px pattern) === */
 .btn-icon {
   background: none;
   border: none;
@@ -40,7 +35,6 @@
   color: var(--fg-main);
 }
 
-/* === TOOLBAR BUTTONS (.tb-btn pattern) === */
 .btn-toolbar {
   background: none;
   border: 1px solid transparent;
@@ -55,10 +49,9 @@
   color: var(--fg-main);
 }
 
-/* === PRIMARY / FILLED BUTTONS === */
 .btn-primary {
   background: var(--primary);
-  color: #fff;
+  color: var(--bg-main);
   border: none;
   padding: var(--s-xs) var(--s-md);
 }
@@ -67,7 +60,6 @@
 .btn-primary:active   { transform: scale(0.98); }
 .btn-primary:disabled { opacity: 0.5; cursor: default; }
 
-/* === GHOST / OUTLINE BUTTONS === */
 .btn-ghost {
   background: none;
   border: 1px solid var(--border);
@@ -80,7 +72,6 @@
   color: var(--fg-main);
 }
 
-/* === DASHED ADD BUTTONS (.add-field-btn, .cfg-add-row) === */
 .btn-dashed {
   background: none;
   border: 1px dashed var(--border);
@@ -96,7 +87,6 @@
   background: var(--bg-hover);
 }
 
-/* === PILL / TAG BUTTONS (.tag-pill, .pop-pill) === */
 .btn-pill {
   border: 1px solid var(--border);
   background: none;
@@ -115,14 +105,12 @@
   color: var(--fg-main);
 }
 
-/* Tag active states (reuses vars.css tag colors) */
 .btn-pill.active-draft,
 .btn-pill.active-beat   { background: var(--tag-beat-bg);    color: var(--tag-beat-fg);    border-color: var(--tag-beat-bd); }
 .btn-pill.active-scene  { background: var(--tag-scene-bg);   color: var(--tag-scene-fg);   border-color: var(--tag-scene-bd); }
 .btn-pill.active-chapter{ background: var(--tag-chapter-bg); color: var(--tag-chapter-fg); border-color: var(--tag-chapter-bd); }
 .btn-pill.active-act    { background: var(--tag-act-bg);     color: var(--tag-act-fg);     border-color: var(--tag-act-bd); }
 
-/* === SAVE BUTTON + STATES (special) === */
 .btn-save {
   background: none;
   border: none;
@@ -145,18 +133,15 @@
 }
 
 .btn-save.saved {
-  border-color: #2da44e;
-  color: #2da44e;
-  background: #dafbe1;
-}
-html[theme="dark"] .btn-save.saved {
-  background: rgba(45, 164, 78, 0.12);
+  border-color: var(--success-fg);
+  color: var(--success-fg);
+  background: var(--success-bg);
 }
 
 .btn-save.save-error {
   border-color: var(--danger);
   color: var(--danger);
-  background: rgba(207, 34, 46, 0.08);
+  background: color-mix(in srgb, var(--danger) 8%, transparent);
 }
 
 @keyframes save-pulse {
@@ -164,7 +149,6 @@ html[theme="dark"] .btn-save.saved {
   to   { opacity: 1; }
 }
 
-/* === REMOVE / CLOSE ICONS (opacity-on-hover pattern) === */
 .btn-remove {
   background: none;
   border: none;
@@ -185,13 +169,12 @@ html[theme="dark"] .btn-save.saved {
   color: var(--danger);
 }
 
-/* === TAB / SEGMENT BUTTONS (.tabmenu li, .cfg-tab, .cfg-seg) === */
 .btn-tab {
   background: none;
   border: none;
   border-bottom: 2px solid transparent;
   padding: var(--s-sm) var(--s-md);
-  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+font-family: var(--font-mono);
   font-size: var(--f-xs);
   text-transform: uppercase;
   letter-spacing: 0.07em;
@@ -214,7 +197,7 @@ html[theme="dark"] .btn-save.saved {
 .cfg-btn {
   border-radius: 6px;
   padding: 3px var(--s-xs);
-  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+font-family: var(--font-mono);
   font-size: var(--f-xs);
   letter-spacing: 0.04em;
   cursor: pointer;
@@ -243,7 +226,7 @@ html[theme="dark"] .btn-save.saved {
 .cfg-btn-primary {
   background: var(--primary);
   border: 1px solid var(--primary);
-  color: #fff;
+  color: var(--bg-main);
 }
 
 .cfg-btn-primary:hover    { opacity: 0.85; }

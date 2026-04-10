@@ -1,5 +1,5 @@
 @layer base {
-	
+
 *,
 ::after,
 ::before,
@@ -21,7 +21,7 @@ html {
 svg {
   stroke-width: 1.5px !important;
 }
-  
+
 svg.ge,
 svg.icon {
   width: 1em;
@@ -33,6 +33,5 @@ svg.icon {
 .flex { display: flex }
 
 .pad-md { padding: var(--s-md); }
-
 
 }
