@@ -405,7 +405,7 @@ close() { closeModal('pref-modal'); console.log('closepref'); }
     this.modal.innerHTML = `
       <div class="modal-header">
         <span class="modal-title"><i data-icon="adjustments-horizontal"></i> Theme Variables</span>
-        <button class="modal-close" id="pref-close" title="Close"><i data-icon="x"></i></button>
+		<button class="cfg-btn cfg-btn-ghost" id="pref-cancel">Cancel</button>		
       </div>
 
       <div class="cfg-tabs pref-tabs">
@@ -419,7 +419,7 @@ close() { closeModal('pref-modal'); console.log('closepref'); }
       </div>
 
       <div class="modal-footer pref-footer">
-        <button class="cfg-btn pref-reset-btn" id="pref-reset">Reset tab</button>
+        <button class="cfg-btn pref-reset-btn" id="pref-reset">Reset</button>
         <button class="cfg-btn cfg-btn-ghost pref-export-btn" id="pref-export">
           <i data-icon="download"></i> Export vars.css
         </button>

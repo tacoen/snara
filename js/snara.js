@@ -132,17 +132,19 @@ async function boot() {
     if (bookId) router.navigate(SnaraRouter.bookPath(bookId, area));
   };
 
+/*
   // Wrap SnaraFiles.switchSection so file section changes update the URL
-  const filesInst = SnaraFiles.instance;
-  if (filesInst) {
-    const _origSection = filesInst.switchSection.bind(filesInst);
-    filesInst.switchSection = (sec) => {
-      _origSection(sec);
-      const bookId = AppConfig.activeBookId;
-      if (bookId) router.navigate(SnaraRouter.filesPath(bookId, sec));
-    };
-  }
+const filesInst = SnaraFiles.instance;
+if (filesInst) {
+  const _origSection = filesInst.switchSection.bind(filesInst);
+  filesInst.switchSection = (sec) => {
+    _origSection(sec);
+    // No navigate() — URL is already /?r=book/1/files from switchArea().
+    // Calling navigate() here would re-trigger _apply() → switchSection('import').
+  };
+}
 
+*/
   // Wrap loadDocument so opening a file updates the URL
   const _origLoad = window.loadDocument;
   window.loadDocument = (bookId, filename) => {

@@ -25,19 +25,25 @@ import { esc, fmtDate, fmtSize, iconFor } from '../helpers.js';
 
 export class SnaraFiles extends SnaraComponent {
 
-  constructor() {
-    super('files-import-modal');
-    this._dragSrc = null;
-    this._section = 'import';
-  }
+constructor() {
+  super('files-import-modal');
+  this._dragSrc       = null;
+  this._section       = 'import';
+  this._switching     = false;
+  this._initialized   = false;
+  this._bookChangeBound = false;
+}
 
-  _init() {
-    super._init();
-    this._bindDropzones();
-    this._bindFileInputs();
-    this._bindBookChange();
-    this.switchSection('import');
-  }
+_init() {
+  this._switching        = false;             // ← must exist before switchSection
+  this._initialized      = false;
+  this._bookChangeBound  = false;
+  super._init();
+  this._bindDropzones();
+  this._bindFileInputs();
+  this._bindBookChange();                     // ← now idempotent
+  this.switchSection('import');
+}
 
   _ensureDOM() {
     if (document.getElementById('files-import-modal')) return;
@@ -52,42 +58,54 @@ export class SnaraFiles extends SnaraComponent {
 
   // ── Book change ───────────────────────────────────────────
 
-  _bindBookChange() {
-    window.addEventListener('bookchange', () => {
-      if (this._section === 'import')  this._loadImpList();
-      if (this._section === 'export')  window.SnaraExport?.instance?.load();
-      if (this._section === 'gallery') SnaraGallery.instance?.load();
-      if (this._section === 'cache')   this._loadCacheList();
-    });
-  }
+// AFTER — bind once, guard against stacking
+_bindBookChange() {
+  if (this._bookChangeBound) return;          // ← prevent duplicate listeners
+  this._bookChangeBound = true;
+  window.addEventListener('bookchange', () => {
+    if (this._switching) return;              // ← re-entrancy guard
+    this._reloadSection();
+  });
+}
 
+_reloadSection() {
+  const sec = this._section;
+  if (sec === 'import')  this._loadImpList();
+  if (sec === 'export')  window.SnaraExport?.instance?.load();
+  if (sec === 'gallery') SnaraGallery.instance?.load();
+  if (sec === 'cache')   this._loadCacheList();
+}
   // ── Section switching ─────────────────────────────────────
 
-  switchSection(sec) {
-    this._section = sec;
+// AFTER
+switchSection(sec) {
+  if (this._switching) return;               // ← re-entrancy guard
+  if (this._section === sec && this._initialized) return; // ← no-op if same section
+  this._switching = true;
 
-    document.querySelectorAll('.fnav-item').forEach(b =>
-      b.classList.toggle('active', b.dataset.section === sec)
-    );
-    document.querySelectorAll('.fpanel').forEach(p => {
-      p.hidden = p.id !== `fpanel-${sec}`;
-    });
+  this._section = sec;
 
-    const titles = { import: 'Import', export: 'Export', gallery: 'Gallery', cache: 'Cache' };
-    const titleEl = document.getElementById('files-section-title');
-    if (titleEl) titleEl.textContent = titles[sec] || sec;
+  document.querySelectorAll('.fnav-item').forEach(b =>
+    b.classList.toggle('active', b.dataset.section === sec)
+  );
+  document.querySelectorAll('.fpanel').forEach(p => {
+    p.hidden = p.id !== `fpanel-${sec}`;
+  });
 
-    this._renderTopActions(sec);
+  const titles = { import: 'Import', export: 'Export', gallery: 'Gallery', cache: 'Cache' };
+  const titleEl = document.getElementById('files-section-title');
+  if (titleEl) titleEl.textContent = titles[sec] || sec;
 
-    if (sec === 'import')  this._loadImpList();
-    if (sec === 'export')  window.SnaraExport?.instance?.load();
-    if (sec === 'gallery') SnaraGallery.instance?.load();
-    if (sec === 'cache')   this._loadCacheList();
+  this._renderTopActions(sec);
+  this._reloadSection();                     // ← centralised, not duplicated
 
-    icx.delayreplace(`#fpanel-${sec} [data-icon]`);
-    icx.delayreplace('#files-topbar-actions [data-icon]');
-  }
+  icx.delayreplace(`#fpanel-${sec} [data-icon]`);
+  icx.delayreplace('#files-topbar-actions [data-icon]');
 
+  this._initialized = true;
+  this._switching   = false;
+}
+    
   _renderTopActions(sec) {
     const el = document.getElementById('files-topbar-actions');
     if (!el) return;

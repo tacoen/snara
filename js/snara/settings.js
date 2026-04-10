@@ -3,9 +3,21 @@
    Three-tab config modal:
      General  — app/infra keys  (config.json)
      Defaults — per-book defaults (default.json)
-     Editor   — font + entry tag colors + article
-                area appearance (conf/editor.json)
-   Depends on: AppConfig, AppDefaults, SnaraUI, icx
+     Editor   — font + entry tag colors (conf/editor.json)
+
+   Save strategy: _snap holds all tab values.
+   Each tab snapshots on switch + at save() time.
+   save() reads _snap only — never the DOM directly.
+
+   Color resolution: openModal() runs BEFORE _render()
+   so the modal is visible when resolveToHex() calls
+   getComputedStyle — var(--*) chains resolve correctly.
+
+   applyEditorPrefs: vars.css already defines the
+   defaults for --entry-*-bg and --entry-*-border.
+   The JS only needs to override when the user has
+   saved a custom value. Transparent bg is skipped
+   (CSS default is already transparent).
 ─────────────────────────────────────────────────── */
 
 import { SnaraComponent }         from './component.js';
@@ -14,11 +26,35 @@ import { SnaraUI }                from './ui.js';
 import icx                        from '../icons/ge-icon.js';
 import { esc, splitCsv }          from '../helpers.js';
 
+// ── Resolve any CSS color value → #rrggbb ─────────────────────────────
+// Appends a throw-away element to <body> so the full cascade applies,
+// then reads getComputedStyle().color which is always a concrete rgb().
+// Works for var(--*) at any nesting depth, hex, rgb(), named colors.
+// Must be called while the modal is visible (not [hidden]).
+function resolveToHex(value) {
+  if (!value || value === 'transparent') return '#000000';
+  if (/^#[0-9a-fA-F]{3,8}$/.test(value)) {
+    const h = value.replace('#', '');
+    if (h.length === 3) return '#' + h.split('').map(c => c + c).join('');
+    return '#' + h.slice(0, 6);
+  }
+  const el = document.createElement('div');
+  el.style.cssText = `position:absolute;visibility:hidden;pointer-events:none;color:${value}`;
+  document.body.appendChild(el);
+  const rgb = getComputedStyle(el).color;
+  document.body.removeChild(el);
+  const m = rgb.match(/(\d+),\s*(\d+),\s*(\d+)/);
+  if (m) return '#' + [m[1], m[2], m[3]]
+    .map(n => parseInt(n).toString(16).padStart(2, '0')).join('');
+  return '#000000';
+}
+
 export class SnaraSettings extends SnaraComponent {
 
   constructor() {
-    super('settings-modal', { defaultTab: 'general' });
+    super('settings-modal', { defaultTab: 'defaults' });
     this._editorPrefs = null;
+    this._snap = { general: null, defaults: null, editor: null };
   }
 
   // ── DOM is static in partials/settings.html ──────────────────────
@@ -29,16 +65,38 @@ export class SnaraSettings extends SnaraComponent {
     if (el.dataset.defaultTab) this._activeTab = el.dataset.defaultTab;
   }
 
-  // ── Open — load editor prefs first, then render ──────────────────
+  // ── Open ─────────────────────────────────────────────────────────
+  // openModal() FIRST — modal must be visible before _render()
+  // so resolveToHex() can call getComputedStyle correctly.
 
   async open() {
     await this._loadEditorPrefs();
-    this._render();
+
+    this._snap.general = {
+      apiPath:    AppConfig.apiPath,
+      dataPath:   AppConfig.dataPath,
+      theme:      AppConfig.theme || 'light',
+      classes:    (AppConfig.classes || []).join(', '),
+      headingMap: AppConfig.headingMap || [],
+    };
+    this._snap.defaults = {
+      act:              AppDefaults.act,
+      defaultTag:       AppDefaults.defaultTag,
+      autosave:         AppDefaults.autosave,
+      autosaveInterval: AppDefaults.autosaveInterval,
+      metaFields:       (AppDefaults.metaFields || []).join(', '),
+    };
+    this._snap.editor = this._editorPrefs ? { ...this._editorPrefs } : {};
+
+    // ── visible FIRST ───────────────────────────────────────────────
     const { openModal } = await import('./modal.js');
     openModal(this.modalId);
+
+    // ── render AFTER — resolveToHex() works now ─────────────────────
+    this._render();
   }
 
-  // ── Render — called on every open ────────────────────────────────
+  // ── Render shell ─────────────────────────────────────────────────
 
   _render() {
     const body = document.getElementById('settings-body');
@@ -46,9 +104,9 @@ export class SnaraSettings extends SnaraComponent {
 
     body.innerHTML = `
       <div class="cfg-tabs">
-        <button class="cfg-tab${this._activeTab === 'general'  ? ' active' : ''}" data-tab="general">General</button>
         <button class="cfg-tab${this._activeTab === 'defaults' ? ' active' : ''}" data-tab="defaults">Defaults</button>
         <button class="cfg-tab${this._activeTab === 'editor'   ? ' active' : ''}" data-tab="editor">Editor</button>
+        <button class="cfg-tab${this._activeTab === 'general'  ? ' active' : ''}" data-tab="general">General</button>
       </div>
       <div class="cfg-tab-content" id="cfg-tab-content">
         ${this._renderTab(this._activeTab)}
@@ -56,10 +114,7 @@ export class SnaraSettings extends SnaraComponent {
     `;
 
     this._bindTabs();
-    this._bindSegmented();
-    this._bindToggle();
-    this._bindHmapAdd();
-    this._bindHmapRemoves();
+    this._bindCurrentTab();
     icx.delayreplace('#settings-body [data-icon]');
   }
 
@@ -70,19 +125,21 @@ export class SnaraSettings extends SnaraComponent {
     return '';
   }
 
-  // ── Tab switching ─────────────────────────────────────────────────
+  // ── Tab switching — snapshot BEFORE switching ─────────────────────
 
-  _switchTab(tab) {
-    this._activeTab = tab;
+  _switchTab(newTab) {
+    this._snapshotTab(this._activeTab);
+    this._activeTab = newTab;
+
     document.querySelectorAll('#settings-body .cfg-tab').forEach(b =>
-      b.classList.toggle('active', b.dataset.tab === tab)
+      b.classList.toggle('active', b.dataset.tab === newTab)
     );
+
     const content = document.getElementById('cfg-tab-content');
     if (!content) return;
-    content.innerHTML = this._renderTab(tab);
-    this._bindSegmented();
-    this._bindToggle();
-    if (tab === 'general') { this._bindHmapAdd(); this._bindHmapRemoves(); }
+    // Modal already visible — resolveToHex works immediately
+    content.innerHTML = this._renderTab(newTab);
+    this._bindCurrentTab();
     icx.delayreplace('#settings-body [data-icon]');
   }
 
@@ -90,6 +147,85 @@ export class SnaraSettings extends SnaraComponent {
     document.querySelectorAll('#settings-body .cfg-tab').forEach(btn => {
       btn.addEventListener('click', () => this._switchTab(btn.dataset.tab));
     });
+  }
+
+  _bindCurrentTab() {
+    this._bindSegmented();
+    this._bindToggle();
+    this._bindColorPickers();
+    if (this._activeTab === 'general') {
+      this._bindHmapAdd();
+      this._bindHmapRemoves();
+    }
+  }
+
+  // ── Snapshot active tab into _snap ────────────────────────────────
+
+  _snapshotTab(tab) {
+    if (tab === 'general')  this._snapshotGeneral();
+    if (tab === 'defaults') this._snapshotDefaults();
+    if (tab === 'editor')   this._snapshotEditor();
+  }
+
+  _snapshotGeneral() {
+    const apiPath  = document.getElementById('cfg-apiPath');
+    const dataPath = document.getElementById('cfg-dataPath');
+    const theme    = document.querySelector('#cfg-theme .cfg-seg.active');
+    const classes  = document.getElementById('cfg-classes');
+    if (!apiPath && !theme) return;
+
+    const headingMap = [];
+    document.querySelectorAll('.cfg-hmap-row').forEach(row => {
+      const prefix = row.querySelector('.cfg-hmap-prefix')?.value ?? '';
+      const cls    = row.querySelector('.cfg-hmap-cls')?.value.trim() ?? '';
+      if (prefix || cls) headingMap.push({ prefix, cls });
+    });
+
+    this._snap.general = {
+      apiPath:    apiPath?.value     || this._snap.general?.apiPath    || AppConfig.apiPath,
+      dataPath:   dataPath?.value    || this._snap.general?.dataPath   || AppConfig.dataPath,
+      theme:      theme?.dataset.val || this._snap.general?.theme      || AppConfig.theme || 'light',
+      classes:    classes?.value     || this._snap.general?.classes    || (AppConfig.classes || []).join(', '),
+      headingMap: headingMap.length  ? headingMap : (this._snap.general?.headingMap || AppConfig.headingMap || []),
+    };
+  }
+
+  _snapshotDefaults() {
+    const actEl      = document.getElementById('cfg-act');
+    const tagEl      = document.querySelector('#cfg-defaultTag .cfg-seg.active');
+    const autosaveEl = document.getElementById('cfg-autosave');
+    const intervalEl = document.getElementById('cfg-autosaveInterval');
+    const metaEl     = document.getElementById('cfg-metaFields');
+    if (!actEl && !tagEl) return;
+
+    this._snap.defaults = {
+      act:              actEl?.value                         ?? this._snap.defaults?.act              ?? AppDefaults.act,
+      defaultTag:       tagEl?.dataset.val                   ?? this._snap.defaults?.defaultTag       ?? AppDefaults.defaultTag,
+      autosave:         autosaveEl?.classList.contains('on') ?? this._snap.defaults?.autosave         ?? AppDefaults.autosave,
+      autosaveInterval: parseInt(intervalEl?.value)          || this._snap.defaults?.autosaveInterval || AppDefaults.autosaveInterval,
+      metaFields:       metaEl?.value                        ?? this._snap.defaults?.metaFields       ?? (AppDefaults.metaFields || []).join(', '),
+    };
+  }
+
+  _snapshotEditor() {
+    const fontGroup = document.getElementById('cfg-entry-font');
+    if (!fontGroup) return;
+
+    const font = fontGroup.querySelector('.cfg-seg.active')?.dataset.val || 'var(--font-sans)';
+    const tags = {};
+
+    for (const tag of ['act', 'chapter', 'scene', 'beat']) {
+      const bgPicker = document.querySelector(`#settings-body .cfg-color-input[data-tag="${tag}"][data-prop="bg"]`);
+      const bdPicker = document.querySelector(`#settings-body .cfg-color-input[data-tag="${tag}"][data-prop="border"]`);
+      const noneBox  = document.querySelector(`#settings-body .cfg-color-none[data-tag="${tag}"]`);
+      tags[tag] = {
+        bg:     noneBox?.checked ? 'transparent' : (bgPicker?.value || 'transparent'),
+        border: bdPicker?.value  || `var(--tag-${tag}-fg)`,
+      };
+    }
+
+    this._snap.editor = { font, ...tags };
+    this._editorPrefs = this._snap.editor;
   }
 
   // ── General tab ───────────────────────────────────────────────────
@@ -196,35 +332,6 @@ export class SnaraSettings extends SnaraComponent {
     const p    = this._editorPrefs || {};
     const font = p.font || 'var(--font-sans)';
 
-    const tagDefs = [
-      { id: 'act',     label: 'Act',     bg: p.act?.bg,     border: p.act?.border     },
-      { id: 'chapter', label: 'Chapter', bg: p.chapter?.bg, border: p.chapter?.border },
-      { id: 'scene',   label: 'Scene',   bg: p.scene?.bg,   border: p.scene?.border   },
-      { id: 'beat',    label: 'Beat',    bg: p.beat?.bg,    border: p.beat?.border     },
-    ];
-
-    // ── Article area — color-theory options ──────────────────────────
-    // Primary   = act     (amber/golden)
-    // Secondary = chapter (coral/peach)
-    // Tertiary  = scene   (mint green)
-    const art   = p.article ?? {};
-    const artBg = art.bg     || 'transparent';
-    const artBd = art.border || 'var(--tag-chapter-bd)';
-
-    const artBgOptions = [
-      { val: 'transparent',           label: 'None'      },
-      { val: 'var(--tag-act-bg)',     label: 'Primary'   },
-      { val: 'var(--tag-chapter-bg)', label: 'Secondary' },
-      { val: 'var(--tag-scene-bg)',   label: 'Tertiary'  },
-    ];
-
-    const artBdOptions = [
-      { val: 'var(--border)',         label: 'Subtle'    },
-      { val: 'var(--tag-act-bd)',     label: 'Primary'   },
-      { val: 'var(--tag-chapter-bd)', label: 'Secondary' },
-      { val: 'var(--tag-scene-bd)',   label: 'Tertiary'  },
-    ];
-
     return `
       <section class="cfg-section">
         <h3 class="cfg-heading">Typography
@@ -252,98 +359,72 @@ export class SnaraSettings extends SnaraComponent {
 
       <section class="cfg-section">
         <h3 class="cfg-heading">Entry colors
-          <span class="cfg-hint">background &amp; left border per tag</span>
+          <span class="cfg-hint">background &amp; left-border per tag</span>
         </h3>
-        ${tagDefs.map(t => this._renderTagColorRow(t)).join('')}
-      </section>
-
-      <section class="cfg-section">
-        <h3 class="cfg-heading">Article area
-          <span class="cfg-hint">background &amp; left border of #article — color theory</span>
-        </h3>
-        <div style="padding:var(--s-sm) 0">
-          <div class="cfg-row">
-            <span class="cfg-label" style="display:flex;align-items:center;gap:6px;font-weight:500;color:var(--fg-main)">
-              <span style="display:inline-block;width:10px;height:10px;border-radius:2px;
-                background:var(--tag-chapter-bg);
-                border:1.5px solid var(--tag-chapter-bd)">
-              </span>
-              Article
-            </span>
-          </div>
-          <div class="cfg-row">
-            <label class="cfg-label" style="font-size:10px;opacity:.7">Background</label>
-            <div class="cfg-segmented cfg-article-bg">
-              ${artBgOptions.map(o =>
-                `<button class="cfg-seg${artBg === o.val ? ' active' : ''}" data-val="${o.val}">${o.label}</button>`
-              ).join('')}
-            </div>
-          </div>
-          <div class="cfg-row" style="margin-top:4px">
-            <label class="cfg-label" style="font-size:10px;opacity:.7">Border</label>
-            <div class="cfg-segmented cfg-article-bd">
-              ${artBdOptions.map(o =>
-                `<button class="cfg-seg${artBd === o.val ? ' active' : ''}" data-val="${o.val}">${o.label}</button>`
-              ).join('')}
-            </div>
-          </div>
-        </div>
+        ${['act', 'chapter', 'scene', 'beat'].map(id => this._renderTagColorRow(id)).join('')}
       </section>
     `;
   }
 
   // ── Tag color row ─────────────────────────────────────────────────
+  // Called while modal is already visible — resolveToHex() works.
 
-  _renderTagColorRow({ id, label, bg, border }) {
-    const bgOptions = [
-      { val: 'transparent',          label: 'None'  },
-      { val: `var(--tag-${id}-bg)`,  label: 'Tint'  },
-      { val: `var(--tag-${id}-bd)`,  label: 'Muted' },
-    ];
+  _renderTagColorRow(id) {
+    const label = id.charAt(0).toUpperCase() + id.slice(1);
+    const p     = this._editorPrefs || {};
 
-    const bdOptions = id === 'beat'
-      ? [
-          { val: 'var(--tag-draft-fg)', label: 'Draft'  },
-          { val: 'var(--tag-beat-bd)',  label: 'Accent' },
-          { val: 'var(--border)',       label: 'Subtle' },
-        ]
-      : [
-          { val: `var(--tag-${id}-fg)`, label: 'Primary'   },
-          { val: `var(--tag-${id}-bd)`, label: 'Secondary' },
-          { val: 'var(--border)',        label: 'Subtle'    },
-        ];
+    const defaultBorder = id === 'beat' ? 'var(--tag-draft-fg)' : `var(--tag-${id}-fg)`;
+    const curBg         = p[id]?.bg     || 'transparent';
+    const curBorder     = p[id]?.border || defaultBorder;
 
-    const defaultBd = id === 'beat' ? 'var(--tag-draft-fg)' : `var(--tag-${id}-fg)`;
-    const curBg = bg     || 'transparent';
-    const curBd = border || defaultBd;
+    const bgIsNone  = curBg === 'transparent';
+    const bgHex     = bgIsNone ? '#ffffff' : resolveToHex(curBg);
+    const borderHex = resolveToHex(curBorder);
 
     return `
-      <div style="padding:var(--s-sm) 0;border-bottom:1px solid var(--border)">
-        <div class="cfg-row" style="margin-bottom:var(--s-xs)">
-          <span class="cfg-label" style="display:flex;align-items:center;gap:6px;font-weight:500;color:var(--fg-main)">
-            <span style="display:inline-block;width:10px;height:10px;border-radius:2px;
-              background:var(--tag-${id}-bg);
-              border:1.5px solid ${id === 'beat' ? 'var(--tag-draft-fg)' : `var(--tag-${id}-fg)`}">
-            </span>
-            ${label}
+      <div class="cfg-color-row">
+
+        <div class="cfg-row" style="margin-bottom:var(--s-sm)">
+          <span class="cfg-label" style="display:flex;align-items:center;gap:8px;font-weight:500;color:var(--fg-main)">
+            <span class="cfg-color-preview" data-tag="${id}" style="
+              background:${bgIsNone ? 'transparent' : bgHex};
+              border-left:3px solid ${borderHex};
+              transition:background 0.1s,border-color 0.1s;
+            ">${label}</span>
           </span>
         </div>
-        <div class="cfg-row">
+
+        <div class="cfg-row" style="margin-bottom:var(--s-xs)">
           <label class="cfg-label" style="font-size:10px;opacity:.7">Background</label>
-          <div class="cfg-segmented cfg-entry-bg" data-tag="${id}">
-            ${bgOptions.map(o =>
-              `<button class="cfg-seg${curBg === o.val ? ' active' : ''}" data-val="${o.val}">${o.label}</button>`
-            ).join('')}
+          <div style="display:flex;align-items:center;gap:var(--s-sm)">
+            <input type="color" class="cfg-color-input"
+              data-tag="${id}" data-prop="bg"
+              value="${bgHex}"
+              ${bgIsNone ? 'disabled' : ''}
+              title="Background color"
+              style="width:32px;height:26px;padding:1px 2px;border:1px solid var(--border);
+                     border-radius:4px;cursor:pointer;background:none;">
+            <label style="display:flex;align-items:center;gap:4px;font-size:var(--f-xs);
+                          color:var(--fg-muted);cursor:pointer;user-select:none">
+              <input type="checkbox" class="cfg-color-none"
+                data-tag="${id}" data-prop="bg"
+                ${bgIsNone ? 'checked' : ''}
+                style="accent-color:var(--primary);cursor:pointer">
+              None
+            </label>
           </div>
         </div>
-        <div class="cfg-row" style="margin-top:4px">
+
+        <div class="cfg-row">
           <label class="cfg-label" style="font-size:10px;opacity:.7">Border</label>
-          <div class="cfg-segmented cfg-entry-bd" data-tag="${id}">
-            ${bdOptions.map(o =>
-              `<button class="cfg-seg${curBd === o.val ? ' active' : ''}" data-val="${o.val}">${o.label}</button>`
-            ).join('')}
-          </div>
+          <input type="color" class="cfg-color-input"
+            data-tag="${id}" data-prop="border"
+            value="${borderHex}"
+            title="Left-border color"
+            style="width:32px;height:26px;padding:1px 2px;border:1px solid var(--border);
+                   border-radius:4px;cursor:pointer;background:none;">
         </div>
+
       </div>`;
   }
 
@@ -359,40 +440,50 @@ export class SnaraSettings extends SnaraComponent {
       </div>`;
   }
 
-  // ── Snapshot editor prefs from current DOM ────────────────────────
-  // Called on every segmented click — NOT at save time.
-  // Guard: if Editor tab not rendered, fontGroup is null → returns
-  // early without mutating _editorPrefs (safe across all tabs).
+  // ── Bind color pickers ────────────────────────────────────────────
 
-  _snapshotEditorPrefs() {
-    const fontGroup = document.getElementById('cfg-entry-font');
-    if (!fontGroup) return;
-
-    const font = fontGroup.querySelector('.cfg-seg.active')?.dataset.val || 'var(--font-sans)';
-
-    // Entry tag bg + border
-    const tags = {};
-    document.querySelectorAll('.cfg-entry-bg[data-tag]').forEach(bgGroup => {
-      const tag     = bgGroup.dataset.tag;
-      const bg      = bgGroup.querySelector('.cfg-seg.active')?.dataset.val || 'transparent';
-      const bdGroup = document.querySelector(`.cfg-entry-bd[data-tag="${tag}"]`);
-      const border  = bdGroup?.querySelector('.cfg-seg.active')?.dataset.val
-        || `var(--tag-${tag}-fg)`;
-      tags[tag] = { bg, border };
+  _bindColorPickers() {
+    document.querySelectorAll('#settings-body .cfg-color-input').forEach(input => {
+      input.addEventListener('input', () => {
+        const { tag, prop } = input.dataset;
+        document.documentElement.style.setProperty(
+          prop === 'bg' ? `--entry-${tag}-bg` : `--entry-${tag}-border`,
+          input.value
+        );
+        this._updatePreviewStrip(tag);
+        this._snapshotEditor();
+      });
     });
 
-    // Article container bg + border (color-theory)
-    const artBgGroup = document.querySelector('.cfg-article-bg');
-    const artBdGroup = document.querySelector('.cfg-article-bd');
-    const article = {
-      bg:     artBgGroup?.querySelector('.cfg-seg.active')?.dataset.val ?? 'transparent',
-      border: artBdGroup?.querySelector('.cfg-seg.active')?.dataset.val ?? 'var(--tag-chapter-bd)',
-    };
-
-    this._editorPrefs = { font, ...tags, article };
+    document.querySelectorAll('#settings-body .cfg-color-none').forEach(checkbox => {
+      checkbox.addEventListener('change', () => {
+        const { tag } = checkbox.dataset;
+        const picker  = document.querySelector(
+          `#settings-body .cfg-color-input[data-tag="${tag}"][data-prop="bg"]`
+        );
+        if (!picker) return;
+        picker.disabled = checkbox.checked;
+        document.documentElement.style.setProperty(
+          `--entry-${tag}-bg`,
+          checkbox.checked ? 'transparent' : picker.value
+        );
+        this._updatePreviewStrip(tag);
+        this._snapshotEditor();
+      });
+    });
   }
 
-  // ── Bind segmented button groups ──────────────────────────────────
+  _updatePreviewStrip(tag) {
+    const strip    = document.querySelector(`#settings-body .cfg-color-preview[data-tag="${tag}"]`);
+    const bgPicker = document.querySelector(`#settings-body .cfg-color-input[data-tag="${tag}"][data-prop="bg"]`);
+    const bdPicker = document.querySelector(`#settings-body .cfg-color-input[data-tag="${tag}"][data-prop="border"]`);
+    const noneBox  = document.querySelector(`#settings-body .cfg-color-none[data-tag="${tag}"]`);
+    if (!strip) return;
+    if (bgPicker) strip.style.background      = noneBox?.checked ? 'transparent' : bgPicker.value;
+    if (bdPicker) strip.style.borderLeftColor = bdPicker.value;
+  }
+
+  // ── Bind segmented buttons ────────────────────────────────────────
 
   _bindSegmented() {
     document.querySelectorAll('#settings-body .cfg-segmented').forEach(group => {
@@ -401,37 +492,11 @@ export class SnaraSettings extends SnaraComponent {
         if (!btn) return;
         group.querySelectorAll('.cfg-seg').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
-
-        // Live font preview
         if (group.id === 'cfg-entry-font') {
           const preview = document.getElementById('cfg-font-preview');
           if (preview) preview.style.fontFamily = btn.dataset.val;
+          this._snapshotEditor();
         }
-
-        // Live preview — entry tag bg
-        if (group.classList.contains('cfg-entry-bg')) {
-          const tag = group.dataset.tag;
-          if (tag) document.documentElement.style.setProperty(`--entry-${tag}-bg`, btn.dataset.val);
-        }
-
-        // Live preview — entry tag border
-        if (group.classList.contains('cfg-entry-bd')) {
-          const tag = group.dataset.tag;
-          if (tag) document.documentElement.style.setProperty(`--entry-${tag}-border`, btn.dataset.val);
-        }
-
-        // Live preview — article background
-        if (group.classList.contains('cfg-article-bg')) {
-          document.documentElement.style.setProperty('--article-bg', btn.dataset.val);
-        }
-
-        // Live preview — article border
-        if (group.classList.contains('cfg-article-bd')) {
-          document.documentElement.style.setProperty('--article-border', btn.dataset.val);
-        }
-
-        // Snapshot editor state to memory on every change
-        this._snapshotEditorPrefs();
       });
     });
   }
@@ -440,8 +505,8 @@ export class SnaraSettings extends SnaraComponent {
 
   _bindToggle() {
     document.getElementById('cfg-autosave')?.addEventListener('click', function () {
-      const on = this.classList.toggle('on');
-      this.setAttribute('aria-pressed', on);
+      this.classList.toggle('on');
+      this.setAttribute('aria-pressed', this.classList.contains('on'));
     });
   }
 
@@ -466,9 +531,11 @@ export class SnaraSettings extends SnaraComponent {
     });
   }
 
-  // ── Save — writes all three tabs ─────────────────────────────────
+  // ── Save ─────────────────────────────────────────────────────────
 
   async save() {
+    this._snapshotTab(this._activeTab);
+
     const btn = document.getElementById('cfg-save-btn');
     btn.disabled    = true;
     btn.textContent = 'saving…';
@@ -480,7 +547,8 @@ export class SnaraSettings extends SnaraComponent {
         this._saveEditor(),
       ]);
       btn.textContent = 'saved ✓';
-    } catch {
+    } catch (e) {
+      console.error('[settings] save error', e);
       btn.textContent = 'error';
     }
 
@@ -491,86 +559,55 @@ export class SnaraSettings extends SnaraComponent {
     }, 900);
   }
 
-  // ── Save: General tab ─────────────────────────────────────────────
-
   async _saveGeneral() {
-    const theme = document.querySelector('#cfg-theme .cfg-seg.active')?.dataset.val || 'light';
-
-    const headingMap = [];
-    document.querySelectorAll('.cfg-hmap-row').forEach(row => {
-      const prefix = row.querySelector('.cfg-hmap-prefix')?.value ?? '';
-      const cls    = row.querySelector('.cfg-hmap-cls')?.value.trim() ?? '';
-      if (prefix || cls) headingMap.push({ prefix, cls });
-    });
-
+    const s = this._snap.general;
+    if (!s) return;
     const updated = {
-      apiPath:    document.getElementById('cfg-apiPath')?.value  || AppConfig.apiPath,
-      dataPath:   document.getElementById('cfg-dataPath')?.value || AppConfig.dataPath,
-      theme,
-      classes:    splitCsv(document.getElementById('cfg-classes')?.value),
-      headingMap,
+      apiPath:    s.apiPath,
+      dataPath:   s.dataPath,
+      theme:      s.theme,
+      classes:    splitCsv(s.classes),
+      headingMap: s.headingMap,
     };
-
     Object.assign(AppConfig, updated);
-
-    const resolved = theme === 'system'
+    const resolved = s.theme === 'system'
       ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
-      : theme;
+      : s.theme;
     SnaraUI.instance.toggleTheme(resolved);
-
     await fetch(AppConfig.apiPath + '?action=config.set', {
-      method:  'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body:    JSON.stringify(updated),
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(updated),
     });
   }
-
-  // ── Save: Defaults tab ────────────────────────────────────────────
 
   async _saveDefaults() {
-    const defaultTag = document.querySelector('#cfg-defaultTag .cfg-seg.active')?.dataset.val
-      || AppDefaults.defaultTag;
-
+    const s = this._snap.defaults;
+    if (!s) return;
     const updated = {
-      act:              document.getElementById('cfg-act')?.value ?? AppDefaults.act,
-      defaultTag,
-      autosave:         document.getElementById('cfg-autosave')?.classList.contains('on')
-                          ?? AppDefaults.autosave,
-      autosaveInterval: parseInt(document.getElementById('cfg-autosaveInterval')?.value)
-                          || AppDefaults.autosaveInterval,
-      metaFields:       splitCsv(document.getElementById('cfg-metaFields')?.value),
+      act:              s.act,
+      defaultTag:       s.defaultTag,
+      autosave:         s.autosave,
+      autosaveInterval: s.autosaveInterval,
+      metaFields:       splitCsv(s.metaFields),
     };
-
     Object.assign(AppDefaults, updated);
-
     const bookId = AppConfig.activeBookId;
-    if (!bookId) {
-      console.warn('[snara] No active book — defaults not saved.');
-      return;
-    }
-
+    if (!bookId) { console.warn('[snara] No active book — defaults not saved.'); return; }
     await fetch(AppConfig.apiPath + `?action=bookdefault.set&bookId=${encodeURIComponent(bookId)}`, {
-      method:  'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body:    JSON.stringify({ defaults: updated }),
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ defaults: updated }),
     });
   }
-
-  // ── Save: Editor tab ──────────────────────────────────────────────
-  // Original guard: snapshot fires on click via _bindSegmented(),
-  // not here. _editorPrefs is always populated by _loadEditorPrefs()
-  // on open(), so the !_editorPrefs guard is a safety net only.
 
   async _saveEditor() {
     const bookId = AppConfig.activeBookId;
-    if (!bookId || !this._editorPrefs) return;
-
-    SnaraSettings.applyEditorPrefs(this._editorPrefs);
-
+    const s      = this._snap.editor;
+    if (!bookId || !s) return;
+    this._editorPrefs = s;
+    SnaraSettings.applyEditorPrefs(s);
     await fetch(AppConfig.apiPath + `?action=editorpref.set&bookId=${encodeURIComponent(bookId)}`, {
-      method:  'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body:    JSON.stringify(this._editorPrefs),
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(s),
     });
   }
 
@@ -588,29 +625,42 @@ export class SnaraSettings extends SnaraComponent {
     }
   }
 
-  // ── Static: apply all CSS variables to :root ─────────────────────
-  // Called on boot (snara.js) and immediately after _saveEditor().
+  // ── Static: apply saved custom properties to :root ───────────────
+  // vars.css already defines the defaults:
+  //   --entry-act-bg:         transparent
+  //   --entry-act-border:     var(--tag-act-fg)
+  //   --entry-chapter-bg:     transparent
+  //   --entry-chapter-border: var(--tag-chapter-fg)
+  //   --entry-scene-bg:       transparent
+  //   --entry-scene-border:   var(--tag-scene-fg)
+  //   --entry-beat-bg:        transparent
+  //   --entry-beat-border:    var(--tag-draft-fg)
+  //
+  // So we only set a property when the user has saved a custom value.
+  // transparent bg is skipped — CSS default is already transparent.
 
   static applyEditorPrefs(prefs) {
     if (!prefs) return;
     const r = document.documentElement;
 
-    // Font family for #article .entries
     if (prefs.font) r.style.setProperty('--entry-font', prefs.font);
 
-    // Entry tag bg + border — original loop, unchanged
     for (const tag of ['act', 'chapter', 'scene', 'beat']) {
       const t = prefs[tag];
       if (!t) continue;
-      if (t.bg)     r.style.setProperty(`--entry-${tag}-bg`,     t.bg);
-      if (t.border) r.style.setProperty(`--entry-${tag}-border`,  t.border);
-    }
-
-    // Article container — additive, skipped if key absent (old prefs)
-    const a = prefs.article;
-    if (a) {
-      if (a.bg)     r.style.setProperty('--article-bg',     a.bg);
-      if (a.border) r.style.setProperty('--article-border', a.border);
+      // Only override bg if it's a real color (not transparent — CSS handles that)
+      if (t.bg && t.bg !== 'transparent') {
+        r.style.setProperty(`--entry-${tag}-bg`, t.bg);
+      } else {
+        // Remove any previous override — let vars.css default (transparent) apply
+        r.style.removeProperty(`--entry-${tag}-bg`);
+      }
+      // Always set border — user may have changed it from the CSS default
+      if (t.border) {
+        r.style.setProperty(`--entry-${tag}-border`, t.border);
+      } else {
+        r.style.removeProperty(`--entry-${tag}-border`);
+      }
     }
   }
 }

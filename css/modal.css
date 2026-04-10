@@ -356,6 +356,11 @@ body.modal-open { overflow: hidden; }
   justify-content: flex-end;
 }
 
+
+#settings-body .cfg-tabs {
+  flex-direction: row;
+  justify-content: flex-start;
+}
 .cfg-tab {
   background: none;
   border: none;
@@ -385,4 +390,21 @@ body.modal-open { overflow: hidden; }
   padding: var(--s-lg);
   overflow-y: auto;
   flex: 1;
+}
+
+.cfg-color-preview {
+	display: inline-flex;
+	width: 36px;
+	height: 14px;
+	border-radius: 3px;
+	background: transparent;
+	border: 1px solid var(--border);
+	padding: var(--s-xs) var(--s-md);
+	transition: background 0.1s, border-color 0.1s;
+	align-items: center;
+}
+
+.cfg-color-row {
+	padding:var(--s-sm) 0;border-bottom:1px solid var(--border);
+	
 }
