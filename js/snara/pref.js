@@ -421,7 +421,7 @@ close() { closeModal('pref-modal'); console.log('closepref'); }
 
       ${_modalFooter(`
         <button class="cfg-btn pref-reset-btn" id="pref-reset">Reset</button>
-        <button class="cfg-btn cfg-btn-ghost pref-export-btn" id="pref-export">
+        <button class="cfg-btn mute pref-export-btn" id="pref-export">
           <i data-icon="download"></i> Export vars.css
         </button>
       `)}

@@ -60,14 +60,14 @@ font-family: var(--font-mono);
 .btn-primary:active   { transform: scale(0.98); }
 .btn-primary:disabled { opacity: 0.5; cursor: default; }
 
-.btn-ghost {
+buttton.mute {
   background: none;
   border: 1px solid var(--border);
   color: var(--fg-muted);
 }
 
-.btn-ghost:hover,
-.btn-ghost:focus {
+button.mute:hover,
+button.mute:focus {
   background: var(--bg-hover);
   color: var(--fg-main);
 }
@@ -205,7 +205,7 @@ font-family: var(--font-mono);
 .cfg-btn {
   border-radius: 6px;
   padding: 3px var(--s-xs);
-font-family: var(--font-mono);
+  font-family: var(--font-mono);
   font-size: var(--f-xs);
   letter-spacing: 0.04em;
   cursor: pointer;
@@ -216,7 +216,7 @@ font-family: var(--font-mono);
   height: 30px;
 }
 
-.cfg-btn-ghost {
+.cfg-btn.mute {
   background: none;
   border: 1px solid var(--border);
   color: var(--fg-muted);
@@ -226,18 +226,18 @@ font-family: var(--font-mono);
   width: 24px;
 }
 
-.cfg-btn-ghost:hover {
+.cfg-btn.mute:hover {
   background: var(--bg-hover);
   color: var(--fg-main);
 }
 
-.cfg-btn-primary {
+.cfg-btn.primary {
   background: var(--primary);
   border: 1px solid var(--primary);
   color: var(--bg-main);
 }
 
-.cfg-btn-primary:hover    { opacity: 0.85; }
-.cfg-btn-primary:active   { transform: scale(0.98); }
-.cfg-btn-primary:disabled { opacity: 0.5; cursor: default; transform: none; }
+.cfg-btn.primary:hover    { opacity: 0.85; }
+.cfg-btn.primary:active   { transform: scale(0.98); }
+.cfg-btn.primary:disabled { opacity: 0.5; cursor: default; transform: none; }
 

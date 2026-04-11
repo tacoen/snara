@@ -39,7 +39,7 @@
       <div id="files-delete-bar" class="fdelete-bar" hidden>
         <p id="files-delete-count"></p>
         <div class="fdelete-actions">
-          <button class="cfg-btn cfg-btn-ghost" onclick="SnaraFiles.instance.clearDeletes('import')">Cancel</button>
+          <button class="cfg-btn mute" onclick="SnaraFiles.instance.clearDeletes('import')">Cancel</button>
           <button class="cfg-btn cfg-btn-danger" onclick="SnaraFiles.instance.applyDeletes('import')">Delete marked</button>
         </div>
       </div>
@@ -81,12 +81,12 @@
       <div id="files-delete-bar-cache" class="fdelete-bar" hidden>
         <p id="files-delete-count-cache"></p>
         <div class="fdelete-actions">
-          <button class="cfg-btn cfg-btn-ghost" onclick="SnaraFiles.instance.clearDeletes('cache')">Cancel</button>
-          <button class="cfg-btn cfg-btn-danger" onclick="SnaraFiles.instance.applyDeletes('cache')">Delete marked</button>
+          <button class="cfg-btn mute" onclick="SnaraFiles.instance.clearDeletes('cache')">Cancel</button>
+          <button class="cfg-btn danger" onclick="SnaraFiles.instance.applyDeletes('cache')">Delete marked</button>
         </div>
       </div>
       <div class="fpanel-footer">
-        <button class="cfg-btn cfg-btn-ghost" onclick="SnaraFiles.instance.rebuildCache()">
+        <button class="cfg-btn mute" onclick="SnaraFiles.instance.rebuildCache()">
           <i data-icon="refresh"></i> Rebuild cache
         </button>
       </div>

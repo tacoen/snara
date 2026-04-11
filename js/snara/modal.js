@@ -69,7 +69,7 @@ export function _modalFooter(additionalHTML = '') {
   return `
     <div class="modal-footer">
       ${additionalHTML.trim()}
-      <button class="cfg-btn cfg-btn-ghost" id="modal-cancel">Cancel</button>
-      <button class="cfg-btn cfg-btn-primary" id="modal-save">Save</button>
+      <button class="cfg-btn mute" id="modal-cancel">Cancel</button>
+      <button class="cfg-btn primary" id="modal-save">Save</button>
     </div>`;
 }
