@@ -24,7 +24,6 @@ font-family: var(--font-mono);
   text-transform: uppercase;
   letter-spacing: .08em;
   color: var(--fg-muted);
-
   padding: var(--s-sm) var(--s-md) var(--s-xs);
 }
 
@@ -48,7 +47,6 @@ font-family: var(--font-mono);
 .fnav-item:hover { color: var(--fg-main); background: var(--bg-main); }
 .fnav-item.active {
   color: var(--fg-main);
-
   background: var(--bg-alt);
   font-weight: 500;
 }
@@ -86,7 +84,6 @@ font-family: var(--font-mono);
   overflow: hidden;
 }
 .fpanel[hidden] { display: none; }
-
 .fpanel-hint {
   padding: 8px var(--s-md) 4px;
   font-size: var(--f-xs);
@@ -122,7 +119,6 @@ font-family: var(--font-mono);
 #files-dropzone svg, #files-gallery-dz svg { width: 20px; height: 20px; opacity: .5; }
 #files-dropzone p, #files-gallery-dz p { font-size: var(--f-xs); line-height: 1.5; }
 #files-dropzone span { font-size: var(--f-xs); opacity: .6; }
-
 #files-dropzone.drag, #files-gallery-dz.drag {
   border-color: var(--primary);
   background: var(--selection);
@@ -130,7 +126,6 @@ font-family: var(--font-mono);
 }
 
 #files-gallery-dz { padding: var(--s-md); }
-
 .flist {
   list-style: none;
   padding: 4px var(--s-md);
@@ -162,7 +157,6 @@ font-family: var(--font-mono);
 }
 
 .flist-item:hover { background: var(--bg-alt); }
-
 .flist-item.delete {
   background: color-mix(in srgb, var(--danger) 6%, transparent);
   border-color: var(--border);
@@ -174,10 +168,9 @@ font-family: var(--font-mono);
 }
 
 .flist-item.drag-over { border-color: var(--primary); }
-
 .flist-act-hdr {
   padding: var(--s-xs) var(--s-sm);
-font-family: var(--font-mono);
+  font-family: var(--font-mono);
   font-size: 10px;
   font-weight: 600;
   text-transform: uppercase;
@@ -195,7 +188,6 @@ font-family: var(--font-mono);
   align-items: center;
 }
 .fhandle svg { width: 12px; height: 12px; }
-
 .fname {
   flex: 1;
   font-size: var(--f-xs);
@@ -206,7 +198,7 @@ font-family: var(--font-mono);
 }
 
 .fbadge {
-font-family: var(--font-mono);
+  font-family: var(--font-mono);
   font-size: 10px;
   padding: 1px 6px;
   border-radius: 20px;
@@ -227,11 +219,9 @@ font-family: var(--font-mono);
 }
 
 .fs-ready { background: var(--selection); color: var(--primary); }
-
 .fs-ok    { background: var(--success-bg); color: var(--success-fg); }
 
 .ftools { display: flex; gap: 2px; flex-shrink: 0; }
-
 .ftool {
   display: flex;
   align-items: center;
@@ -248,7 +238,6 @@ font-family: var(--font-mono);
 .ftool svg {width: 20px;pointer-events: none;}
 .ftool:hover { background: var(--bg-alt); border-color: var(--border); color: var(--fg-main); }
 .ftool.erase-btn:hover { color: var(--danger); }
-
 .fdelete-bar {
   display: flex;
   align-items: center;
@@ -272,4 +261,3 @@ font-family: var(--font-mono);
   padding: 4px var(--s-sm);
 }
 .fcheck-row input { accent-color: var(--primary); width: 13px; height: 13px; cursor: pointer; }
-

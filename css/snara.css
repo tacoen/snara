@@ -70,7 +70,6 @@ font-family: var(--font-mono);
 #save-btn {
   background: none;
   border: none;
-
   cursor: pointer;
   color: var(--fg-muted);
   display: flex;
@@ -88,7 +87,6 @@ font-family: var(--font-mono);
 #save-btn:hover {
   background: var(--bg-hover);
   color: var(--fg-main);
-
 }
 
 #save-btn:disabled {
@@ -146,7 +144,6 @@ font-family: var(--font-mono);
 }
 
 .tabmenu li:hover { color: var(--fg-main); }
-
 .tabmenu li.active {
   color: var(--fg-main);
   border-bottom-color: var(--primary);
@@ -173,7 +170,6 @@ font-family: var(--font-mono);
 }
 
 .meta-field:first-child { border-top: 1px solid var(--border); }
-
 .field-key {
 font-family: var(--font-mono);
   font-size: var(--f-xs);
@@ -219,7 +215,6 @@ font-family: var(--font-mono);
 }
 
 .field-val:focus { background: var(--bg-alt); }
-
 .field-remove {
   background: none;
   border: none;
@@ -276,7 +271,6 @@ font-family: var(--font-mono);
 }
 
 .editor-active .toolbar-row { display: flex; }
-
 .tb-btn {
   background: none;
   border: 1px solid transparent;

@@ -4,32 +4,18 @@
   --s-md: 1rem;
   --s-lg: 1.25rem;
   --s-xl: 1.5rem;
-
   --f-xs: 0.75rem;
   --f-sm: 1rem;
   --f-md: 1.25rem;
-
   --font-sans: system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
   --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, 'Courier New', monospace;
   --font-serif: Georgia, 'Times New Roman', serif;
-
   --entry-font:           var(--font-sans);
-
-  --entry-act-bg:         transparent;
   --entry-act-border:     var(--tag-act-fg);
-
-  --entry-chapter-bg:     transparent;
   --entry-chapter-border: var(--tag-chapter-fg);
-
-  --entry-scene-bg:       transparent;
   --entry-scene-border:   var(--tag-scene-fg);
-
-  --entry-beat-bg:        transparent;
-  --entry-beat-border:    var(--tag-draft-fg);
-
-  --article-bg:     transparent;
-  --article-border: var(--tag-chapter-bd);
-
+  --entry-beat-border:    var(--tag-beat-fg);
+  --article-border: var(--tag-beat-bd);
 }
 
 :root,
@@ -49,26 +35,28 @@ html[theme="light"] {
   --selection:  #ddf4ff;
   --sel-border: #54aeff;
 
-  --tag-beat-bg:    #eeedfe;
-  --tag-beat-fg:    #0f6e56;
-  --tag-beat-bd:    #afa9ec;
-  --tag-draft-fg:   #3c3489;
+  /* L1: Act - Gold/Umber */
+  --tag-act-bg: #fff5d6;
+  --tag-act-fg: #662211;
+  --tag-act-bd: #ffcc33;
 
-  --tag-scene-bg:   #e1f5ee;
-  --tag-scene-fg:   #0f6e56;
-  --tag-scene-bd:   #5dcaa5;
+  /* L2: Chapter - Rust/Terracotta */
+  --tag-chapter-bg: #fff0e0;
+  --tag-chapter-fg: #993311;
+  --tag-chapter-bd: #ffb088;
 
-  --tag-chapter-bg: #faece7;
-  --tag-chapter-fg: #993c1d;
-  --tag-chapter-bd: #f0997b;
+  /* L3: Scene - Burnt Sienna */
+  --tag-scene-bg: #ffebeb;
+  --tag-scene-fg: #BB4422;
+  --tag-scene-bd: #ff9b85;
 
-  --tag-act-bg:     #fbca33;
-  --tag-act-fg:     #aa6600;
-  --tag-act-bd:     #ed93b1;
+  /* L4: Beat - Strong Crimson */
+  --tag-beat-bg: #fce8e8;
+  --tag-beat-fg: #CC1111;
+  --tag-beat-bd: #f87171;
 
   --success-bg:  #dafbe1;
   --success-fg:  #2da44e;
-
 }
 
 html[data-theme="dark"],
@@ -87,22 +75,22 @@ html[theme="dark"] {
   --selection:  rgba(56, 139, 253, 0.15);
   --sel-border: #388bfd;
 
-  --tag-beat-bg:    #eeedfe;
-  --tag-beat-fg:    #0f6e56;
-  --tag-beat-bd:    #afa9ec;
-  --tag-draft-fg:   #3c3489;
-
-  --tag-scene-bg:   #e1f5ee;
-  --tag-scene-fg:   #0f6e56;
-  --tag-scene-bd:   #5dcaa5;
-
-  --tag-chapter-bg: #faece7;
-  --tag-chapter-fg: #993c1d;
-  --tag-chapter-bd: #f0997b;
-
-  --tag-act-bg:     #fbca33;
-  --tag-act-fg:     #aa6600;
-  --tag-act-bd:     #ed93b1;
+  /* L1: Act - Horizon (Gold) */
+  --tag-act-bg: rgba(255, 204, 51, 0.1);
+  --tag-act-fg: #ffcc33;
+  --tag-act-bd: #ffcc33;
+  /* L2: Chapter - Heat (Orange) */
+  --tag-chapter-bg: rgba(255, 153, 51, 0.1);
+  --tag-chapter-fg: #ff9933;
+  --tag-chapter-bd: #ff9933;
+  /* L3: Scene - Glow (Coral) */
+  --tag-scene-bg: rgba(255, 107, 107, 0.1);
+  --tag-scene-fg: #ff6b6b;
+  --tag-scene-bd: #ff6b6b;
+  /* L4: Beat - Dusk (Purple) */
+  --tag-beat-bg: rgba(204, 93, 232, 0.1);
+  --tag-beat-fg: #cc5de8;
+  --tag-beat-bd: #cc5de8;
 
   --success-bg:  rgba(45, 164, 78, 0.12);
   --success-fg:  #3fb950;

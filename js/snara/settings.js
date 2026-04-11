@@ -380,7 +380,7 @@ _snapshotTab(tab) {
     const label = id.charAt(0).toUpperCase() + id.slice(1);
     const p     = this._editorPrefs || {};
 
-    const defaultBorder = id === 'beat' ? 'var(--tag-draft-fg)' : `var(--tag-${id}-fg)`;
+    const defaultBorder = id === 'beat' ? 'var(--tag-beat-fg)' : `var(--tag-${id}-fg)`;
     const curBg         = p[id]?.bg     || 'transparent';
     const curBorder     = p[id]?.border || defaultBorder;
 
@@ -728,12 +728,8 @@ _snapshotTab(tab) {
   // vars.css already defines the defaults:
   //   --entry-act-bg:         transparent
   //   --entry-act-border:     var(--tag-act-fg)
-  //   --entry-chapter-bg:     transparent
   //   --entry-chapter-border: var(--tag-chapter-fg)
-  //   --entry-scene-bg:       transparent
   //   --entry-scene-border:   var(--tag-scene-fg)
-  //   --entry-beat-bg:        transparent
-  //   --entry-beat-border:    var(--tag-draft-fg)
   //
   // So we only set a property when the user has saved a custom value.
   // transparent bg is skipped — CSS default is already transparent.

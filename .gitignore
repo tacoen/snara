@@ -1,3 +1,5 @@
+*.backup
+*.tmp
 test.sh
 json/ai.json
 /data

@@ -48,7 +48,6 @@ const DEFAULTS = {
     '--tag-beat-bg':    '#eeedfe',
     '--tag-beat-fg':    '#0f6e56',
     '--tag-beat-bd':    '#afa9ec',
-    '--tag-draft-fg':   '#3c3489',
     '--tag-scene-bg':   '#e1f5ee',
     '--tag-scene-fg':   '#0f6e56',
     '--tag-scene-bd':   '#5dcaa5',
@@ -150,7 +149,6 @@ const GROUPS = {
       { name: '--tag-beat-bg',  label: 'Background', type: 'color' },
       { name: '--tag-beat-fg',  label: 'Text',       type: 'color' },
       { name: '--tag-beat-bd',  label: 'Border',     type: 'color' },
-      { name: '--tag-draft-fg', label: 'Draft text', type: 'color' },
     ]},
     { heading: 'Tag — scene', vars: [
       { name: '--tag-scene-bg', label: 'Background', type: 'color' },
@@ -192,7 +190,6 @@ const GROUPS = {
       { name: '--tag-beat-bg',  label: 'Background', type: 'color' },
       { name: '--tag-beat-fg',  label: 'Text',       type: 'color' },
       { name: '--tag-beat-bd',  label: 'Border',     type: 'color' },
-      { name: '--tag-draft-fg', label: 'Draft text', type: 'color' },
     ]},
     { heading: 'Tag — scene', vars: [
       { name: '--tag-scene-bg', label: 'Background', type: 'color' },
@@ -234,7 +231,7 @@ function buildFullCss(saved) {
 
   // Split light vars into logical groups for readability
   const chromeSpacer     = ['--overlay', '--selection', '--sel-border'];
-  const tagBeat          = ['--tag-beat-bg','--tag-beat-fg','--tag-beat-bd','--tag-draft-fg'];
+  const tagBeat          = ['--tag-beat-bg','--tag-beat-fg','--tag-beat-bd'];
   const tagScene         = ['--tag-scene-bg','--tag-scene-fg','--tag-scene-bd'];
   const tagChapter       = ['--tag-chapter-bg','--tag-chapter-fg','--tag-chapter-bd'];
   const tagAct           = ['--tag-act-bg','--tag-act-fg','--tag-act-bd'];
