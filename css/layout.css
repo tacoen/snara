@@ -5,3 +5,32 @@
   height: calc(100dvh - 43px);
 }
 
+
+nav {
+  height: calc(100dvh - 8px);
+}
+
+aside, .content-area {
+  height: calc(100dvh - 43px);
+}
+
+aside {
+  grid-row: span 2;
+  /* padding: var(--s-md); */
+  border-left: 1px solid var(--border);
+}
+
+.content-area {
+  display: flex;
+  width: 100%;
+  flex-direction: column;
+}
+
+aside.chat-side {
+  position: fixed;
+  top: 44px;
+  right: 0;
+  width: 15rem;
+  padding: var(--s-sm);
+  font-size: var(--f-xs);
+}

@@ -26,7 +26,6 @@
   --chatbot-send-radius:  6px;
   --chatbot-copy-size:    var(--f-xs);
   --chatbot-transition:   0.15s ease;
-
   display:        flex;
   flex-direction: column;
   height:         100%;
@@ -127,6 +126,7 @@
   padding:       var(--s-sm) var(--s-md);
   border-top:    1px solid var(--chatbot-border);
   flex-shrink:   0;
+	height: 48px;
   background:    var(--chatbot-bg);
 }
 
@@ -191,7 +191,6 @@ nav {
   display: flex;
   flex-direction: column;
   flex-wrap: nowrap;
-  height: calc(100dvh - 8px);
   padding: var(--s-xs) 0 var(--s-xs) 0;
   border-right: 1px solid var(--border);
   align-items: center;
@@ -242,21 +241,7 @@ header {
 }
 
 
-aside, .content-area {
-  height: calc(100dvh - 6px - 43px);
-}
 
-aside {
-  grid-row: span 2;
-  padding: var(--s-md);
-  border-left: 1px solid var(--border);
-}
-
-.content-area {
-  display: flex;
-  width: 100%;
-  flex-direction: column;
-}
 
 #kanban-area,
 #meta-area,

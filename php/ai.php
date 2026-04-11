@@ -1,24 +1,24 @@
 <?php
 /* ─────────────────────────────────────────────────
    php/ai.php — AI Chat handler
-   Config lives in json/conf/ai.json — edit that
+   Config lives in json/ai.json — edit that
    file to set your key, URL, and model.
 ─────────────────────────────────────────────────── */
 
 class AiChat {
 
     private static function confPath(): string {
-        return __DIR__ . '/../json/conf/ai.json';
+        return __DIR__ . '/../json/ai.json';
     }
 
     private static function conf(): array {
         $path = self::confPath();
         if (!file_exists($path)) {
-            throw new RuntimeException('AI not configured — create json/conf/ai.json');
+            throw new RuntimeException('AI not configured — create json/ai.json');
         }
         $data = json_decode(file_get_contents($path), true);
         if (!is_array($data)) {
-            throw new RuntimeException('json/conf/ai.json is malformed');
+            throw new RuntimeException('json/ai.json is malformed');
         }
         return $data;
     }
@@ -67,7 +67,7 @@ class AiChat {
     public static function get(): array {
         try {
             $conf = self::conf();
-        } catch (RuntimeException) {
+        } catch (RuntimeException $e) {
             return ['url' => '', 'model' => '', 'key_set' => false];
         }
         return [
@@ -81,7 +81,7 @@ class AiChat {
     public static function set(array $body): void {
         try {
             $conf = self::conf();
-        } catch (RuntimeException) {
+        } catch (RuntimeException $e) {
             $conf = [];
         }
         if (isset($body['url']))   $conf['url']   = trim((string) $body['url']);

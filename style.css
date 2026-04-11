@@ -1,19 +1,37 @@
-@layer base, layout, components, pages;
+/*
 
-@import url('./css/vars.css');
-@import url('./css/norm.css');
-@import url('./css/buttons.css');
+Layer,Content Type,Goal
+base,"html, body, svg",Standardize the environment.
+layout,".container, .grid",Define the big structural skeleton.
+components,".button, .card, .modal","Define specific UI ""chunks."""
+utilities,".flex, .pad-md, .hidden",Override everything else for specific tweaks.
 
-@import url('./css/layout.css');
 
-@import url('./css/snara.css');
-@import url('./css/popup.css');
-@import url('./css/editor.css');
-@import url('./css/index.css');
-@import url('./css/toc.css');
-@import url('./css/modal.css');
-@import url('./css/pref.css');
 
-@import url('./css/baru.css');
-@import url('./css/files.css');
-@import url('./css/gallery.css');
+/* 1. Define the layer order first */
+@layer base, layout, components, pages, utilities;
+
+/* 2. Import files directly into those layers */
+/* Base */
+@import url('./css/vars.css') layer(base);
+@import url('./css/norm.css') layer(base);
+
+/* Layout */
+@import url('./css/layout.css') layer(layout);
+@import url('./css/snara.css') layer(layout);
+
+/* Components */
+@import url('./css/buttons.css') layer(components);
+@import url('./css/popup.css') layer(components);
+@import url('./css/editor.css') layer(components);
+@import url('./css/index.css') layer(components);
+@import url('./css/toc.css') layer(components);
+@import url('./css/modal.css') layer(components);
+
+/* Pages */
+@import url('./css/pref.css') layer(pages);
+@import url('./css/files.css') layer(pages);
+@import url('./css/gallery.css') layer(pages);
+
+/* Utilities */
+@import url('./css/baru.css') layer(utilities);
