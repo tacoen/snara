@@ -23,7 +23,7 @@
   --chatbot-border:       var(--border);
   --chatbot-radius:       18px;
   --chatbot-gap:          var(--s-sm);
-  --chatbot-send-radius:  20px;
+  --chatbot-send-radius:  6px;
   --chatbot-copy-size:    var(--f-xs);
   --chatbot-transition:   0.15s ease;
 
@@ -44,8 +44,14 @@
   flex-shrink:     0;
 }
 
+.chatbot__header div {
+	display: inline-flex;
+	align-items:center;
+	gap: var(--s-xs)
+}
+
 .chatbot__title {
-  font-size:   var(--f-sm);
+  font-size: var(--f-sm);
   font-weight: 600;
   color:       var(--fg-main);
 }
@@ -131,7 +137,7 @@
   color:       var(--fg-main);
   border-radius: var(--chatbot-send-radius);
   padding:     var(--s-xs) var(--s-sm);
-  font-size:   var(--f-sm);
+  font-size: var(--f-xs);
   outline:     none;
   transition:  border-color var(--chatbot-transition);
 }
@@ -151,7 +157,7 @@
   border:        none;
   border-radius: var(--chatbot-send-radius);
   padding:       var(--s-xs) var(--s-md);
-  font-size:     var(--f-sm);
+  font-size: var(--f-xs);
   font-weight:   600;
   cursor:        pointer;
   flex-shrink:   0;

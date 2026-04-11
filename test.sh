@@ -1,9 +1,10 @@
 
-curl "https://api.poe.com/v1/chat/completions" \
+
+curl "https://api.groq.com/openai/v1/chat/completions" \
   -H "Content-Type: application/json" \
-  -H "Authorization: Bearer sk-poe-nGDCSOhqgzx8ZJ5HHOkUheIxD0pTFRW-85AZUNwDaos" \
+  -H "Authorization: Bearer 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" \
   -d '{
-    "model": "snarabot-clm",
+    "model": "llama-3.3-70b-versatile",
     "messages": [
       {
         "role": "user",
