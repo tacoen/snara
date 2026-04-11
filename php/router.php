@@ -55,6 +55,9 @@ require_once __DIR__ . '/cache.php';
 require_once __DIR__ . '/gallery.php';
 require_once __DIR__ . '/editor-pref.php';
 
+require_once __DIR__ . '/ai.php';
+
+
 class Router {
 
     public static function dispatch(): void {
@@ -324,6 +327,15 @@ class Router {
                     self::requireMethod($method, 'POST');
                     $bookId = (int) self::requireParam('bookId');
                     echo json_encode(Cache::rebuild($bookId));
+                    break;
+
+// ── AI Chat ──────────────────────────────────
+                case 'ai.chat':
+                    self::requireMethod($method, 'POST');
+                    $body    = self::body();
+                    $message = trim($body['message'] ?? '');
+                    if ($message === '') self::error(400, 'Missing message');
+                    echo json_encode(AiChat::chat($message));
                     break;
 
                 // ── Unknown ──────────────────────────────────

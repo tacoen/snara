@@ -1,0 +1,30 @@
+<!--
+  partials/chatbot.html
+  Included by: index.php → <main id="chatbot-area" hidden>
+  Powered by:  js/snara/chatbot.js → SnaraChat
+-->
+<div class="chatbot" id="chatbot-root">
+
+  <header class="chatbot__header">
+    <span class="chatbot__title">AI Assistant</span>
+    <button class="btn-icon chatbot__clear" id="chatbot-clear"
+            title="Clear conversation" aria-label="Clear conversation">
+      <i data-icon="trash"></i>
+    </button>
+  </header>
+
+  <div class="chatbot__window" id="chatbot-window"
+       role="log" aria-live="polite" aria-label="Chat messages">
+  </div>
+
+  <div class="chatbot__composer">
+    <select class="chatbot__select" id="chatbot-preprompt" aria-label="Prompt preset">
+      <option value="">Default</option>
+    </select>
+    <input  class="chatbot__input"  id="chatbot-input"
+            type="text" placeholder="Type a message…"
+            autocomplete="off" aria-label="Message" />
+    <button class="chatbot__send"   id="chatbot-send" aria-label="Send">Send</button>
+  </div>
+
+</div>

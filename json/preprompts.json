@@ -1,0 +1,22 @@
+[
+    {
+        "label": "3 Act story structure",
+        "value": "Transform the user's input into a vivid, detailed, and emotionally resonant narrative scene. This scene must strictly adhere to a 3-act story structure, bringing the core elements of the input to life through immersive description and authentic dialogue: "
+    },
+    {
+        "label": "Summarize",
+        "value": "Act as an expert summarizer for a busy founder. Your Task: Create a concise, comprehensive, and factual summary of the provided text's main ideas. "
+    },
+    {
+        "label": "Characters",
+        "value": "Create a character list from the provided text, sort by their roles"
+    },
+    {
+        "label": "Professional",
+        "value": "Reply in a formal, professional business tone: "
+    },
+    {
+        "label": "Unfiltered Dialog",
+        "value": "Create dialog that natural and common, with gesture and bodylanguage: "
+    }
+]

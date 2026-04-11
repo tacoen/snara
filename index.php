@@ -54,6 +54,14 @@ $title  = 'Snara';
 		<?php include __DIR__ . '/partials/files.html'; ?>
 	</main>
 
+	<main id='chatbot-area' class="content-area" hidden>
+		<?php include __DIR__ . '/partials/chatbot.html'; ?>
+	</main>
+	
+	<main id='notes-area' class="content-area" hidden>
+		<?php include __DIR__ . '/partials/notes.html'; ?>
+	</main>	
+	
   </div>
 </div>
 

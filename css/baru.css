@@ -2,9 +2,166 @@
   display: none !important;
 }
 
-.app-overlay {
-	
-	
+/* ── chatbot.css ──────────────────────────────────────────────────────
+   Block:    .chatbot
+   Elements: __header, __title, __window, __message, __text,
+             __copy-btn, __composer, __select, __input, __send
+   Modifiers:__message--user, __message--ai, __copy-btn--copied
+   
+   All colour tokens inherit from Snara's CSS custom properties.
+   To override per-instance, set CSS vars on the root element.
+─────────────────────────────────────────────────────────────────────── */
+
+/* ── Block ── */
+.chatbot {
+  /* Local tokens — override on any instance without touching global vars */
+  --chatbot-bg:           var(--bg-main);
+  --chatbot-bubble-user:  var(--primary);
+  --chatbot-bubble-ai:    var(--bg-alt);
+  --chatbot-fg-user:      #fff;
+  --chatbot-fg-ai:        var(--fg-main);
+  --chatbot-border:       var(--border);
+  --chatbot-radius:       18px;
+  --chatbot-gap:          var(--s-sm);
+  --chatbot-send-radius:  20px;
+  --chatbot-copy-size:    var(--f-xs);
+  --chatbot-transition:   0.15s ease;
+
+  display:        flex;
+  flex-direction: column;
+  height:         100%;
+  background:     var(--chatbot-bg);
+  overflow:       hidden;
+}
+
+/* ── Header ── */
+.chatbot__header {
+  display:         flex;
+  align-items:     center;
+  justify-content: space-between;
+  padding:         var(--s-sm) var(--s-md);
+  border-bottom:   1px solid var(--chatbot-border);
+  flex-shrink:     0;
+}
+
+.chatbot__title {
+  font-size:   var(--f-sm);
+  font-weight: 600;
+  color:       var(--fg-main);
+}
+
+/* ── Scrollable message window ── */
+.chatbot__window {
+  flex:       1;
+  padding:    var(--s-md);
+  overflow-y: auto;
+  display:    flex;
+  flex-direction: column;
+  gap:        var(--chatbot-gap);
+}
+
+/* ── Message bubbles ── */
+.chatbot__message {
+  max-width:   80%;
+  padding:     var(--s-sm) var(--s-md);
+  border-radius: var(--chatbot-radius);
+  font-size:   var(--f-sm);
+  line-height: 1.5;
+  word-break:  break-word;
+  position:    relative;
+}
+
+.chatbot__message--user {
+  align-self:  flex-end;
+  background:  var(--chatbot-bubble-user);
+  color:       var(--chatbot-fg-user);
+  border-bottom-right-radius: 4px;
+}
+
+.chatbot__message--ai {
+  align-self:   flex-start;
+  background:   var(--chatbot-bubble-ai);
+  color:        var(--chatbot-fg-ai);
+  border-bottom-left-radius: 4px;
+  padding-right: calc(var(--s-md) + 52px); /* room for copy btn */
+  white-space:  pre-wrap;
+}
+
+/* ── Copy button (inside AI bubble) ── */
+.chatbot__copy-btn {
+  position:    absolute;
+  top:         var(--s-xs);
+  right:       var(--s-xs);
+  background:  rgba(0, 0, 0, 0.06);
+  border:      none;
+  border-radius: 5px;
+  padding:     3px var(--s-xs);
+  font-size:   var(--chatbot-copy-size);
+  cursor:      pointer;
+  color:       var(--fg-muted);
+  transition:  background var(--chatbot-transition),
+               color      var(--chatbot-transition);
+  line-height: 1.4;
+}
+
+.chatbot__copy-btn:hover {
+  background: rgba(0, 0, 0, 0.12);
+  color:      var(--fg-main);
+}
+
+.chatbot__copy-btn--copied {
+  color: #10b981;
+}
+
+/* ── Composer bar ── */
+.chatbot__composer {
+  display:       flex;
+  align-items:   center;
+  gap:           var(--s-sm);
+  padding:       var(--s-sm) var(--s-md);
+  border-top:    1px solid var(--chatbot-border);
+  flex-shrink:   0;
+  background:    var(--chatbot-bg);
+}
+
+.chatbot__select,
+.chatbot__input {
+  background:  var(--bg-alt);
+  border:      1px solid var(--chatbot-border);
+  color:       var(--fg-main);
+  border-radius: var(--chatbot-send-radius);
+  padding:     var(--s-xs) var(--s-sm);
+  font-size:   var(--f-sm);
+  outline:     none;
+  transition:  border-color var(--chatbot-transition);
+}
+
+.chatbot__select:focus,
+.chatbot__input:focus {
+  border-color: var(--primary);
+}
+
+.chatbot__select { cursor: pointer; flex-shrink: 0; }
+
+.chatbot__input  { flex: 1; min-width: 0; }
+
+.chatbot__send {
+  background:    var(--primary);
+  color:         #fff;
+  border:        none;
+  border-radius: var(--chatbot-send-radius);
+  padding:       var(--s-xs) var(--s-md);
+  font-size:     var(--f-sm);
+  font-weight:   600;
+  cursor:        pointer;
+  flex-shrink:   0;
+  transition:    opacity var(--chatbot-transition);
+}
+
+.chatbot__send:hover   { opacity: 0.88; }
+.chatbot__send:disabled {
+  opacity: 0.4;
+  cursor:  not-allowed;
 }
 
 #app {

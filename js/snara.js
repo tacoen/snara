@@ -15,6 +15,9 @@ import { SnaraExport }   from './export.js';
 import { SnaraGallery }  from './snara/gallery.js';
 import { SnaraRouter }     from './snara/router.js';
 
+import { SnaraChat } from './snara/chatbot.js';
+
+
 // ── Central config store ──────────────────────────
 export const AppConfig = {
   apiPath:          '/api.php',
@@ -78,6 +81,9 @@ async function boot() {
   const gallery  = new SnaraGallery();
   const exporter = new SnaraExport();
 
+  const chat = new SnaraChat('#chatbot-root');
+ 
+ 
   icx.replace();
 
   if (AppConfig.activeBookId) {
@@ -92,6 +98,9 @@ async function boot() {
       meta:   document.getElementById('meta-area'),
       files:  document.getElementById('files-area'),
       kanban: document.getElementById('kanban-area'),
+	  chatbot: document.getElementById('chatbot-area'), 
+	  notes: document.getElementById('notes-area'), 
+ 
     };
     Object.entries(areas).forEach(([key, el]) => {
       if (!el) return;

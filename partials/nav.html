@@ -3,6 +3,12 @@
     <button class="btn-icon" id="bookindex-btn" onclick="bookIndex()" title="Book index" aria-label="Book index">
       <i data-icon="books"></i>
     </button>
+    <button class="btn-icon" id="notes-btn" onclick="switchArea('notes')" title="Notes" aria-label="Notes">
+      <i data-icon="notebook"></i>
+    </button>
+    <button class="btn-icon seppad-top" id="chatbot-btn" onclick="switchArea('chatbot')" title="Chatbot Assistant" aria-label="Chatbot">
+      <i data-icon="ai-agents"></i>
+    </button>
   </div>
 
   <div class="embed">
@@ -21,7 +27,7 @@
   </div>
 
   <div class="nav-bottom">
-    <button class="btn-icon" id="theme-toggle" onclick="toggleTheme()" title="Toggle theme" aria-label="Toggle theme"></button>
+    <button class="btn-icon btn-icon seppad-bottom" id="theme-toggle" onclick="toggleTheme()" title="Toggle theme" aria-label="Toggle theme"></button>
     <button class="btn-icon" id="pref-btn" onclick="openPref()" title="Theme variables" aria-label="Theme variables">
       <i data-icon="adjustments-horizontal"></i>
     </button>

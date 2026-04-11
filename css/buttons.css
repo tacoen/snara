@@ -149,6 +149,19 @@ font-family: var(--font-mono);
   to   { opacity: 1; }
 }
 
+.seppad-top {
+	margin-top: var(--s-md);
+	padding-top: var(--s-md);
+	border-top: 1px dashed var(--border);
+}
+
+.seppad-bottom {
+	margin-bottom: var(--s-md);
+	padding-bottom: var(--s-md);
+	border-bottom: 1px dashed var(--border);
+}
+
+
 .btn-remove {
   background: none;
   border: none;
