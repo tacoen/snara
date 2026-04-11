@@ -1,9 +1,10 @@
 /* ─────────────────────────────────────────────────
    snara/settings.js — SnaraSettings
-   Three-tab config modal:
+   four-tab config modal:
      General  — app/infra keys  (config.json)
      Defaults — per-book defaults (default.json)
      Editor   — font + entry tag colors (conf/editor.json)
+	 AI chat
 
    Save strategy: _snap holds all tab values.
    Each tab snapshots on switch + at save() time.
@@ -55,7 +56,7 @@ export class SnaraSettings extends SnaraComponent {
   constructor() {
     super('settings-modal', { defaultTab: 'defaults' });
     this._editorPrefs = null;
-    this._snap = { general: null, defaults: null, editor: null };
+    this._snap = { general: null, defaults: null, editor: null, ai: null };	
   }
 
   // ── DOM is static in partials/settings.html ──────────────────────
@@ -88,6 +89,8 @@ export class SnaraSettings extends SnaraComponent {
       metaFields:       (AppDefaults.metaFields || []).join(', '),
     };
     this._snap.editor = this._editorPrefs ? { ...this._editorPrefs } : {};
+	
+	    this._snap.ai = await this._loadAiConfig();
 
     // ── visible FIRST ───────────────────────────────────────────────
     const { openModal } = await import('./modal.js');
@@ -107,6 +110,7 @@ export class SnaraSettings extends SnaraComponent {
       <div class="cfg-tabs">
         <button class="cfg-tab${this._activeTab === 'defaults' ? ' active' : ''}" data-tab="defaults">Defaults</button>
         <button class="cfg-tab${this._activeTab === 'editor'   ? ' active' : ''}" data-tab="editor">Editor</button>
+        <button class="cfg-tab${this._activeTab === 'ai' ? ' active' : ''}" data-tab="ai">AI Chat</button>		
         <button class="cfg-tab${this._activeTab === 'general'  ? ' active' : ''}" data-tab="general">General</button>
       </div>
       <div class="cfg-tab-content" id="cfg-tab-content">
@@ -123,6 +127,7 @@ export class SnaraSettings extends SnaraComponent {
     if (tab === 'general')  return this._renderGeneral();
     if (tab === 'defaults') return this._renderDefaults();
     if (tab === 'editor')   return this._renderEditor();
+    if (tab === 'ai') return this._renderAi();	
     return '';
   }
 
@@ -162,11 +167,12 @@ export class SnaraSettings extends SnaraComponent {
 
   // ── Snapshot active tab into _snap ────────────────────────────────
 
-  _snapshotTab(tab) {
-    if (tab === 'general')  this._snapshotGeneral();
-    if (tab === 'defaults') this._snapshotDefaults();
-    if (tab === 'editor')   this._snapshotEditor();
-  }
+_snapshotTab(tab) {
+  if (tab === 'general')  this._snapshotGeneral();
+  if (tab === 'defaults') this._snapshotDefaults();
+  if (tab === 'editor')   this._snapshotEditor();
+  if (tab === 'ai')       this._snapshotAi();       // ← add this
+}
 
   _snapshotGeneral() {
     const apiPath  = document.getElementById('cfg-apiPath');
@@ -546,6 +552,7 @@ export class SnaraSettings extends SnaraComponent {
         this._saveGeneral(),
         this._saveDefaults(),
         this._saveEditor(),
+        this._saveAi(),		
       ]);
       btn.textContent = 'saved ✓';
     } catch (e) {
@@ -612,6 +619,97 @@ export class SnaraSettings extends SnaraComponent {
     });
   }
 
+// ── AI Chat tab ──────────────────────────────────────────────
+ 
+  /**
+   * Fetch current AI config from the backend.
+   * Returns { url, model, key_set } — key itself is never sent.
+   * Falls back to safe defaults when the endpoint is unavailable.
+   */
+  async _loadAiConfig() {
+    try {
+      const res = await fetch(AppConfig.apiPath + '?action=ai.get');
+      if (!res.ok) throw new Error('ai.get failed');
+      return await res.json();
+    } catch {
+      return { url: '', model: '', key_set: false };
+    }
+  }
+  
+    /**
+   * Render the AI Chat settings tab.
+   * Follows the exact same cfg-section / cfg-row / cfg-label / cfg-hint
+   * pattern used by _renderGeneral() and _renderDefaults().
+   */
+ 
+ _renderAi() {
+    const ai = this._snap.ai ?? {};
+    const keyLabel = ai.key_set
+      ? '<span class="cfg-ai-key-ok">configured ✓</span>'
+      : '<span class="cfg-ai-key-missing">not set</span>';
+ 
+    return `
+      <section class="cfg-section">
+        <h3 class="cfg-heading">AI Backend
+          <span class="cfg-hint">set your key in <code>json/conf/ai.json</code> — never sent to the browser</span>
+        </h3>
+ 
+        <div class="cfg-row">
+          <label class="cfg-label" for="cfg-ai-url">Endpoint URL</label>
+          <input class="cfg-input cfg-input-full" id="cfg-ai-url"
+            placeholder="https://api.groq.com/openai/v1/chat/completions"
+            value="${esc(ai.url ?? '')}">
+        </div>
+ 
+        <div class="cfg-row">
+          <label class="cfg-label" for="cfg-ai-model">Model</label>
+          <input class="cfg-input" id="cfg-ai-model"
+            placeholder="llama-3.3-70b-versatile"
+            value="${esc(ai.model ?? '')}">
+        </div>
+ 
+        <div class="cfg-row">
+          <label class="cfg-label">API Key</label>
+          <span class="cfg-input cfg-input--readonly">${keyLabel}</span>
+        </div>
+      </section>
+ 
+
+    `;
+  }
+ 
+  /**
+   * Snapshot the AI tab DOM into _snap.ai.
+   * Called by _snapshotTab() when the active tab is 'ai'.
+   */
+  _snapshotAi() {
+    const urlEl   = document.getElementById('cfg-ai-url');
+    const modelEl = document.getElementById('cfg-ai-model');
+    if (!urlEl && !modelEl) return;          // tab not rendered yet
+ 
+    this._snap.ai = {
+      ...this._snap.ai,                      // preserve key_set from load
+      url:   urlEl?.value.trim()   ?? this._snap.ai?.url   ?? '',
+      model: modelEl?.value.trim() ?? this._snap.ai?.model ?? '',
+    };
+  }
+ 
+  /**
+   * Persist url + model to the backend via ai.set.
+   * Skipped silently when the snap is empty (tab was never opened).
+   */
+  async _saveAi() {
+    this._snapshotAi();
+    const s = this._snap.ai;
+    if (!s || (!s.url && !s.model)) return;  // nothing to save
+ 
+    await fetch(AppConfig.apiPath + '?action=ai.set', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify({ url: s.url, model: s.model }),
+    });
+  }
+ 
   // ── Load editor prefs from server ─────────────────────────────────
 
   async _loadEditorPrefs() {

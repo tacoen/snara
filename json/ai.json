@@ -1,0 +1,5 @@
+{
+    "url":   "https://api.groq.com/openai/v1/chat/completions",
+    "model": "llama-3.3-70b-versatile",
+    "key":   "gsk_your-secret-key-here"
+}

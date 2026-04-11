@@ -337,7 +337,18 @@ class Router {
                     if ($message === '') self::error(400, 'Missing message');
                     echo json_encode(AiChat::chat($message));
                     break;
-
+                // ── AI Chat config ───────────────────────────
+                case 'ai.get':
+                    self::requireMethod($method, 'GET');
+                    echo json_encode(AiConfig::get());
+                    break;
+ 
+                case 'ai.set':
+                    self::requireMethod($method, 'POST');
+                    AiConfig::set(self::body());
+                    echo json_encode(['ok' => true]);
+                    break;
+					
                 // ── Unknown ──────────────────────────────────
                 default:
                     self::error(404, 'Unknown action: ' . $action);

@@ -316,3 +316,51 @@ nav.embed {
 	border-top: 1px solid var(--border);
 	box-shadow: 0 -2px 12px var(--overlay);
 }
+
+
+/* ─────────────────────────────────────────────────
+   AI Chat tab — additions to existing cfg-* styles
+   Paste into the same stylesheet that defines
+   .cfg-section, .cfg-row, .cfg-label, .cfg-input.
+   All values use existing CSS custom properties.
+─────────────────────────────────────────────────── */
+
+/* Read-only field variant (key status display) */
+.cfg-input--readonly {
+  display:         inline-flex;
+  align-items:     center;
+  padding:         var(--space-1) var(--space-2);
+  border-radius:   var(--radius);
+  font-size:       var(--text-sm);
+  font-family:     var(--font-mono);
+  background:      var(--surface-2);
+  border:          1px solid var(--border);
+  color:           var(--text-2);
+  cursor:          default;
+  user-select:     none;
+  min-width:       9rem;
+}
+
+/* Key status indicators */
+.cfg-ai-key-ok {
+  color: var(--green, #4ade80);
+}
+.cfg-ai-key-missing {
+  color: var(--amber, #fb923c);
+}
+
+/* Code snippet block */
+.cfg-ai-snippet {
+  margin:          var(--space-2) 0 0;
+  padding:         var(--space-3);
+  background:      var(--surface-2);
+  border:          1px solid var(--border);
+  border-radius:   var(--radius);
+  font-family:     var(--font-mono);
+  font-size:       var(--text-xs, 0.75rem);
+  line-height:     1.7;
+  color:           var(--text-2);
+  white-space:     pre;
+  overflow-x:      auto;
+  tab-size:        2;
+}

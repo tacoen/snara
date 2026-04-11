@@ -1,77 +1,91 @@
 <?php
 /* ─────────────────────────────────────────────────
-   php/ai.php — AiChat handler (now using Groq)
-   Called by Router via: POST ?action=ai.chat
-   Body: { "message": "..." }
-   Proxies to Groq's OpenAI-compatible API
+   php/ai.php — AI Chat handler
+   Config lives in json/conf/ai.json — edit that
+   file to set your key, URL, and model.
 ─────────────────────────────────────────────────── */
-class AiChat {
-    // ── Groq API config ─────────────────────────────
-    private static string $apiUrl = 'https://api.groq.com/openai/v1/chat/completions';
-    
-    // ←←← REPLACE WITH YOUR OWN GROQ KEY ←←←
-    private static string $apiKey = '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';
-    
-    // Recommended models (choose one):
-    // - llama-3.3-70b-versatile     → best quality/reasoning (recommended)
-    // - llama-3.1-8b-instant        → faster & lighter
-    // - openai/gpt-oss-120b         → another strong option
-    private static string $model = 'llama-3.3-70b-versatile';
 
-    // ── Public: called by Router ──────────────────
-    /**
-     * @param string $message The full prompt (preprompt + user text)
-     * @return array Decoded API response, forwarded as-is
-     */
-    public static function chat(string $message): array {
-        if ($message === '') {
-            return ['error' => 'Message cannot be empty'];
+class AiChat {
+
+    private static function confPath(): string {
+        return __DIR__ . '/../json/conf/ai.json';
+    }
+
+    private static function conf(): array {
+        $path = self::confPath();
+        if (!file_exists($path)) {
+            throw new RuntimeException('AI not configured — create json/conf/ai.json');
         }
+        $data = json_decode(file_get_contents($path), true);
+        if (!is_array($data)) {
+            throw new RuntimeException('json/conf/ai.json is malformed');
+        }
+        return $data;
+    }
+
+    public static function chat(string $message): array {
+        if ($message === '') return ['error' => 'Message cannot be empty'];
+
+        $conf  = self::conf();
+        $url   = $conf['url']   ?? '';
+        $model = $conf['model'] ?? '';
+        $key   = $conf['key']   ?? '';
+
+        if (!$url || !$key) return ['error' => 'AI not configured'];
 
         $payload = json_encode([
-            'model' => self::$model,
-            'messages' => [
-                ['role' => 'user', 'content' => $message],
-            ],
-            // Optional useful parameters:
-            // 'temperature' => 0.7,
-            // 'max_tokens'  => 1024,
+            'model'    => $model,
+            'messages' => [['role' => 'user', 'content' => $message]],
         ]);
 
-        $ch = curl_init(self::$apiUrl);
+        $ch = curl_init($url);
         curl_setopt_array($ch, [
             CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_POST => true,
-            CURLOPT_HTTPHEADER => [
+            CURLOPT_POST           => true,
+            CURLOPT_HTTPHEADER     => [
                 'Content-Type: application/json',
-                'Authorization: Bearer ' . self::$apiKey,
+                'Authorization: Bearer ' . $key,
             ],
             CURLOPT_POSTFIELDS => $payload,
-            CURLOPT_TIMEOUT => 60,           // Groq is very fast, but give it some room
+            CURLOPT_TIMEOUT    => 60,
         ]);
 
-        $raw = curl_exec($ch);
-        $errno = curl_errno($ch);
-        $error = curl_error($ch);
+        $raw      = curl_exec($ch);
+        $errno    = curl_errno($ch);
+        $error    = curl_error($ch);
         $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
         curl_close($ch);
 
-        if ($errno) {
-            return ['error' => 'cURL error ' . $errno . ': ' . $error];
-        }
-
-        if ($httpCode >= 400) {
-            return [
-                'error' => 'Groq API error (HTTP ' . $httpCode . ')',
-                'raw_response' => $raw
-            ];
-        }
+        if ($errno)           return ['error' => 'cURL error ' . $errno . ': ' . $error];
+        if ($httpCode >= 400) return ['error' => 'AI API error (HTTP ' . $httpCode . ')', 'raw_response' => $raw];
 
         $decoded = json_decode($raw, true);
-        if (!is_array($decoded)) {
-            return ['error' => 'Invalid JSON from Groq API'];
-        }
+        return is_array($decoded) ? $decoded : ['error' => 'Invalid JSON from AI API'];
+    }
 
-        return $decoded;
+    // Safe payload for the frontend — key is never included
+    public static function get(): array {
+        try {
+            $conf = self::conf();
+        } catch (RuntimeException) {
+            return ['url' => '', 'model' => '', 'key_set' => false];
+        }
+        return [
+            'url'     => $conf['url']   ?? '',
+            'model'   => $conf['model'] ?? '',
+            'key_set' => !empty($conf['key']),
+        ];
+    }
+
+    // Saves url + model only — key is intentionally never overwritten from the UI
+    public static function set(array $body): void {
+        try {
+            $conf = self::conf();
+        } catch (RuntimeException) {
+            $conf = [];
+        }
+        if (isset($body['url']))   $conf['url']   = trim((string) $body['url']);
+        if (isset($body['model'])) $conf['model'] = trim((string) $body['model']);
+        file_put_contents(self::confPath(), json_encode($conf, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
     }
 }
