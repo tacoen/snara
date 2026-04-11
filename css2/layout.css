@@ -1,0 +1,125 @@
+/* layout.css — structural skeleton
+   Merged from: baru.css, layout.css
+   Rule: only ID/element selectors that define major regions live here.
+         No colors, no fonts — only position, size, and grid.
+
+   DO:   use this for grid/flex containers that define page zones
+   DON'T: style individual UI widgets here (buttons, modals → components) */
+
+/* ── App shell ──────────────────────────────────── */
+
+#app { background: var(--bg-mate); }
+
+.grid-v {
+  display: grid;
+  grid-template-columns: 40px auto;
+}
+
+.grid-h {
+  display: grid;
+  grid-template-rows: 40px auto;
+  grid-template-columns: auto 15rem;
+}
+
+/* ── Nav ────────────────────────────────────────── */
+
+nav {
+  display: flex;
+  flex-direction: column;
+  height: calc(100dvh - 8px);
+  padding: var(--s-xs) 0;
+  border-right: 1px solid var(--border);
+  align-items: center;
+  grid-row: span 2;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 200;
+}
+
+nav > div {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--s-xs);
+  padding: var(--s-xs) 0;
+}
+
+/* Pill-shaped nav group */
+nav div.embed {
+  margin-right: -11px;
+  padding: var(--s-md) 0;
+  background: var(--border);
+  gap: var(--s-sm);
+  border-radius: 6px 0 0 6px;
+}
+nav div.embed svg { width: 24px; margin-left: 3px; }
+
+/* Files-panel nav reuses same embed pattern */
+nav.embed {
+  display: flex;
+  flex-direction: column;
+  padding: var(--s-xs) 0;
+  border-left: 1px solid var(--bg-mate);
+  background: var(--border);
+  justify-content: flex-start;
+  align-items: flex-start;
+  box-shadow: inset 3px 0 4px rgba(0,0,0,0.5);
+}
+
+/* ── Header ─────────────────────────────────────── */
+
+header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-md);
+  padding: 0 var(--s-sm);
+  height: 42px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg-main);
+  flex-shrink: 0;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  grid-column: span 2;
+}
+
+/* ── Content areas ──────────────────────────────── */
+
+aside,
+.content-area { height: calc(100dvh - 6px - 43px); }
+
+aside {
+  grid-row: span 2;
+  padding: var(--s-md);
+  border-left: 1px solid var(--border);
+}
+
+.content-area {
+  display: flex;
+  width: 100%;
+  flex-direction: column;
+}
+
+/* Full-width areas bypass the sidebar column */
+#kanban-area,
+#meta-area,
+#files-area { grid-column: span 2; }
+
+#article {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-main);
+  border-left: 1px solid var(--border);
+}
+
+/* ── Dashboard sub-grid (settings page) ─────────── */
+
+.dashboard {
+  display: grid;
+  grid-template-columns: auto 15rem;
+  height: calc(100dvh - 43px);
+}
