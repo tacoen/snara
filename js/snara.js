@@ -17,6 +17,7 @@ import { SnaraRouter }   from './snara/router.js';
 
 import { SnaraChat }      from './snara/chatbot.js';
 import { SnaraAIToolbar } from './snara/ai-toolbar.js';
+import { SnaraNotes } from './notes.js';
 
 // ── Central config store ──────────────────────────
 export const AppConfig = {
@@ -81,7 +82,7 @@ async function boot() {
   const gallery     = new SnaraGallery();
   const exporter    = new SnaraExport();
   const chat        = new SnaraChat('#chatbot-root');
-
+  const notes = new SnaraNotes('#notes-root');
 
 const aiToolbar = new SnaraAIToolbar('#popup', {
   getEntry:  () => ui.focusedEntry,
@@ -95,8 +96,19 @@ const aiToolbar = new SnaraAIToolbar('#popup', {
     if (label) label.textContent = AppConfig.activeBookTitle || `Book ${AppConfig.activeBookId}`;
   }
 
+  const _saveMap = {
+    editor: { label: 'save doc',   fn: () => ui.saveDocument() },
+    meta:   { label: 'save meta',  fn: () => ui.saveDocument() },
+    notes:  { label: 'save notes', fn: () => notes.save?.()    },
+    // kanban / files / chatbot → omitted = button hidden
+  };
+
+  let _activeArea = 'editor';
+
   // ── 3. Define window.switchArea ───────────────
   window.switchArea = (area) => {
+    _activeArea = area;
+
     const areas = {
       editor:  document.getElementById('editor-area'),
       meta:    document.getElementById('meta-area'),
@@ -109,11 +121,25 @@ const aiToolbar = new SnaraAIToolbar('#popup', {
       if (!el) return;
       el.hidden = key !== area;
     });
+
     const aside = document.querySelector('aside.side-panel');
     if (aside) aside.hidden = area !== 'editor';
+
     document.querySelectorAll('.nav-tab-btn').forEach(btn => {
       btn.classList.toggle('active-tab', btn.dataset.area === area);
     });
+
+    // ── Save button — label + fn + visibility ──
+    const saveBtn   = document.getElementById('save-btn');
+    const saveLabel = saveBtn?.querySelector('.save-label');
+    const action    = _saveMap[area];
+    if (saveBtn) {
+      saveBtn.hidden  = !action;
+      if (action) {
+        if (saveLabel) saveLabel.textContent = action.label;
+        saveBtn.onclick = action.fn;
+      }
+    }
   };
 
   // Keep ui.switchTab in sync
@@ -191,7 +217,7 @@ const aiToolbar = new SnaraAIToolbar('#popup', {
   document.addEventListener('keydown', e => {
     if (e.key === 's' && (e.ctrlKey || e.metaKey)) {
       e.preventDefault();
-      ui.saveDocument();
+      _saveMap[_activeArea]?.fn();
     }
   });
 

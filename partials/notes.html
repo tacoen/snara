@@ -1,1 +1,49 @@
-<div></div>
+<!-- partials/notes.html -->
+<!-- ═══════════════════════════════════════════════
+     notes area — drop into index.php beside the
+     other <main id="*-area"> blocks
+     ═══════════════════════════════════════════════ -->
+
+
+<div class="notes" id="notes-root" data-cols="5" data-api="/api.php">
+
+  <!-- Toolbar -->
+  <header class="notes__toolbar">
+    <span class="notes__title">Notes</span>
+
+    <div class="notes__toggle" role="group" aria-label="View mode">
+      <button
+        class="notes__toggle-btn notes__toggle-btn--active"
+        data-view="md"
+        title="Markdown source"
+        aria-pressed="true">
+        MD
+      </button>
+      <button
+        class="notes__toggle-btn"
+        data-view="html"
+        title="Rendered HTML"
+        aria-pressed="false">
+        HTML
+      </button>
+    </div>
+
+    <button class="notes__add-btn" id="notes-add-btn" title="New note (Alt+N)" aria-label="Add note">
+      + Note
+    </button>
+  </header>
+
+  <!-- Card grid -->
+  <div class="notes__body" id="notes-body">
+    <div class="notes__grid" id="notes-grid">
+      <span class="notes__empty" id="notes-empty">No notes yet — click &ldquo;+ Note&rdquo; to begin.</span>
+    </div>
+  </div>
+
+  <!-- Status bar -->
+  <footer class="notes__status">
+    <span class="notes__status-msg" id="notes-status-msg"></span>
+    <span id="notes-count">0 notes</span>
+  </footer>
+
+</div>

@@ -43,8 +43,18 @@
 
      GET  ?action=cache.list&bookId=$n
      POST ?action=cache.rebuild&bookId=$n
-─────────────────────────────────────────────────── */
 
+     POST ?action=ai.chat              ← {message}
+     GET  ?action=ai.get
+     POST ?action=ai.set               ← {url, model}
+
+     GET  ?action=chatlog.get&bookId=$n
+     POST ?action=chatlog.save&bookId=$n ← {id, role, content, label, timestamp}
+     DELETE ?action=chatlog.clear&bookId=$n
+
+     GET  ?action=notes.list
+     POST ?action=notes.save           ← Note[]
+─────────────────────────────────────────────────── */
 require_once __DIR__ . '/config.php';
 require_once __DIR__ . '/document.php';
 require_once __DIR__ . '/book.php';
@@ -57,6 +67,7 @@ require_once __DIR__ . '/editor-pref.php';
 
 require_once __DIR__ . '/ai.php';
 require_once __DIR__ . '/chatlog.php';
+require_once __DIR__ . '/notes.php';
 
 class Router {
 
@@ -78,6 +89,22 @@ class Router {
         try {
             switch ($action) {
 
+                // ── Notes ────────────────────────────────────
+                case 'notes.list':
+                    self::requireMethod($method, 'GET');
+                    echo json_encode(Notes::list());
+                    break;
+ 
+					case 'notes.save':
+                    self::requireMethod($method, 'POST');
+                    $body = self::body();
+                    // body() returns [] on empty input — that would wipe all notes
+                    if (empty($body) && file_get_contents('php://input') !== '[]') {
+                        self::error(400, 'Expected JSON array of notes');
+                    }
+                    Notes::save($body);
+                    echo json_encode(['ok' => true]);
+                    break;
 
 // ── Chatlog ──────────────────────────────────
                 case 'chatlog.get':

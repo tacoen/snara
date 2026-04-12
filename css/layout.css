@@ -26,10 +26,7 @@
   height: calc(100dvh - 43px);
 }
 
-/* ── Full-width page areas ── */
-#kanban-area,
-#meta-area,
-#files-area { grid-column: span 2; }
+
 
 /* ── Icon nav (left strip) ──
    FIX: duplicate nav rule (baru + layout) merged here. */
@@ -111,6 +108,15 @@ header {
 
 aside,
 .content-area { height: calc(100dvh - 43px); }
+
+/* ── Full-width page areas ── */
+#kanban-area,
+#meta-area,
+#files-area,
+#notes-area,
+#chatbot-area {
+	grid-column: span 2;
+}
 
 aside {
   grid-row: span 2;
