@@ -1,6 +1,6 @@
 # Project Structure
 
-**Last scanned:** April 10, 2026
+**Last scanned:** April 12, 2026
 
 ```
 snara/
@@ -9,28 +9,20 @@ snara/
 ├── api.php                    # REST API entry point
 ├── CHANGELOG.md
 ├── index.php                  # Main application entry point
-├── marked.min.js              # Markdown processor (newly added)
+├── marked.min.js              # Markdown processor
 ├── README.md
 ├── spa.html                   # Standalone SPA entry point
-├── style.css                  # Main stylesheet (@import for css/ modules)
 ├── STRUCTURE.md               # This file
+├── mycss.css                  # User-customizable styles
+├── style.css                  # Main stylesheet (imports from css/)
 │
-├── css/                       # CSS modules
-│   ├── baru.css
-│   ├── buttons.css
-│   ├── editor.css
-│   ├── files.css
-│   ├── gallery.css
-│   ├── index.css
+├── css/                       # CSS modules (CSS 2.0)
+│   ├── base.css
+│   ├── components.css
 │   ├── layout.css
-│   ├── modal.css
-│   ├── norm.css
-│   ├── popup.css
-│   ├── pref.css
-│   ├── settings-tabs.css
-│   ├── snara.css
-│   ├── toc.css
-│   └── vars.css
+│   ├── pages.css
+│   ├── utils.css
+│   └── custome/               # (custom folder — likely for overrides)
 │
 ├── js/                        # Frontend JavaScript
 │   ├── export.js
@@ -40,7 +32,8 @@ snara/
 │   ├── icons/
 │   │   ├── ge-icon.js
 │   │   └── icons.js
-│   └── snara/                 # Core ES modules (note: some duplication during refactor)
+│   └── snara/                 # Core ES modules (some duplication during refactor)
+│       ├── chatbot.js
 │       ├── component.js
 │       ├── core.js
 │       ├── files.js
@@ -58,12 +51,16 @@ snara/
 │       ├── snara.js
 │       └── tools.js
 │
-├── json/                      # Configuration templates (some committed)
+├── json/                      # Configuration & templates
+│   ├── ai.example.json        # AI provider example
+│   ├── ai.json
 │   ├── config.json
 │   ├── def-config.json
-│   └── default.json
+│   ├── default.json
+│   └── preprompts.json        # AI quick-action prompts for toolbar
 │
 ├── partials/                  # HTML fragments
+│   ├── chatbot.html
 │   ├── editor-side.html
 │   ├── editor.html
 │   ├── files.html
@@ -71,11 +68,13 @@ snara/
 │   ├── kanban.html
 │   ├── meta.html
 │   ├── nav.html
+│   ├── notes.html
 │   ├── popup.html
 │   ├── pref.html
 │   └── settings.html
 │
 ├── php/                       # Backend modules
+│   ├── ai.php
 │   ├── book.php
 │   ├── cache.php
 │   ├── config.php
@@ -88,10 +87,9 @@ snara/
 │   └── state.php
 │
 └── data/              # Runtime data (gitignored – auto-created at first run)
-└── {book-slug}/
-    ├── *.json             # Documents
-    ├── conf/act.json      # Structure index
-    ├── import/            # Import staging
-    ├── image/             # Uploaded media
-    └── cache/             # Caches
-```
+    └── {book-slug}/
+        ├── *.json             # Documents
+        ├── conf/act.json      # Structure index
+        ├── import/            # Import staging
+        ├── image/             # Uploaded media
+        └── cache/             # Caches

@@ -1,0 +1,308 @@
+**✅ Done!** I've fully reviewed your repo (as of the latest `ai-toolbar` commit on April 12, 2026). Snara is looking really solid — the Files Workspace overhaul, Groq AI integration, CSS 2.0 redesign, and new AI Toolbar are excellent additions.
+
+Here are **clean, updated versions** of the three files.  
+I kept your original style and voice while:
+- Adding the latest features from recent commits (AI Toolbar, CSS 2.0, chatlog/popup improvements, preprompts, etc.).
+- Updating dates and file lists to match the current tree.
+- Improving readability, fixing small inconsistencies, and making the docs more useful for new users/contributors.
+
+Just copy-paste these into your files (or let me know if you want any tweaks).
+
+### 1. Updated **CHANGELOG.md**
+```markdown
+# Changelog
+
+All notable changes to **Snara** will be documented in this file.
+
+This project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html) and the changelog format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
+
+---
+
+## [Unreleased]
+
+### Added
+- **AI Toolbar** (`SnaraAIToolbar`) — contextual quick-action toolbar directly in the editor. Powered by `json/preprompts.json` with presets (3-Act Structure, Summarize, Characters, Professional, Unfiltered Dialog). Inserts AI responses as new editable beats.
+- Full **AI Chatbot** integration with dedicated panel (`chatbot.html`, `js/snara/chatbot.js`) and Groq support (fast LLM with generous free tier).
+- `json/preprompts.json` and `json/ai.example.json` for easy AI configuration.
+- **CSS 2.0** redesign — modular CSS (`base.css`, `components.css`, `layout.css`, `pages.css`, `utils.css`, `mycss.css`) with improved theming, toolbars, modals, gallery, and chatbot UI.
+- Files Workspace (Import/Export/Gallery/Cache sections) with drag-and-drop, media management, and export tools.
+- `SnaraExport` and `SnaraGallery` modules.
+- Multi-area navigation (`switchArea()`) — Editor, Meta, Files, Kanban.
+- Kanban area scaffold.
+- `SnaraPref` live CSS variable editor in Preferences panel.
+- Import preview modal with structure parsing.
+- `bookchange` event for automatic panel refresh on book switch.
+- Gallery and import API endpoints (`gallery.list`, `import.read`, `import.delete`).
+
+### Changed
+- Navigation restructured with `data-area` attributes and `switchArea()`.
+- Major CSS modernization and component consistency.
+- `SnaraFiles` expanded into full tabbed workspace.
+- AI backend (`php/ai.php`) updated for Groq + easy provider switching.
+- Icon system (`icx.replace`) applied consistently across dynamic UI.
+
+### Fixed
+- Gallery/Import panels now reload correctly on book change.
+- Export footer icons and file upload clearing.
+- Various stability improvements in modals and dynamic panels.
+
+---
+
+## [0.2.0] - 2026-04-05
+
+### Added
+- Automatic Table of Contents feature
+- Core Preferences / Settings panel
+- Experimental SPA mode entry point (`spa.html`)
+- `.htaccess` for cleaner URLs
+
+### Changed
+- Backend files reorganized into dedicated `/php/` folder
+- Frontend JavaScript improved for better modularity
+
+---
+
+## [0.1.0] - 2026-04-04
+
+### Added
+- Initial public release
+- Structured Markdown editor with hierarchical structure: **Acts → Chapters → Scenes → Beats**
+- Full Document & Book management (CRUD operations, indexing, active book switching)
+- Live Markdown preview and formatting tools (powered by marked.js)
+- Autosave functionality
+- Light / Dark theme support
+- Keyboard shortcuts (`Ctrl/Cmd + S`, editor shortcuts)
+- Complete REST API backend (`api.php`)
+- Flat-file storage system (`/data/` for documents, `/json/` for config & indexes)
+- Basic configuration system via `json/config.json`
+
+---
+
+## [0.0.1] - 2026-04-03
+
+### Added
+- Project foundation (PHP 7.4+ + Vanilla JavaScript)
+- Basic file-based data layer
+- Early UI scaffolding and editor prototype
+
+---
+
+**Snara is in active early development.**  
+New features and improvements are being added frequently.  
+Check back often or watch the repository for updates!
+```
+
+### 2. Updated **STRUCTURE.md**
+```markdown
+# Project Structure
+
+**Last scanned:** April 12, 2026
+
+```
+snara/
+├── .gitignore
+├── .htaccess                  # Apache clean URLs & security
+├── api.php                    # REST API entry point
+├── CHANGELOG.md
+├── index.php                  # Main application entry point
+├── marked.min.js              # Markdown processor
+├── README.md
+├── spa.html                   # Standalone SPA entry point
+├── STRUCTURE.md               # This file
+├── mycss.css                  # User-customizable styles
+├── style.css                  # Main stylesheet (imports from css/)
+│
+├── css/                       # CSS modules (CSS 2.0)
+│   ├── base.css
+│   ├── components.css
+│   ├── layout.css
+│   ├── pages.css
+│   ├── utils.css
+│   └── custome/               # (custom folder — likely for overrides)
+│
+├── js/                        # Frontend JavaScript
+│   ├── export.js
+│   ├── helpers.js
+│   ├── snara.js               # Main bootstrap
+│   ├── tools.js
+│   ├── icons/
+│   │   ├── ge-icon.js
+│   │   └── icons.js
+│   └── snara/                 # Core ES modules (some duplication during refactor)
+│       ├── chatbot.js
+│       ├── component.js
+│       ├── core.js
+│       ├── files.js
+│       ├── gallery.js
+│       ├── index.js
+│       ├── modal.js
+│       ├── pref.js
+│       ├── router.js
+│       ├── settings.js
+│       ├── struct.js
+│       ├── tool.js
+│       ├── ui.js
+│       ├── export.js
+│       ├── helpers.js
+│       ├── snara.js
+│       └── tools.js
+│
+├── json/                      # Configuration & templates
+│   ├── ai.example.json        # AI provider example
+│   ├── ai.json
+│   ├── config.json
+│   ├── def-config.json
+│   ├── default.json
+│   └── preprompts.json        # AI quick-action prompts for toolbar
+│
+├── partials/                  # HTML fragments
+│   ├── chatbot.html
+│   ├── editor-side.html
+│   ├── editor.html
+│   ├── files.html
+│   ├── header.html
+│   ├── kanban.html
+│   ├── meta.html
+│   ├── nav.html
+│   ├── notes.html
+│   ├── popup.html
+│   ├── pref.html
+│   └── settings.html
+│
+├── php/                       # Backend modules
+│   ├── ai.php
+│   ├── book.php
+│   ├── cache.php
+│   ├── config.php
+│   ├── document.php
+│   ├── editor-pref.php
+│   ├── gallery.php
+│   ├── import.php
+│   ├── pref.php
+│   ├── router.php
+│   └── state.php
+│
+└── data/              # Runtime data (gitignored – auto-created at first run)
+    └── {book-slug}/
+        ├── *.json             # Documents
+        ├── conf/act.json      # Structure index
+        ├── import/            # Import staging
+        ├── image/             # Uploaded media
+        └── cache/             # Caches
+```
+```
+
+### 3. Updated **README.md**
+```markdown
+# Snara
+
+**A lightweight, self-hosted structured writing tool for storytellers.**
+
+Snara is a clean, minimalist web-based editor built specifically for long-form narrative writing — novels, screenplays, web novels, or any story-driven project. It helps you organize your writing with a clear hierarchical structure: **Acts → Chapters → Scenes → Beats**.
+
+Everything runs on your own server with flat-file storage. No database, no heavy frameworks, no bloat.
+
+---
+
+## ✨ Features
+
+- Structured Markdown editor with automatic section detection
+- Live Auto Table of Contents (Acts / Chapters / Scenes / Beats)
+- Full document & book management (multiple books supported)
+- **Files Workspace** — Import, Export, Media Gallery, and Cache management
+- Built-in **AI Chatbot** + **AI Toolbar** for brainstorming, rewriting, and quick actions (Groq ready)
+- Metadata support (characters, settings, custom fields)
+- Media gallery (images & videos) with rename/delete/autocomplete
+- Advanced Preferences panel with live CSS variable editing
+- Autosave, themes, keyboard shortcuts, and export options (Markdown + HTML)
+- Kanban board (scaffolded)
+- Simple REST API backend
+
+**Fully self-hosted** — your stories never leave your server.
+
+---
+
+## AI Tools
+
+Snara includes a flexible AI assistant (Chatbot + Toolbar).
+
+### How it works
+- Chatbot panel for general assistance (brainstorming, continuing scenes, etc.).
+- AI Toolbar in the editor for instant context-aware actions using `preprompts.json`.
+- Backend (`php/ai.php`) forwards requests to any OpenAI-compatible provider.
+
+### Current Setup (Groq)
+- Default provider: **Groq.com** (very fast, generous free tier)
+- Recommended model: `llama-3.3-70b-versatile`
+- Easy to switch: edit `php/ai.php` or use the in-app settings + `json/ai.example.json`
+
+Test it:
+```bash
+bash test.sh
+```
+
+Recommended free/low-cost providers → **[no-cost-ai](https://github.com/zebbern/no-cost-ai)**
+
+---
+
+## Quick Start
+
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/tacoen/snara.git
+   cd snara
+   ```
+
+2. Set write permissions for the web server on these folders:
+   - `/data/`
+   - `/json/`
+
+3. Run the app:
+   - Quick testing: `php -S localhost:8000`
+   - Production: Use Apache (`.htaccess` included) or Nginx
+
+4. Open `http://localhost:8000` (or `spa.html` for experimental SPA mode)
+
+The app automatically creates missing folders and config files on first run.
+
+---
+
+## Tech Stack
+
+- Backend: PHP 7.4+
+- Frontend: Vanilla JavaScript + HTML5 + CSS3 (modular)
+- Markdown: marked.js
+- Storage: Flat files (Markdown + JSON)
+
+---
+
+## Project Structure
+
+See [STRUCTURE.md](STRUCTURE.md) for the detailed folder layout.
+
+---
+
+## Configuration
+
+Main settings are in `json/config.json` (auto-generated). Most options are also editable from the in-app **Settings** panel.
+
+---
+
+## License
+
+Open source. Feel free to fork, modify, and improve it.
+
+Made for storytellers who want structure without complexity.
+
+Questions or suggestions? Open an issue!
+```
+
+These should bring everything up to date and make the project look more polished for visitors.  
+
+Want me to:
+- Add screenshots/badges to README?
+- Bump the version and move Unreleased → [0.3.0]?
+- Add a “What’s New” section?
+- Or anything else?
+
+Just say the word! 🚀

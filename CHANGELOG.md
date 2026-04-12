@@ -9,32 +9,30 @@ This project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html) 
 ## [Unreleased]
 
 ### Added
-- **Files Workspace** — four-section file manager replacing the old single-tab Files view:
-  - **Import** section — drag-and-drop upload for `.txt` / `.md` files, inline preview modal with parsed structure, per-file delete with confirmation bar
-  - **Export** section — chapter checklist grouped by act, select-all toggle, export as Markdown (`.md`) or HTML (`.html`); PDF and EPUB planned
-  - **Gallery** section — 4-column masonry media grid for images and videos per book; hover-to-play on video cards; rename with meta-driven autocomplete; delete with confirmation
-  - **Cache** section — system cache management stub
-- **SnaraExport** (`js/export.js`) — standalone export module with act-grouped chapter selection, Markdown and HTML export with clean print-ready template
-- **SnaraGallery** (`js/snara/gallery.js`) — media management module with upload, rename, delete, and autocomplete from document metadata
-- **Multi-area navigation** via `switchArea()` — Editor, Meta, Files, and Kanban areas with sidebar nav button active states and `aside` TOC visibility sync
-- **Kanban** area scaffold (`partials/kanban.html`, `kanban-area` in layout) — placeholder for upcoming kanban feature
-- **`SnaraPref`** — live CSS variable editor in the Preferences panel covering root, light, dark, and per-tag (beat/scene/chapter/act) token groups
-- **`default.get` / `default.set`** API actions for persisting editor defaults (`defaultTag`, `autosave`, `autosaveInterval`, `metaFields`, `act`)
-- **Import preview modal** — parses staged files through `SnaraStruct.split()` before committing
-- **`bookchange` event** — broadcast on active book switch so all file sections reload automatically
-- **Gallery and import API endpoints**: `gallery.list`, `import.read`, `import.delete`
+- **AI Toolbar** (`SnaraAIToolbar`) — contextual quick-action toolbar directly in the editor. Powered by `json/preprompts.json` with presets (3-Act Structure, Summarize, Characters, Professional, Unfiltered Dialog). Inserts AI responses as new editable beats.
+- Full **AI Chatbot** integration with dedicated panel (`chatbot.html`, `js/snara/chatbot.js`) and Groq support (fast LLM with generous free tier).
+- `json/preprompts.json` and `json/ai.example.json` for easy AI configuration.
+- **CSS 2.0** redesign — modular CSS (`base.css`, `components.css`, `layout.css`, `pages.css`, `utils.css`, `mycss.css`) with improved theming, toolbars, modals, gallery, and chatbot UI.
+- Files Workspace (Import/Export/Gallery/Cache sections) with drag-and-drop, media management, and export tools.
+- `SnaraExport` and `SnaraGallery` modules.
+- Multi-area navigation (`switchArea()`) — Editor, Meta, Files, Kanban.
+- Kanban area scaffold.
+- `SnaraPref` live CSS variable editor in Preferences panel.
+- Import preview modal with structure parsing.
+- `bookchange` event for automatic panel refresh on book switch.
+- Gallery and import API endpoints (`gallery.list`, `import.read`, `import.delete`).
 
 ### Changed
-- Navigation restructured: nav buttons now use `data-area` attributes and drive `switchArea()` instead of legacy `switchTab()`
-- `SnaraFiles` expanded into a full tabbed workspace with `switchSection()`, section-specific top-bar actions, and dropzone wiring for both import and gallery
-- `SnaraUI.switchTab()` wrapped to stay in sync with `switchArea()` for backwards compatibility
-- `AppConfig` and `AppDefaults` now loaded in parallel at boot via `Promise.all`
-- Icon replacement (`icx.replace` / `icx.delayreplace`) applied consistently across all dynamic panels and modals
+- Navigation restructured with `data-area` attributes and `switchArea()`.
+- Major CSS modernization and component consistency.
+- `SnaraFiles` expanded into full tabbed workspace.
+- AI backend (`php/ai.php`) updated for Groq + easy provider switching.
+- Icon system (`icx.replace`) applied consistently across dynamic UI.
 
 ### Fixed
-- Gallery and import panels now correctly reload on book change via the `bookchange` event
-- Export footer icons replaced after dynamic render
-- File upload inputs cleared after selection to allow re-uploading the same file
+- Gallery/Import panels now reload correctly on book change.
+- Export footer icons and file upload clearing.
+- Various stability improvements in modals and dynamic panels.
 
 ---
 

@@ -55,6 +55,7 @@
      GET  ?action=notes.list
      POST ?action=notes.save           ← Note[]
 ─────────────────────────────────────────────────── */
+
 require_once __DIR__ . '/config.php';
 require_once __DIR__ . '/document.php';
 require_once __DIR__ . '/book.php';

@@ -1,4 +1,3 @@
-
 # Snara
 
 **A lightweight, self-hosted structured writing tool for storytellers.**
@@ -14,50 +13,39 @@ Everything runs on your own server with flat-file storage. No database, no heavy
 - Structured Markdown editor with automatic section detection
 - Live Auto Table of Contents (Acts / Chapters / Scenes / Beats)
 - Full document & book management (multiple books supported)
-- Built-in AI Chatbot for brainstorming, continuing scenes, rewriting, and idea generation
+- **Files Workspace** — Import, Export, Media Gallery, and Cache management
+- Built-in **AI Chatbot** + **AI Toolbar** for brainstorming, rewriting, and quick actions (Groq ready)
 - Metadata support (characters, settings, custom fields)
-- Media gallery (images & videos)
-- Autosave, themes, keyboard shortcuts, and export options
+- Media gallery (images & videos) with rename/delete/autocomplete
+- Advanced Preferences panel with live CSS variable editing
+- Autosave, themes, keyboard shortcuts, and export options (Markdown + HTML)
+- Kanban board (scaffolded)
 - Simple REST API backend
 
 **Fully self-hosted** — your stories never leave your server.
 
 ---
 
-## AI Chatbot Implementation
+## AI Tools
 
-Snara includes a simple and flexible AI assistant to help with your writing.
+Snara includes a flexible AI assistant (Chatbot + Toolbar).
 
 ### How it works
-- Frontend sends the user message via POST to `?action=ai.chat`
-- Backend (`php/ai.php`) forwards the request to an external AI provider using OpenAI-compatible format
-- The raw JSON response is returned to the client
+- Chatbot panel for general assistance (brainstorming, continuing scenes, etc.).
+- AI Toolbar in the editor for instant context-aware actions using `preprompts.json`.
+- Backend (`php/ai.php`) forwards requests to any OpenAI-compatible provider.
 
-### Current Setup (Tested with Groq)
-
-We are currently using **Groq.com** because it is very fast and has a generous free tier.
-
-- `php/ai.php` has been updated to use Groq's endpoint (`https://api.groq.com/openai/v1/chat/completions`)
+### Current Setup (Groq)
+- Default provider: **Groq.com** (very fast, generous free tier)
 - Recommended model: `llama-3.3-70b-versatile`
-- A `test.sh` script is included for quick testing via cURL
-- There is also a `test.php` file for easy browser-based testing
+- Easy to switch: edit `php/ai.php` or use the in-app settings + `json/ai.example.json`
 
-To test the AI:
+Test it:
 ```bash
 bash test.sh
 ```
 
-Just replace the API key in `php/ai.php` with your own Groq key.
-
-### Recommended Free AI Providers
-
-If you want to switch providers or keep everything free/low-cost, check this excellent living index:
-
-→ **[https://github.com/zebbern/no-cost-ai](https://github.com/zebbern/no-cost-ai)**  
-*A living index of no-cost AI APIs for developers, researchers & curious builders.*  
-Contributions are welcome and appreciated!
-
-You can easily change the AI backend by editing only a few lines in `php/ai.php` (URL, key, and model).
+Recommended free/low-cost providers → **[no-cost-ai](https://github.com/zebbern/no-cost-ai)**
 
 ---
 
@@ -74,19 +62,19 @@ You can easily change the AI backend by editing only a few lines in `php/ai.php`
    - `/json/`
 
 3. Run the app:
-   - For quick testing: `php -S localhost:8000`
-   - For production: Use Apache or Nginx (`.htaccess` is included)
+   - Quick testing: `php -S localhost:8000`
+   - Production: Use Apache (`.htaccess` included) or Nginx
 
-4. Open `http://localhost:8000` in your browser
+4. Open `http://localhost:8000` (or `spa.html` for experimental SPA mode)
 
-The app will automatically create missing folders and config files.
+The app automatically creates missing folders and config files on first run.
 
 ---
 
 ## Tech Stack
 
 - Backend: PHP 7.4+
-- Frontend: Vanilla JavaScript + HTML5 + CSS3
+- Frontend: Vanilla JavaScript + HTML5 + CSS3 (modular)
 - Markdown: marked.js
 - Storage: Flat files (Markdown + JSON)
 
@@ -94,20 +82,13 @@ The app will automatically create missing folders and config files.
 
 ## Project Structure
 
-See [structure.md](structure.md) for detailed folder layout.
+See [STRUCTURE.md](STRUCTURE.md) for the detailed folder layout.
 
 ---
 
 ## Configuration
 
-Main settings are stored in `json/config.json` (auto-generated). You can also adjust most options from the in-app **Settings** panel.
-
----
-
-## API
-
-Snara uses a clean router in `php/router.php`.  
-New action added: `ai.chat` (POST) — handles AI requests.
+Main settings are in `json/config.json` (auto-generated). Most options are also editable from the in-app **Settings** panel.
 
 ---
 
@@ -118,6 +99,3 @@ Open source. Feel free to fork, modify, and improve it.
 Made for storytellers who want structure without complexity.
 
 Questions or suggestions? Open an issue!
-```
-
-```
