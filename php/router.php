@@ -56,7 +56,7 @@ require_once __DIR__ . '/gallery.php';
 require_once __DIR__ . '/editor-pref.php';
 
 require_once __DIR__ . '/ai.php';
-
+require_once __DIR__ . '/chatlog.php';
 
 class Router {
 
@@ -78,6 +78,28 @@ class Router {
         try {
             switch ($action) {
 
+
+// ── Chatlog ──────────────────────────────────
+                case 'chatlog.get':
+                    self::requireMethod($method, 'GET');
+                    $bookId = (int) self::requireParam('bookId');
+                    echo json_encode(['log' => Chatlog::get($bookId)]);
+                    break;
+
+                case 'chatlog.save':
+                    self::requireMethod($method, 'POST');
+                    $bookId = (int) self::requireParam('bookId');
+                    $entry  = Chatlog::save($bookId, self::body());
+                    echo json_encode(['ok' => true, 'entry' => $entry]);
+                    break;
+
+                case 'chatlog.clear':
+                    self::requireMethod($method, 'DELETE');
+                    $bookId = (int) self::requireParam('bookId');
+                    Chatlog::clear($bookId);
+                    echo json_encode(['ok' => true]);
+                    break;
+					
                 // ── Config ───────────────────────────────────
                 case 'config.get':
                     self::requireMethod($method, 'GET');

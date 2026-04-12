@@ -1,39 +1,60 @@
-<!--
-  partials/chatbot.html
-  Included by: index.php → <main id="chatbot-area" hidden>
-  Powered by:  js/snara/chatbot.js → SnaraChat
--->
-<div class="chatbot" id="chatbot-root">
+<div class="chatbot"
+     id="chatbot-root"
+     data-book-id="<?= htmlspecialchars((string)($bookId ?? ''), ENT_QUOTES) ?>"
+     data-api-base="api.php"
+     data-max-label="30">
 
   <header class="chatbot__header">
-    <div>
-      <i data-icon="ai-agents"></i>
-	<span class="chatbot__title">AI Assistant</span>
+    <div class="chatbot__brand">
+      <i data-icon="ai-agents" aria-hidden="true"></i>
+      <span class="chatbot__title">AI Assistant</span>
     </div>
-	<button class="btn-icon cfg-btn" id="chatbot-clear"
-            title="Clear conversation" aria-label="Clear conversation">
-      <i data-icon="trash"></i>
+    <button class="btn-icon cfg-btn chatbot__clear"
+            id="chatbot-clear"
+            type="button"
+            title="Clear conversation"
+            aria-label="Clear conversation">
+      <i data-icon="trash" aria-hidden="true"></i>
     </button>
   </header>
 
-  <div class="chatbot__window" id="chatbot-window"
-       role="log" aria-live="polite" aria-label="Chat messages">
+  <div class="chatbot__window"
+       id="chatbot-window"
+       role="log"
+       aria-live="polite"
+       aria-label="Chat messages"
+       aria-relevant="additions">
   </div>
 
   <div class="chatbot__composer">
-    <select class="chatbot__select" id="chatbot-preprompt" aria-label="Prompt preset">
+    <select class="chatbot__select"
+            id="chatbot-preprompt"
+            aria-label="Prompt preset">
       <option value="">Default</option>
     </select>
-    <input  class="chatbot__input"  id="chatbot-input"
-            type="text" placeholder="Type a message…"
-            autocomplete="off" aria-label="Message" />
-    <button class="chatbot__send"   id="chatbot-send" aria-label="Send">Send</button>
+	<div class='chatbot__entries'>
+    <textarea class="chatbot__input"
+              id="chatbot-input"
+              placeholder="Type a message…"
+              autocomplete="off"
+              aria-label="Message"
+              maxlength="2000"
+              rows="1"></textarea>
+
+    <button class="chatbot__send"
+            id="chatbot-send"
+            type="button"
+            aria-label="Send message">
+      <span class="chatbot__send-label">Send</span>
+      <span class="chatbot__send-spinner" aria-hidden="true"></span>
+    </button>
+	</div>
   </div>
 
-<aside class="chat-side">
-not yet
-</aside>
+  <aside class="chat-side"
+         aria-label="AI response index"
+         id="chatbot-toc">
+    <p class="chat-side__heading">Responses</p>
+  </aside>
 
 </div>
-
-

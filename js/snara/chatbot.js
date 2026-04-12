@@ -1,15 +1,17 @@
 /* ─────────────────────────────────────────────────
    js/snara/chatbot.js  —  SnaraChat
-   
-   Reads AppConfig.jsonPath for preprompts.
-   Reads AppConfig.apiPath for the AI endpoint,
-   falling back to the data-endpoint attribute.
 
-   Debug output: set localStorage.debug = 'chatbot'
-   in the browser console to enable verbose logs.
-   
+   Original working logic preserved intact.
+   Added on top (clearly marked):
+     + TOC aside  — every AI response → chat-side__item anchor
+     + Chatlog    — api.php?action=chatlog.* persistence
+     + History    — replay on init
+
+   Debug: localStorage.setItem('debug', 'chatbot') → reload.
+
    Public API:
      new SnaraChat('#chatbot-root')
+     instance.clear()
      instance.destroy()
 ─────────────────────────────────────────────────── */
 
@@ -21,7 +23,7 @@ export class SnaraChat {
 
   static instance = null;
 
-  // ── Constructor ──────────────────────────────────────────────────
+  // ── Constructor ─────────────────────────────────────────────────
 
   constructor(selector) {
     if (SnaraChat.instance) {
@@ -30,12 +32,9 @@ export class SnaraChat {
     }
     SnaraChat.instance = this;
 
-    // Debug gate: localStorage.debug = 'chatbot' to enable
     this._debugEnabled = (localStorage.getItem('debug') ?? '').includes('chatbot');
-
     this._log('constructor called with selector:', selector);
 
-    // ── Resolve root element ──
     this._root = typeof selector === 'string'
       ? document.querySelector(selector)
       : selector;
@@ -45,45 +44,48 @@ export class SnaraChat {
       return;
     }
 
-    this._log('root element found:', this._root.id);
-
-    // ── Child elements (all scoped to root) ──
+    // ── Child elements ──
     this._window   = this._root.querySelector('#chatbot-window');
     this._input    = this._root.querySelector('#chatbot-input');
     this._sendBtn  = this._root.querySelector('#chatbot-send');
     this._clearBtn = this._root.querySelector('#chatbot-clear');
     this._select   = this._root.querySelector('#chatbot-preprompt');
+    this._aside    = this._root.querySelector('.chat-side');   // + TOC
 
-    const missing = ['_window','_input','_sendBtn']
+    const missing = ['_window', '_input', '_sendBtn']
       .filter(k => !this[k]);
     if (missing.length) {
       console.error(`${TAG} Missing required child elements:`, missing);
       return;
     }
 
-    // ── Settings — AppConfig wins over data-attrs ──
+    // ── Settings (original) ──
     this._endpoint = AppConfig.apiPath
       ? AppConfig.apiPath + '?action=ai.chat'
-      : (this._root.dataset.endpoint || 'php/ai.php');
+      : (this._root.dataset.endpoint || 'api.php?action=ai.chat');
 
-    this._prepromptUrl = AppConfig.jsonPath
-      ? AppConfig.jsonPath + '/preprompts.json'
-      : '/json/preprompts.json';
+    this._prepromptUrl = (AppConfig.jsonPath || '/json') + '/preprompts.json';
 
     this._log('endpoint:', this._endpoint);
     this._log('prepromptUrl:', this._prepromptUrl);
 
-    // ── Internal state ──
-    this._busy = false;
+    // ── State ──
+    this._busy    = false;
+    this._maxLabel = parseInt(this._root.dataset.maxLabel || '30', 10); // + TOC
 
-    // ── Bind handlers (stored refs for destroy()) ──
-    this._onSend      = this._handleSend.bind(this);
-    this._onKeypress  = this._handleKeypress.bind(this);
-    this._onClear     = this._handleClear.bind(this);
-    this._onDelegate  = this._handleDelegate.bind(this); // copy buttons
+    // ── TOC map: id → anchor element ──────────── + TOC
+    this._tocMap = new Map();
+
+    // ── Bound handler refs (for destroy()) ──
+    this._onSend     = this._handleSend.bind(this);
+    this._onKeypress = this._handleKeypress.bind(this);
+    this._onClear    = this._handleClear.bind(this);
+    this._onDelegate = this._handleDelegate.bind(this);
+    this._onTocClick = this._handleTocClick.bind(this);   // + TOC
 
     this._bindEvents();
     this._loadPreprompts();
+    this._loadHistory();                                   // + chatlog
     this._appendMessage('ai', 'Hello! Ask me anything.');
 
     this._log('init complete');
@@ -92,12 +94,11 @@ export class SnaraChat {
   // ── Events ──────────────────────────────────────────────────────
 
   _bindEvents() {
-    this._sendBtn.addEventListener('click',    this._onSend);
-    this._input.addEventListener('keypress',   this._onKeypress);
-    this._clearBtn?.addEventListener('click',  this._onClear);
-
-    // Event delegation — catches .chatbot__copy-btn clicks (dynamic elements)
-    this._root.addEventListener('click', this._onDelegate);
+    this._sendBtn.addEventListener('click',   this._onSend);
+    this._input.addEventListener('keypress',  this._onKeypress);
+    this._clearBtn?.addEventListener('click', this._onClear);
+    this._root.addEventListener('click',      this._onDelegate);
+    this._aside?.addEventListener('click',    this._onTocClick);  // + TOC
 
     this._log('events bound');
   }
@@ -110,7 +111,6 @@ export class SnaraChat {
   _handleKeypress(e) {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
-      this._log('Enter key → send');
       this._send();
     }
   }
@@ -118,6 +118,15 @@ export class SnaraChat {
   _handleClear() {
     this._log('clear triggered');
     this._window.innerHTML = '';
+    // + TOC: also wipe aside and map
+    if (this._aside) this._aside.innerHTML = '<p class="chat-side__heading">Responses</p>';
+    this._tocMap.clear();
+    // + chatlog: delete remote log
+    if (AppConfig.activeBookId) {
+      this._apiRequest('DELETE').catch(err =>
+        console.warn(`${TAG} clear remote log failed:`, err.message)
+      );
+    }
     this._appendMessage('ai', 'Hello! Ask me anything.');
   }
 
@@ -126,35 +135,42 @@ export class SnaraChat {
     const btn = e.target.closest('.chatbot__copy-btn');
     if (!btn) return;
     const textEl = btn.closest('.chatbot__message')?.querySelector('.chatbot__text');
-    if (textEl) {
-      this._log('copy triggered for message');
-      this._copyToClipboard(textEl.innerText, btn);
-    }
+    if (textEl) this._copyToClipboard(textEl.innerText, btn);
   }
 
-  // ── Core: send ───────────────────────────────────────────────────
+  // + TOC: delegated handler for aside anchor clicks
+  _handleTocClick(e) {
+    const anchor = e.target.closest('.chat-side__item');
+    if (!anchor) return;
+    e.preventDefault();
+
+    this._aside.querySelectorAll('.chat-side__item--active')
+      .forEach(el => el.classList.remove('chat-side__item--active'));
+    anchor.classList.add('chat-side__item--active');
+
+    const bubble = this._window.querySelector(anchor.getAttribute('href'));
+    bubble?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+
+  // ── Core: send (original working logic preserved) ────────────────
 
   async _send() {
     const userText = this._input.value.trim();
-    if (!userText) {
-      this._log('send aborted — empty input');
-      return;
-    }
-    if (this._busy) {
-      this._log('send aborted — already busy');
-      return;
-    }
+    if (!userText || this._busy) return;
 
     const preprompt  = this._select?.value ?? '';
     const fullPrompt = preprompt + userText;
-
-    this._log('sending message. preprompt prefix length:', preprompt.length);
 
     this._appendMessage('user', userText);
     this._input.value = '';
     this._setLoading(true);
 
-    const pendingText = this._appendMessage('ai', '…');
+    // + chatlog: persist user message
+    this._persistEntry('user', userText);
+
+    // Pending AI bubble — span ref updated after fetch (original pattern)
+    const aiId      = this._randomId();                   // + TOC
+    const pendingSpan = this._createPendingBubble(aiId);
 
     try {
       this._log('fetch →', this._endpoint);
@@ -166,41 +182,58 @@ export class SnaraChat {
       });
 
       this._log('fetch ← status:', res.status);
-
       if (!res.ok) throw new Error(`HTTP ${res.status} ${res.statusText}`);
 
       const data = await res.json();
       this._log('response data:', data);
 
+      let aiText;
       if (data.error) {
         console.warn(`${TAG} API returned error:`, data.error);
-        pendingText.innerText = `Error: ${data.error}`;
+        aiText = `Error: ${data.error}`;
       } else if (data.choices?.[0]?.message?.content) {
-        pendingText.innerText = data.choices[0].message.content;
+        aiText = data.choices[0].message.content;
       } else {
         console.warn(`${TAG} Unexpected response shape:`, data);
-        pendingText.innerText = 'Error: Unexpected response from API.';
+        aiText = 'Error: Unexpected response from API.';
       }
+
+      pendingSpan.innerText = aiText;
+
+      // + TOC + chatlog: add entry and persist with final content
+      this._addTocEntry(aiId, aiText);
+      this._persistEntry('ai', aiText, aiId);
 
     } catch (err) {
       console.error(`${TAG} Fetch failed:`, err);
-      pendingText.innerText = 'Error: Connection failed. Check the console.';
+      pendingSpan.innerText = 'Error: Connection failed. Check the console.';
     } finally {
       this._setLoading(false);
       this._scrollBottom();
     }
   }
 
-  // ── DOM helpers ──────────────────────────────────────────────────
+  // ── DOM helpers (original) ───────────────────────────────────────
 
   /**
+   * Append a finalised message bubble (history replay + user messages).
+   * Returns the text <span> so callers can update innerText if needed.
    * @param {'user'|'ai'} role
    * @param {string}      text
-   * @returns {HTMLElement}  The text <span> — caller can update `.innerText`
+   * @param {object}      [opts]
+   * @param {string}      [opts.id]         pre-assigned id (history replay)
+   * @param {string}      [opts.timestamp]  ISO 8601     (history replay)
+   * @param {boolean}     [opts.addToc]     add TOC entry (default: false)
    */
-  _appendMessage(role, text) {
+  _appendMessage(role, text, opts = {}) {
     const div = document.createElement('div');
     div.className = `chatbot__message chatbot__message--${role}`;
+
+    // + TOC: assign id so TOC anchors can target it
+    if (opts.id) {
+      div.id = `msg-${opts.id}`;
+      div.setAttribute('data-timestamp', opts.timestamp || new Date().toISOString());
+    }
 
     const span = document.createElement('span');
     span.className = 'chatbot__text';
@@ -213,6 +246,9 @@ export class SnaraChat {
       btn.textContent = 'Copy';
       btn.setAttribute('aria-label', 'Copy message');
       div.appendChild(btn);
+
+      // + TOC: add sidebar entry for history replay
+      if (opts.addToc) this._addTocEntry(opts.id, text);
     }
 
     this._window.appendChild(div);
@@ -220,9 +256,35 @@ export class SnaraChat {
     return span;
   }
 
+  /**
+   * + TOC: create a pending AI bubble, return its text span.
+   * Used by _send() so the span can be updated after fetch.
+   */
+  _createPendingBubble(id) {
+    const div = document.createElement('div');
+    div.className = 'chatbot__message chatbot__message--ai';
+    div.id        = `msg-${id}`;
+
+    const span = document.createElement('span');
+    span.className = 'chatbot__text';
+    span.innerText = '…';
+    div.appendChild(span);
+
+    const btn = document.createElement('button');
+    btn.className = 'chatbot__copy-btn';
+    btn.textContent = 'Copy';
+    btn.setAttribute('aria-label', 'Copy message');
+    div.appendChild(btn);
+
+    this._window.appendChild(div);
+    this._scrollBottom();
+    return span;
+  }
+
   _setLoading(state) {
-    this._busy = state;
+    this._busy             = state;
     this._sendBtn.disabled = state;
+    this._sendBtn.classList.toggle('chatbot__send--loading', state);
     this._log('loading state:', state);
   }
 
@@ -230,7 +292,7 @@ export class SnaraChat {
     this._window.scrollTop = this._window.scrollHeight;
   }
 
-  // ── Preprompts ───────────────────────────────────────────────────
+  // ── Preprompts (original, with fixes from previous turn) ─────────
 
   async _loadPreprompts() {
     if (!this._select) return;
@@ -243,21 +305,21 @@ export class SnaraChat {
 
       this._log('preprompts loaded:', opts.length, 'options');
 
-      this._select.innerHTML = '<option value="">Default (No Prompt)</option>';
+      this._select.innerHTML = '<option value="">Default</option>';
       opts.forEach(({ label, value }) => {
-        const el = document.createElement('option');
-        el.value = value;
+        const el       = document.createElement('option');
+        el.value       = value;
         el.textContent = label;
         this._select.appendChild(el);
       });
 
     } catch (err) {
-      console.warn(`${TAG} Could not load preprompts:`, err);
+      console.warn(`${TAG} Could not load preprompts:`, err.message);
       this._select.innerHTML = '<option value="">Default</option>';
     }
   }
 
-  // ── Clipboard ────────────────────────────────────────────────────
+  // ── Clipboard (original) ─────────────────────────────────────────
 
   _copyToClipboard(text, btn) {
     const onSuccess = () => {
@@ -277,7 +339,6 @@ export class SnaraChat {
         this._fallbackCopy(text, onSuccess);
       });
     } else {
-      this._log('non-secure context — using execCommand fallback');
       this._fallbackCopy(text, onSuccess);
     }
   }
@@ -291,16 +352,91 @@ export class SnaraChat {
     ta.select();
     try {
       if (document.execCommand('copy')) onSuccess();
-      else console.warn(`${TAG} execCommand copy returned false`);
     } catch (err) {
       console.error(`${TAG} Fallback copy threw:`, err);
     }
     document.body.removeChild(ta);
   }
 
-  // ── Debug logger ─────────────────────────────────────────────────
-  // Enable:  localStorage.setItem('debug', 'chatbot')  then reload
-  // Disable: localStorage.removeItem('debug')          then reload
+  // + TOC ─────────────────────────────────────────────────────────
+
+  _addTocEntry(id, content) {
+    if (!this._aside || !id) return;
+
+    const label = this._truncate(content, this._maxLabel);
+    const time  = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+    const anchor       = document.createElement('a');
+    anchor.className   = 'chat-side__item';
+    anchor.href        = `#msg-${id}`;
+    anchor.title       = content;
+
+    const labelEl       = document.createElement('span');
+    labelEl.className   = 'chat-side__label';
+    labelEl.textContent = label;
+
+    const timeEl       = document.createElement('span');
+    timeEl.className   = 'chat-side__time';
+    timeEl.textContent = time;
+
+    anchor.append(labelEl, timeEl);
+    this._aside.appendChild(anchor);
+    this._tocMap.set(id, anchor);
+  }
+
+  // + Chatlog persistence ──────────────────────────────────────────
+
+  async _loadHistory() {
+    if (!AppConfig.activeBookId) return;
+    try {
+      const data = await this._apiRequest('GET');
+      if (!Array.isArray(data?.log) || !data.log.length) return;
+
+      data.log.forEach(entry => {
+        if (!entry.id || !entry.content) return;
+        if (!['user', 'ai'].includes(entry.role)) return;
+        this._appendMessage(entry.role, entry.content, {
+          id:      entry.id,
+          timestamp: entry.timestamp,
+          addToc:  entry.role === 'ai',   // rebuild TOC from history
+        });
+      });
+
+      this._log('history replayed:', data.log.length, 'entries');
+    } catch (err) {
+      console.warn(`${TAG} history load failed:`, err.message);
+    }
+  }
+
+  _persistEntry(role, content, id) {
+    if (!AppConfig.activeBookId) return;
+    const entryId   = id ?? this._randomId();
+    const timestamp = new Date().toISOString();
+    const label     = this._truncate(content, this._maxLabel);
+    this._apiRequest('POST', { id: entryId, role, content, label, timestamp })
+      .catch(err => console.warn(`${TAG} persist failed:`, err.message));
+  }
+
+  async _apiRequest(method, body = null) {
+    const ACTION_MAP = { GET: 'chatlog.get', POST: 'chatlog.save', DELETE: 'chatlog.clear' };
+    const url = `${AppConfig.apiPath}?action=${ACTION_MAP[method]}&bookId=${encodeURIComponent(AppConfig.activeBookId)}`;
+    const opts = { method, headers: { 'Content-Type': 'application/json' }, credentials: 'same-origin' };
+    if (body) opts.body = JSON.stringify(body);
+    const res = await fetch(url, opts);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    return res.json();
+  }
+
+  // ── Utilities ────────────────────────────────────────────────────
+
+  _randomId() {
+    return String(Math.floor(Math.random() * 900_000 + 100_000));
+  }
+
+  _truncate(str, max) {
+    if (typeof str !== 'string') return '';
+    return str.length <= max ? str : str.slice(0, max).trimEnd() + '\u2026';
+  }
 
   _log(...args) {
     if (this._debugEnabled) console.log(TAG, ...args);
@@ -309,11 +445,14 @@ export class SnaraChat {
   // ── Public API ───────────────────────────────────────────────────
 
   destroy() {
-    this._log('destroy called — removing all listeners');
+    this._log('destroy called');
     this._sendBtn?.removeEventListener('click',   this._onSend);
     this._input?.removeEventListener('keypress',  this._onKeypress);
     this._clearBtn?.removeEventListener('click',  this._onClear);
     this._root?.removeEventListener('click',      this._onDelegate);
+    this._aside?.removeEventListener('click',     this._onTocClick);
+    this._tocMap?.clear();
+    this._tocMap = null;
     SnaraChat.instance = null;
     this._root = null;
     this._log('destroy complete');
