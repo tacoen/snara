@@ -1,15 +1,19 @@
 <div class="popup-toolbar" id="popup">
 
-<div class='col'>
+<div class='row'>
   <button class="pop-pill act"     onclick="setEntryClass('act')">A</button>
   <button class="pop-pill chapter" onclick="setEntryClass('chapter')">C</button>
   <button class="pop-pill scene"   onclick="setEntryClass('scene')">S</button>
   <button class="pop-pill beat"    onclick="setEntryClass('beat')">B</button>
-  <div class="pop-sep"></div>
-  <button class="pop-pill pop-remove" onclick="removeEntry()" title="Delete entry">✕</button>
-</div>
-<div class='col'>
-
+  <span class="sep"></span>
+	<button class='ai-1'><i data-icon='ai-dialog'></i></button>
+	<button class='ai-2'><i data-icon='ai-content'></i></button>
+	<button class='ai-3'><i data-icon='ai-file'></i></button>
+	<button class='ai-4'><i data-icon='ai-chara'></i></button>
+  <span class="sep"></span>
+  <button class="pop-pill pop-remove" onclick="removeEntry()" title="Delete entry">
+  <i data-icon='trash'></i>
+  </button>
 </div>
 
 </div>

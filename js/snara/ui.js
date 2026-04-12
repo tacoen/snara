@@ -53,8 +53,12 @@ export class SnaraUI {
     clearTimeout(this._popupTimeout);
 
     const rect = div.getBoundingClientRect();
-    this.popup.style.left = `${rect.right + 8}px`;
-    this.popup.style.top  = `${rect.top}px`;
+	const popupWidth = this.popup.offsetWidth;
+	
+	const rcenter = `${rect.left + (rect.width / 2) - (popupWidth / 2)}`
+	
+    this.popup.style.left = `${rcenter}px`;
+    this.popup.style.top  = `${rect.top - 18}px`;
     this.popup.classList.add('visible');
 
     const currentClass = SnaraEditor.CLASSES.find(c => div.classList.contains(c));

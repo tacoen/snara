@@ -629,10 +629,10 @@ body.modal-open { overflow: hidden; }
 
 /* FIX: narrative-level indent defined twice (first used raw --tag-* tokens,
         second used correct --entry-* aliases). Kept aliases only. */
-.entry.act     { border-left-color: var(--entry-act-border);     background: var(--tag-act-bg);   padding-left: var(--s-md); }
-.entry.chapter { border-left-color: var(--entry-chapter-border);                                   padding-left: calc(2 * var(--s-md)); }
-.entry.scene   { border-left-color: var(--entry-scene-border);   background: var(--tag-scene-bg); padding-left: calc(3 * var(--s-md)); }
-.entry.beat    { border-left-color: var(--entry-beat-border);    background: var(--tag-beat-bg);  padding-left: calc(4 * var(--s-md)); }
+.entry.act     { border-left-color: var(--entry-act-border); padding-left: var(--s-md); }
+.entry.chapter { border-left-color: var(--entry-chapter-border); padding-left: calc(2 * var(--s-md)); }
+.entry.scene   { border-left-color: var(--entry-scene-border); padding-left: calc(3 * var(--s-md)); }
+.entry.beat    { border-left-color: var(--entry-beat-border);  padding-left: calc(4 * var(--s-md)); }
 
 [data-editing="1"] { min-height: 80px; max-height: 320px; }
 
@@ -864,25 +864,30 @@ body.entry-edit #editor { height: 72px; }
   align-content: flex-start;
   z-index: 9999;
   background: var(--border);
-  border: 1px solid var(--border);
+  border: 1px solid var(--bg-main);
   border-radius: 8px;
   box-shadow: 0 4px 16px var(--overlay);
   opacity: 0;
   pointer-events: none;
   transition: opacity .12s;
 }
-.popup-toolbar.visible { opacity: 1; pointer-events: all; }
 
-.popup-toolbar div.col {
+.popup-toolbar.visible { opacity: 1; pointer-events: all; }
+[hold].popup-toolbar { opacity: 1; pointer-events: all; }
+
+.popup-toolbar div {
   display: flex;
-  flex-direction: column;
+  /* flex-direction: column; */
   align-items: center;
   gap: var(--s-xs);
   /* FIX: broken multi-line padding value — consolidated. */
-  padding: var(--s-sm) var(--s-xs) var(--s-md);
+  padding: var(--s-xs);
 }
 
-/* ── Pop pills (narrative type selector) ── */
+.popup-toolbar .sep { margin-left: var(--s-md) }
+.popup-toolbar button { background: none; border: none; }
+.popup-toolbar button svg { width: 20px; }
+
 .pop-pill {
   border: 1px solid transparent;
   background: none;
@@ -890,32 +895,29 @@ body.entry-edit #editor { height: 72px; }
   padding: 2px var(--s-xs);
   width: 1.5rem;
   font-family: var(--font-mono);
-  font-size: .9rem;
+  /* font-size: .9rem; */
   font-weight: 500;
   text-transform: uppercase;
-  letter-spacing: .07em;
+  /* letter-spacing: .07em; */
   color: var(--fg-muted);
   cursor: pointer;
   transition: all .12s;
 }
 .pop-pill:hover { background: var(--bg-hover); color: var(--fg-main); }
 
-/* FIX: each .pop-pill type had duplicate `color:` declarations (first shadowed).
-   Kept only the winning value: var(--bg-main). */
-.pop-pill.scene,
-.pop-pill.beat,
-.pop-pill.chapter,
-.pop-pill.act  { color: var(--bg-main); }
+.pop-pill.scene  { color: var(--entry-scene-border); }
+.pop-pill.beat  { color: var(--entry-beat-border); }
+.pop-pill.chapter  { color: var(--entry-chapter-border); }
+.pop-pill.act  { color: var(--entry-act-border); }
 
-/* Active states — shared with .tag-pill for consistency */
 .tag-pill.active-scene,
-.pop-pill.scene.sel,   .pop-pill.scene:hover   { background: var(--entry-scene-border); }
+.pop-pill.scene.sel,   .pop-pill.scene:hover   { background: var(--entry-scene-border); color: var(--bg-main)}
 .tag-pill.active-beat,
-.pop-pill.beat.sel,    .pop-pill.beat:hover     { background: var(--entry-beat-border); }
+.pop-pill.beat.sel,    .pop-pill.beat:hover     { background: var(--entry-beat-border);  color: var(--bg-main)}
 .tag-pill.active-chapter,
-.pop-pill.chapter.sel, .pop-pill.chapter:hover  { background: var(--entry-chapter-border); }
+.pop-pill.chapter.sel, .pop-pill.chapter:hover  { background: var(--entry-chapter-border);  color: var(--bg-main)}
 .tag-pill.active-act,
-.pop-pill.act.sel,     .pop-pill.act:hover      { background: var(--entry-act-border); }
+.pop-pill.act.sel,     .pop-pill.act:hover      { background: var(--entry-act-border); color: var(--bg-main) }
 
 .pop-sep {
   width: 1px;

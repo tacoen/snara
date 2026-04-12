@@ -14,7 +14,9 @@
 /* ── Display ────────────────────────────────────── */
 
 .flex    { display: flex; }
-.flex-col { display: flex; flex-direction: column; }
+.flex-col,.flex.col { display: flex; flex-direction: column; }
+.flex-row,.flex.row { display: flex; flex-direction: row; }
+.flex.grow { flex-grow }
 .flex-1  { flex: 1; }
 
 /* ── Spacing ────────────────────────────────────── */
