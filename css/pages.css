@@ -1,0 +1,417 @@
+/* ═══════════════════════════════════════════════════
+   pages › file manager
+   DO:  scope all rules to #files or .f* prefix
+   DON'T: put reusable patterns here — if a widget
+          appears elsewhere it belongs in components
+   ═══════════════════════════════════════════════════ */
+
+#files {
+  display: grid;
+  grid-template-columns: 160px 1fr;
+  height: 100%;
+  overflow: hidden;
+}
+
+/* ── Left navigation panel ── */
+#files-nav {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-start;
+  padding: var(--s-xs) 0;
+  width: auto;
+  border-left: 1px solid var(--bg-mate);
+  background: var(--border);
+}
+
+.fnav-group-label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  color: var(--fg-muted);
+  padding: var(--s-sm) var(--s-md) var(--s-xs);
+}
+
+.fnav-item {
+  display: flex;
+  align-items: center;
+  gap: var(--s-sm);
+  padding: 7px var(--s-md);
+  width: 100%;
+  background: none;
+  border: none;
+  border-left: 2px solid transparent;
+  font-family: inherit;
+  font-size: var(--f-xs);
+  color: var(--fg-muted);
+  text-align: left;
+  cursor: pointer;
+  transition: all .12s;
+}
+.fnav-item svg       { width: 20px; height: 20px; flex-shrink: 0; opacity: .7; }
+.fnav-item:hover     { color: var(--fg-main); background: var(--bg-main); }
+.fnav-item.active    { color: var(--fg-main); background: var(--bg-alt); font-weight: 500; }
+
+/* ── Main panel ── */
+#files-main {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: var(--bg-main);
+  height: calc(100dvh - 90px);
+}
+
+#files-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+  gap: var(--s-sm);
+  padding: 0 var(--s-md) 8px;
+  border-bottom: 1px solid var(--border);
+}
+
+.files-title {
+  font-family: var(--font-mono);
+  font-size: var(--f-xs);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: .07em;
+}
+
+/* ── Sub-panel ── */
+.fpanel              { display: flex; flex-direction: column; flex: 1; overflow: hidden; }
+.fpanel[hidden]      { display: none; }
+.fpanel-hint         { padding: 8px var(--s-md) 4px; font-size: var(--f-xs); color: var(--fg-muted); }
+.fpanel-footer       { display: flex; flex-shrink: 0; gap: var(--s-sm); padding: var(--s-sm) var(--s-md); border-top: 1px solid var(--border); }
+
+/* ── Drop zones ── */
+#files-dropzone,
+#files-gallery-dz {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  gap: var(--s-xs);
+  margin: var(--s-sm) var(--s-md);
+  padding: var(--s-lg);
+  border: 1.5px dashed var(--border);
+  border-radius: 6px;
+  color: var(--fg-muted);
+  text-align: center;
+  cursor: pointer;
+  transition: all .15s;
+}
+#files-dropzone svg, #files-gallery-dz svg { width: 20px; height: 20px; opacity: .5; }
+#files-dropzone p,   #files-gallery-dz p   { font-size: var(--f-xs); line-height: 1.5; }
+#files-dropzone span                        { font-size: var(--f-xs); opacity: .6; }
+#files-dropzone.drag,
+#files-gallery-dz.drag { border-color: var(--primary); background: var(--selection); color: var(--primary); }
+#files-gallery-dz      { padding: var(--s-md); }
+
+/* ── File list ── */
+.flist {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  overflow-y: auto;
+  list-style: none;
+  padding: 4px var(--s-md);
+  gap: 4px;
+}
+.flist-empty { padding: var(--s-lg); font-size: var(--f-xs); color: var(--fg-muted); opacity: .6; text-align: center; line-height: 1.6; }
+
+.flist-item {
+  display: flex;
+  align-items: center;
+  gap: var(--s-sm);
+  padding: 6px var(--s-sm);
+  border-radius: 5px;
+  border: 1px solid transparent;
+  cursor: default;
+  transition: all .12s;
+}
+.flist-item:hover             { background: var(--bg-alt); }
+.flist-item.delete            { background: color-mix(in srgb, var(--danger) 6%, transparent); border-color: var(--border); }
+.flist-item.delete .fname     { text-decoration: line-through; opacity: .5; }
+.flist-item.drag-over         { border-color: var(--primary); }
+
+.flist-act-hdr {
+  padding: var(--s-xs) var(--s-sm);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .07em;
+  color: var(--fg-muted);
+  opacity: .7;
+  margin-top: var(--s-xs);
+}
+
+/* ── File item sub-elements ── */
+.fhandle          { cursor: grab; opacity: .3; flex-shrink: 0; display: flex; align-items: center; }
+.fhandle svg      { width: 12px; height: 12px; }
+.fname            { flex: 1; font-size: var(--f-xs); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--fg-main); }
+.fbadge           { font-family: var(--font-mono); font-size: 10px; padding: 1px 6px; border-radius: 20px; background: var(--bg-alt); border: 1px solid var(--border); color: var(--fg-muted); flex-shrink: 0; white-space: nowrap; }
+.fstatus          { font-family: var(--font-mono); font-size: 10px; padding: 1px 7px; border-radius: 20px; font-weight: 500; flex-shrink: 0; }
+.fs-ready         { background: var(--selection); color: var(--primary); }
+.fs-ok            { background: var(--success-bg); color: var(--success-fg); }
+
+/* ── File tools ── */
+.ftools { display: flex; gap: 2px; flex-shrink: 0; }
+.ftool {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  background: none;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  cursor: pointer;
+  color: var(--fg-muted);
+  transition: all .12s;
+}
+.ftool svg                 { width: 20px; pointer-events: none; }
+.ftool:hover               { background: var(--bg-alt); border-color: var(--border); color: var(--fg-main); }
+.ftool.erase-btn:hover     { color: var(--danger); }
+
+/* ── Delete bar ── */
+.fdelete-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+  padding: var(--s-sm) var(--s-md);
+  background: rgba(207,34,46,.06);
+  border-top: 1px solid var(--border);
+}
+.fdelete-bar p { font-size: var(--f-xs); color: var(--danger); }
+
+/* ── Checkbox row ── */
+.fcheck-row { display: flex; align-items: center; gap: var(--s-sm); cursor: pointer; font-size: var(--f-xs); padding: 4px var(--s-sm); }
+.fcheck-row input { accent-color: var(--primary); width: 13px; height: 13px; cursor: pointer; }
+
+/* ═══════════════════════════════════════════════════
+   pages › media gallery
+   DO:  use masonry via `columns` (already set)
+   DON'T: add fixed heights to .gallery-card —
+          let images dictate the flow
+   ═══════════════════════════════════════════════════ */
+
+.gallery-scroll { flex: 1; overflow-y: auto; min-height: 0; }
+
+.gallery-grid {
+  columns: 4;
+  column-gap: 6px;
+  padding: 6px;
+}
+@media (max-width: 600px) { .gallery-grid { columns: 2; } }
+
+/* ── Card ── */
+.gallery-card {
+  break-inside: avoid;
+  position: relative;
+  margin-bottom: 6px;
+  border-radius: 6px;
+  overflow: hidden;
+  background: var(--bg-alt);
+  border: 1px solid var(--border);
+  cursor: default;
+  transition: box-shadow .15s;
+}
+.gallery-card:hover { box-shadow: 0 2px 12px var(--overlay); }
+
+.gallery-card img,
+.gallery-card video {
+  display: block;
+  width: 100%;
+  height: auto;
+  object-fit: cover;
+}
+
+/* ── Hover overlay bar ── */
+.gallery-bar {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: var(--s-md) var(--s-xs) var(--s-xs) var(--s-md);
+  background: linear-gradient(0deg, var(--fg-main) 0%, transparent 100%);
+  opacity: 0;
+  transition: opacity .15s;
+}
+.gallery-card:hover .gallery-bar { opacity: 1; }
+
+.gallery-name {
+  flex: 1;
+  font-family: var(--font-mono);
+  font-size: var(--f-xs);
+  color: var(--bg-main);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+}
+
+.gallery-tools { display: flex; gap: 2px; flex-shrink: 0; }
+
+.gtool {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  background: color-mix(in srgb, var(--bg-main) 15%, transparent);
+  border: none;
+  border-radius: 4px;
+  padding: 0;
+  cursor: pointer;
+  color: var(--bg-main);
+  transition: background .1s;
+}
+.gtool:hover { background: color-mix(in srgb, var(--bg-main) 30%, transparent); }
+.gtool svg   { width: 12px; height: 12px; }
+
+/* ── States ── */
+.gallery-card.gallery-deleting { opacity: .45; pointer-events: none; }
+
+/* ── Inline rename box ── */
+.gallery-rename-box {
+  position: absolute;
+  bottom: 0;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: center;
+  gap: 6px;
+  padding: var(--s-sm);
+  height: auto;
+  width: calc(100% - 1rem);
+  background: color-mix(in srgb, var(--bg-main) 72%, transparent);
+}
+.gallery-rename-input {
+  display: flex;
+  margin-top: var(--s-md);
+  max-height: 1.3rem;
+  font-size: var(--f-xs) !important;
+  padding: 4px 7px !important;
+  background: var(--bg-main) !important;
+}
+.gallery-rename-actions { display: flex; gap: 4px; justify-content: flex-end; }
+
+/* ═══════════════════════════════════════════════════
+   pages › preferences
+   Extends: .app-modal, .cfg-* (from modal.css)
+   DO:  use .pref-section for each settings group
+   DON'T: add cfg-form primitives here — they live
+          in modal.css and are shared app-wide
+   ═══════════════════════════════════════════════════ */
+
+.pref-modal { width: min(620px, calc(100vw - 32px)); max-height: 88dvh; }
+.pref-body  { padding: 0; gap: 0; }
+.pref-tabs  { padding: 0 var(--s-sm); border-bottom: 1px solid var(--border); }
+
+.pref-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-xs);
+  padding: var(--s-md) var(--s-lg);
+  border-bottom: 1px solid var(--border);
+}
+.pref-section:last-child    { border-bottom: none; }
+.pref-section .cfg-heading  { margin-bottom: var(--s-xs); }
+
+.pref-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: nowrap;
+  gap: var(--s-sm);
+  min-height: 34px;
+}
+
+.pref-var-label {
+  width: 90px;
+  flex-shrink: 0;
+  font-size: var(--f-xs);
+  color: var(--fg-muted);
+}
+
+.pref-var-name {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--fg-muted);
+  background: var(--bg-alt);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 1px 6px;
+  flex-shrink: 0;
+  white-space: nowrap;
+  opacity: .75;
+  width: 168px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.pref-color {
+  width: 34px;
+  height: 28px;
+  padding: 2px;
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  background: none;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.pref-color::-webkit-color-swatch-wrapper { padding: 0; }
+.pref-color::-webkit-color-swatch         { border: none; border-radius: 3px; }
+
+.pref-text {
+  flex: 1;
+  font-family: var(--font-mono);
+  font-size: var(--f-xs);
+  min-width: 0;
+}
+
+/* ── Footer ── */
+.pref-reset-btn {
+  margin-right: auto;
+  background: none;
+  border: 1px solid var(--danger);
+  border-radius: 6px;
+  padding: var(--s-xs) var(--s-md);
+  font-family: var(--font-mono);
+  font-size: var(--f-xs);
+  letter-spacing: .04em;
+  color: var(--danger);
+  opacity: .7;
+  cursor: pointer;
+  transition: all .15s;
+}
+.pref-reset-btn:hover { opacity: 1; background: rgba(207,34,46,.07); }
+
+.pref-export-btn { display: flex; align-items: center; gap: var(--s-xs); }
+
+/* ── Pref-panel open button (in nav) ── */
+#pref-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  border-radius: 6px;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  font-size: 14px;
+  cursor: pointer;
+  color: var(--fg-muted);
+  flex-shrink: 0;
+  transition: background .15s, color .15s;
+}
+#pref-btn:hover { background: var(--bg-hover); color: var(--fg-main); }

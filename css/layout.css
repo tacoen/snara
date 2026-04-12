@@ -1,31 +1,121 @@
+/* ═══════════════════════════════════════════════════
+   layout › skeleton — grids, nav, header, article
+   DO:  structural shells, sticky containers, grids
+   DON'T: style content inside a shell here
+   ═══════════════════════════════════════════════════ */
 
+#app { background: var(--bg-mate); }
+
+/* ── App grids ──
+   .grid-v — 40px icon strip | content
+   .grid-h — header row | content | sidebar */
+.grid-v {
+  display: grid;
+  grid-template-columns: 40px auto;
+  grid-gap: 0;
+}
+.grid-h {
+  display: grid;
+  grid-template-rows: 40px auto;
+  grid-template-columns: auto 15rem;
+  grid-gap: 0;
+}
 .dashboard {
   display: grid;
   grid-template-columns: auto 15rem;
   height: calc(100dvh - 43px);
 }
 
+/* ── Full-width page areas ── */
+#kanban-area,
+#meta-area,
+#files-area { grid-column: span 2; }
 
+/* ── Icon nav (left strip) ──
+   FIX: duplicate nav rule (baru + layout) merged here. */
 nav {
+  display: flex;
+  flex-direction: column;
+  flex-wrap: nowrap;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--s-xs) 0;
+  border-right: 1px solid var(--border);
+  grid-row: span 2;
+  position: sticky;
+  top: 0;
+  z-index: 200;
   height: calc(100dvh - 8px);
 }
 
-aside, .content-area {
-  height: calc(100dvh - 43px);
+nav > div {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--s-xs);
+  padding: var(--s-xs) 0;
 }
+
+nav div.embed {
+  margin-right: -11px;
+  padding: var(--s-md) 0;
+  gap: var(--s-sm);
+  background: var(--border);
+  border-top-left-radius: 6px;
+  border-bottom-left-radius: 6px;
+}
+nav div.embed svg { width: 24px; margin-left: 3px; }
+
+/* Secondary embedded nav panel */
+nav.embed {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-start;
+  padding: var(--s-xs) 0;
+  width: auto;
+  border-left: 1px solid var(--bg-mate);
+  background: var(--border);
+  box-shadow: inset 3px 0 4px rgba(0,0,0,.5);
+}
+
+/* ── Sticky header bar ──
+   FIX: removed duplicate `justify-content: space-between`. */
+header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-md);
+  padding: 0 var(--s-sm);
+  height: 42px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg-main);
+  flex-shrink: 0;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  grid-column: span 2;
+}
+
+/* ── Main content regions ──
+   FIX: #article was split across baru.css and editor.css — merged. */
+#article {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  background: var(--bg-main);
+  border-left: 1px solid var(--border);
+  transition: background .25s ease, border-color .25s ease;
+}
+
+aside,
+.content-area { height: calc(100dvh - 43px); }
 
 aside {
   grid-row: span 2;
-  /* padding: var(--s-md); */
   border-left: 1px solid var(--border);
 }
-
-.content-area {
-  display: flex;
-  width: 100%;
-  flex-direction: column;
-}
-
 aside.chat-side {
   position: fixed;
   top: 44px;
@@ -34,3 +124,119 @@ aside.chat-side {
   padding: var(--s-sm);
   font-size: var(--f-xs);
 }
+
+.content-area {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+/* ── Header chrome ── */
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: var(--s-sm);
+  flex: 1;
+  min-width: 0;
+}
+
+.filename {
+  display: flex;
+  align-items: center;
+  gap: 1px;
+  font-family: var(--font-mono);
+  font-size: var(--f-xs);
+  color: var(--fg-muted);
+  flex-shrink: 0;
+}
+
+#filename {
+  outline: none;
+  min-width: 60px;
+  color: var(--fg-main);
+  caret-color: var(--primary);
+  border-bottom: 1px solid transparent;
+  transition: border-color .15s;
+}
+#filename:empty::before {
+  content: attr(data-placeholder);
+  color: var(--fg-muted);
+  opacity: .5;
+  pointer-events: none;
+}
+#filename:focus { border-bottom-color: var(--border); }
+
+/* Header icon buttons (theme toggle, nav settings) */
+#theme-toggle,
+#settings-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  border-radius: 6px;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  font-size: var(--f-sm);
+  line-height: 1;
+  cursor: pointer;
+  color: var(--fg-muted);
+  flex-shrink: 0;
+  transition: background .15s, color .15s;
+}
+#theme-toggle:hover,
+#settings-btn:hover { background: var(--bg-hover); color: var(--fg-main); }
+#settings-btn       { margin-top: auto; margin-bottom: var(--s-xs); }
+
+/* Save button — header-specific, stateful */
+#save-btn {
+  display: flex;
+  align-items: center;
+  gap: var(--s-xs);
+  padding: 3px var(--s-sm);
+  margin-right: var(--s-sm);
+  font-family: var(--font-mono);
+  font-size: var(--f-xs);
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--fg-muted);
+  flex-shrink: 0;
+  white-space: nowrap;
+  transition: background .15s, color .15s, border-color .15s;
+}
+#save-btn:hover              { background: var(--bg-hover); color: var(--fg-main); }
+#save-btn:disabled           { opacity: .5; cursor: default; }
+#save-btn.saving             { color: var(--primary); animation: save-pulse .8s ease-in-out infinite alternate; }
+#save-btn.saved              { color: var(--success-fg); background: var(--success-bg); }
+html[data-theme="dark"] #save-btn.saved,
+html[theme="dark"]      #save-btn.saved { background: rgba(45,164,78,.12); }
+#save-btn.save-error         { color: var(--danger); background: rgba(207,34,46,.08); }
+
+/* FIX: @keyframes defined twice (buttons + snara) — single source of truth. */
+@keyframes save-pulse { from { opacity: .6; } to { opacity: 1; } }
+
+/* Tab navigation (header right) */
+.tabmenu {
+  display: flex;
+  list-style: none;
+  margin-left: auto;
+}
+.tabmenu li {
+  display: flex;
+  align-items: center;
+  font-family: var(--font-mono);
+  font-size: var(--f-xs);
+  text-transform: uppercase;
+  letter-spacing: .07em;
+  padding: 0 var(--s-md);
+  height: 42px;
+  cursor: pointer;
+  color: var(--fg-muted);
+  border-bottom: 2px solid transparent;
+  user-select: none;
+  transition: color .15s, border-color .15s;
+}
+.tabmenu li:hover  { color: var(--fg-main); }
+.tabmenu li.active { color: var(--fg-main); border-bottom-color: var(--primary); }

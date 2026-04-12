@@ -1,0 +1,126 @@
+/* ═══════════════════════════════════════════════════
+   base › vars — all design tokens
+   DO:  add new tokens here, consume via var()
+   DON'T: hardcode colors/spacing anywhere else
+   ═══════════════════════════════════════════════════ */
+
+:root {
+  /* Spacing scale */
+  --s-xs: .25rem;
+  --s-sm: .5rem;
+  --s-md: 1rem;
+  --s-lg: 1.25rem;
+  --s-xl: 1.5rem;
+
+  /* Type scale */
+  --f-xs: .75rem;
+  --f-sm: 1rem;
+  --f-md: 1.25rem;
+
+  /* Font stacks */
+  --font-sans:  system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  --font-mono:  ui-monospace, SFMono-Regular, Menlo, Consolas, 'Courier New', monospace;
+  --font-serif: Georgia, 'Times New Roman', serif;
+
+  /* Narrative hierarchy aliases (resolve via theme tokens below) */
+  --entry-font:           var(--font-sans);
+  --entry-act-border:     var(--tag-act-fg);
+  --entry-chapter-border: var(--tag-chapter-fg);
+  --entry-scene-border:   var(--tag-scene-fg);
+  --entry-beat-border:    var(--tag-beat-fg);
+  --article-border:       var(--tag-beat-bd);
+}
+
+/* ── Light theme (default) ── */
+:root,
+html[data-theme="light"],
+html[theme="light"] {
+  --bg-main:    #fff;
+  --bg-alt:     #f6f8fa;
+  --bg-mate:    #fcfcfc;
+  --bg-hover:   #f0f2f5;
+  --fg-main:    #24292f;
+  --fg-muted:   #57606a;
+  --fg-link:    #0969da;
+  --border:     #d0d7de;
+  --primary:    #0969da;
+  --danger:     #cf222e;
+  --overlay:    rgba(0,0,0,.4);
+  --selection:  #ddf4ff;
+  --sel-border: #54aeff;
+  --success-bg: #dafbe1;
+  --success-fg: #2da44e;
+
+  /* Narrative tag tokens — compact: bg / fg / border per level */
+  --tag-act-bg:     #fff5d6; --tag-act-fg:     #662211; --tag-act-bd:     #ffcc33;
+  --tag-chapter-bg: #fff0e0; --tag-chapter-fg: #993311; --tag-chapter-bd: #ffb088;
+  --tag-scene-bg:   #ffebeb; --tag-scene-fg:   #bb4422; --tag-scene-bd:   #ff9b85;
+  --tag-beat-bg:    #fce8e8; --tag-beat-fg:    #cc1111; --tag-beat-bd:    #f87171;
+}
+
+/* ── Dark theme ── */
+html[data-theme="dark"],
+html[theme="dark"] {
+  --bg-main:    #0d1117;
+  --bg-alt:     #161b22;
+  --bg-mate:    #14181f;
+  --bg-hover:   #21262d;
+  --fg-main:    #c9d1d9;
+  --fg-muted:   #8b949e;
+  --fg-link:    #58a6ff;
+  --border:     #30363d;
+  --primary:    #1f6feb;
+  --danger:     #f85149;
+  --overlay:    rgba(0,0,0,.75);
+  --selection:  rgba(56,139,253,.15);
+  --sel-border: #388bfd;
+  --success-bg: rgba(45,164,78,.12);
+  --success-fg: #3fb950;
+
+  --tag-act-bg:     rgba(255,204,51,.1);  --tag-act-fg:     #ffcc33; --tag-act-bd:     #ffcc33;
+  --tag-chapter-bg: rgba(255,153,51,.1);  --tag-chapter-fg: #ff9933; --tag-chapter-bd: #ff9933;
+  --tag-scene-bg:   rgba(255,107,107,.1); --tag-scene-fg:   #ff6b6b; --tag-scene-bd:   #ff6b6b;
+  --tag-beat-bg:    rgba(204,93,232,.1);  --tag-beat-fg:    #cc5de8; --tag-beat-bd:    #cc5de8;
+}
+
+/* ── Scrollbars ──
+   Compact: 3 entry rules, 2 element rules.
+   Custom scrollbars are cosmetic so they stay in vars. */
+::-webkit-scrollbar           { width: 8px; }
+.entry::-webkit-scrollbar     { width: 4px; }
+.entry::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
+.entry::-webkit-scrollbar-thumb:hover { background: var(--bg-hover); }
+
+/* ═══════════════════════════════════════════════════
+   base › norm — environment standardisation
+   DO:  target bare HTML elements & pseudo-elements
+   DON'T: add classes here — classes belong in layers
+   ═══════════════════════════════════════════════════ */
+
+/* Universal box model reset.
+   Compact: one rule covers all pseudo-elements. */
+*, ::after, ::before, ::backdrop, ::file-selector-button {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  font-family: var(--font-sans);
+  font-size: 100%;
+  line-height: 1.5;
+  background: var(--bg-alt);
+  color: var(--fg-main);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Force consistent stroke on all inline SVG icons */
+svg { stroke-width: 1.5px !important; }
+
+svg.ge,
+svg.icon {
+  width: 1em;
+  height: 1em;
+  display: block;
+  flex-shrink: 0;
+}
