@@ -886,7 +886,7 @@ body.entry-edit #editor { height: 72px; }
 
 .popup-toolbar .sep { margin-left: var(--s-md) }
 .popup-toolbar button { background: none; border: none; }
-.popup-toolbar button svg { width: 20px; }
+.popup-toolbar button svg { width: 22px; }
 
 .pop-pill {
   border: 1px solid transparent;
@@ -919,12 +919,6 @@ body.entry-edit #editor { height: 72px; }
 .tag-pill.active-act,
 .pop-pill.act.sel,     .pop-pill.act:hover      { background: var(--entry-act-border); color: var(--bg-main) }
 
-.pop-sep {
-  width: 1px;
-  height: 14px;
-  background: var(--border);
-  margin: 0 2px;
-}
 
 .pop-remove       { font-size: 11px; padding: 1px var(--s-xs); color: var(--fg-muted); }
 .pop-remove:hover { color: var(--danger); background: none; }
