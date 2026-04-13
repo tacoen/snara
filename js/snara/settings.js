@@ -227,7 +227,7 @@ _snapshotTab(tab) {
       const noneBox  = document.querySelector(`#settings-body .cfg-color-none[data-tag="${tag}"]`);
       tags[tag] = {
         bg:     noneBox?.checked ? 'transparent' : (bgPicker?.value || 'transparent'),
-        border: bdPicker?.value  || `var(--tag-${tag}-fg)`,
+        border: bdPicker?.value  || `var(--tag-${tag}-bd)`,
       };
     }
 
@@ -727,7 +727,7 @@ _snapshotTab(tab) {
   // ── Static: apply saved custom properties to :root ───────────────
   // vars.css already defines the defaults:
   //   --entry-act-bg:         transparent
-  //   --entry-act-border:     var(--tag-act-fg)
+  //   --entry-act-border:     var(--tag-act-bd)
   //   --entry-chapter-border: var(--tag-chapter-fg)
   //   --entry-scene-border:   var(--tag-scene-fg)
   //
@@ -740,10 +740,14 @@ _snapshotTab(tab) {
 
     if (prefs.font) r.style.setProperty('--entry-font', prefs.font);
 
+
     for (const tag of ['act', 'chapter', 'scene', 'beat']) {
       const t = prefs[tag];
+	  
+	  
       if (!t) continue;
       // Only override bg if it's a real color (not transparent — CSS handles that)
+
       if (t.bg && t.bg !== 'transparent') {
         r.style.setProperty(`--entry-${tag}-bg`, t.bg);
       } else {
@@ -751,11 +755,19 @@ _snapshotTab(tab) {
         r.style.removeProperty(`--entry-${tag}-bg`);
       }
       // Always set border — user may have changed it from the CSS default
+
       if (t.border) {
+
+		  console.log(t.border);
+		  
+			t.border = `var(--tag-${tag}-bd)`
         r.style.setProperty(`--entry-${tag}-border`, t.border);
       } else {
         r.style.removeProperty(`--entry-${tag}-border`);
       }
-    }
+
+   }
+
   }
+
 }
