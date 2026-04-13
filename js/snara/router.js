@@ -10,6 +10,8 @@
      ?p=editor&bid=1                → book 1, editor, no file
      ?p=meta&bid=1                  → book 1, meta area
      ?p=kanban&bid=1                → book 1, kanban area
+     ?p=chatbot                     → AI chatbot (no bid required)
+     ?p=notes                       → notes (no bid required)
      ?p=import&bid=1                → book 1, files › import
      ?p=export&bid=1                → book 1, files › export
      ?p=gallery&bid=1               → book 1, files › gallery
@@ -35,7 +37,11 @@ import { AppConfig } from '../snara.js';
 
 const APP_NAME      = 'Snara';
 const FILE_SECTIONS = ['import', 'export', 'gallery', 'cache'];
-const BOOK_AREAS    = ['editor', 'meta', 'kanban'];
+const BOOK_AREAS    = ['editor', 'meta', 'kanban']; // bid required
+const GLOBAL_AREAS  = {                              // bid never required
+  chatbot: 'AI Assistant',
+  notes:   'Notes',
+};
 
 export class SnaraRouter {
 
@@ -93,24 +99,16 @@ export class SnaraRouter {
     if (!p) return;
 
     // ── Modals (no bookid) ────────────────────
-    if (p === 'books') {
-      this._title('Books');
-      window.SnaraIndex?.instance?.openBookIndex();
-      return;
-    }
-    if (p === 'chapters') {
-      this._title('Chapters');
-      window.SnaraIndex?.instance?.openChapterIndex();
-      return;
-    }
-    if (p === 'configuration') {
-      this._title('Settings');
-      window.openSettings?.();
-      return;
-    }
-    if (p === 'pref') {
-      this._title('Preferences');
-      window.openPref?.();
+    if (p === 'books')         { this._title('Books');    window.SnaraIndex?.instance?.openBookIndex();    return; }
+    if (p === 'chapters')      { this._title('Chapters'); window.SnaraIndex?.instance?.openChapterIndex(); return; }
+    if (p === 'configuration') { this._title('Settings'); window.openSettings?.();                         return; }
+    if (p === 'pref')          { this._title('Prefs');    window.openPref?.();                             return; }
+
+    // ── Global areas — bid never required ─────
+    // To add a new one: extend GLOBAL_AREAS at the top. No code changes here.
+    if (p in GLOBAL_AREAS) {
+      this._rawSwitch?.(p);
+      this._title(GLOBAL_AREAS[p]);
       return;
     }
 
@@ -221,9 +219,14 @@ export class SnaraRouter {
   // ── Static helpers ────────────────────────────
 
   static pageFor(area) {
-    // switchArea names → page names
-    // 'files' maps to 'import' as the default landing section
-    const map = { editor: 'editor', meta: 'meta', kanban: 'kanban', files: 'import' };
+    const map = {
+      editor:  'editor',
+      meta:    'meta',
+      kanban:  'kanban',
+      files:   'import',
+      ...Object.fromEntries(Object.keys(GLOBAL_AREAS).map(k => [k, k])),
+    };
     return map[area] ?? area;
   }
+
 }
