@@ -5,7 +5,7 @@
    ═══════════════════════════════════════════════════ */
 @layer base, layout, components, pages, utilities;
 
-@import './css/custome/color.css'    layer(base);
+@import './css/custome/snara-color.css'    layer(base);
 @import './css/base.css'    layer(base);
 @import './css/layout.css'  layer(layout);
 @import './css/components.css' layer(components);

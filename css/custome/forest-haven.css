@@ -1,0 +1,49 @@
+/* ── forest-haven.css ── */
+:root,
+html[data-theme="light"],
+html[theme="light"] {
+  --bg-main:    #fdfcfb;
+  --bg-alt:     #f0f4f2;
+  --bg-hover:   #e8ecea;
+  --fg-main:    #2d332a;
+  --fg-muted:   #5c635a;
+  --fg-link:    #2a6f4d;
+  --border:     #ced6cc;
+  --primary:    #3e7a5c;
+  --danger:     #b33939;
+  --overlay:    rgba(45, 51, 42, 0.4);
+  --selection:  #e2f3eb;
+  --sel-border: #8ec3a7;
+  --success-bg: #e7f5e9;
+  --success-fg: #2e7d32;
+  --bg-mate:    color-mix(in srgb, var(--border), transparent 50%);
+  
+  --tag-act-bg:     #eef9f0; --tag-act-fg:     #1b4332; --tag-act-bd:     #b7e4c7;
+  --tag-chapter-bg: #fdf8e1; --tag-chapter-fg: #7a5100; --tag-chapter-bd: #f9e076;
+  --tag-scene-bg:   #fff0ee; --tag-scene-fg:   #a33b2a; --tag-scene-bd:   #ffc8c0;
+  --tag-beat-bg:    #f4f1ff; --tag-beat-fg:    #553c9a; --tag-beat-bd:    #d6bcfa;
+}
+
+html[data-theme="dark"],
+html[theme="dark"] {
+  --bg-main:    #1a1d1a;
+  --bg-alt:     #242924;
+  --bg-hover:   #2d352d;
+  --fg-main:    #e0e5de;
+  --fg-muted:   #949e93;
+  --fg-link:    #74c69d;
+  --border:     #3a423a;
+  --primary:    #52b788;
+  --danger:     #ff6b6b;
+  --overlay:    rgba(0,0,0,.8);
+  --selection:  rgba(82, 183, 136, 0.2);
+  --sel-border: #52b788;
+  --success-bg: rgba(45, 164, 78, 0.15);
+  --success-fg: #74c69d;
+  --bg-mate:    color-mix(in srgb, var(--border), transparent 50%);
+  
+  --tag-act-bg:     rgba(116, 198, 157, 0.1); --tag-act-fg:     #b7e4c7; --tag-act-bd:     #74c69d;
+  --tag-chapter-bg: rgba(255, 183, 3, 0.1);   --tag-chapter-fg: #ffb703; --tag-chapter-bd: #ffb703;
+  --tag-scene-bg:   rgba(255, 107, 107, 0.1); --tag-scene-fg:   #ff8787; --tag-scene-bd:   #ff8787;
+  --tag-beat-bg:    rgba(183, 148, 244, 0.1); --tag-beat-fg:    #d6bcfa; --tag-beat-bd:    #d6bcfa;
+}
