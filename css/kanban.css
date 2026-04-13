@@ -1,0 +1,416 @@
+/* ═══════════════════════════════════════════════════
+   css/kanban.css — SnaraKanban component styles
+   Block:    .kanban
+   Elements: __header  __board  __column  __col-title
+             __col-count  __cards  __card  __card-title
+             __card-drag  __quick-form  __quick-input
+             __quick-actions  __add-btn  __empty
+             __card-menu  __card-menu-btn
+   Modifiers: --dragging  --drag-over  --hidden  --ghost
+   ─────────────────────────────────────────────────── */
+
+/* ── Block-level custom property overrides ──────────
+   Every visual token is declared here so any instance
+   can be re-skinned by setting vars on its root el.   */
+.kanban {
+  --kb-col-width:       240px;
+  --kb-col-gap:         var(--s-md);
+  --kb-col-bg:          var(--bg-alt);
+  --kb-col-radius:      8px;
+  --kb-col-border:      var(--border);
+  --kb-card-bg:         var(--bg-main);
+  --kb-card-radius:     6px;
+  --kb-card-shadow:     0 1px 3px rgba(0,0,0,.08), 0 0 0 1px var(--border);
+  --kb-card-shadow-drag:0 8px 24px rgba(0,0,0,.18);
+  --kb-card-gap:        var(--s-sm);
+  --kb-header-height:   48px;
+  --kb-transition:      160ms ease;
+  --kb-add-icon-size:   14px;
+  --kb-drag-opacity:    .35;
+  --kb-ghost-bg:        var(--selection);
+  --kb-ghost-border:    var(--sel-border);
+
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-md);
+  height: 100%;
+  padding: var(--s-md) var(--s-lg);
+  font-family: var(--font-sans);
+  overflow: hidden;
+}
+
+/* ── Header ──────────────────────────────────────── */
+.kanban__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: var(--kb-header-height);
+  flex-shrink: 0;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: var(--s-sm);
+}
+
+.kanban__header-left {
+  display: flex;
+  align-items: baseline;
+  gap: var(--s-sm);
+}
+
+.kanban__title {
+  font-family: var(--font-mono);
+  font-size: var(--f-sm);
+  font-weight: 600;
+  color: var(--fg-main);
+  letter-spacing: -.01em;
+}
+
+.kanban__count {
+  font-family: var(--font-mono);
+  font-size: var(--f-xs);
+  color: var(--fg-muted);
+}
+
+/* ── Board (scrollable column strip) ─────────────── */
+.kanban__board {
+  display: flex;
+  gap: var(--kb-col-gap);
+  align-items: flex-start;
+  overflow-x: auto;
+  overflow-y: hidden;
+  flex: 1;
+  padding-bottom: var(--s-md);
+  /* Smooth scrollbar */
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+}
+
+.kanban__board::-webkit-scrollbar       { height: 6px; }
+.kanban__board::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+/* ── Column ──────────────────────────────────────── */
+.kanban__column {
+  background: var(--kb-col-bg);
+  width: var(--kb-col-width);
+  min-width: var(--kb-col-width);
+  border-radius: var(--kb-col-radius);
+  border: 1px solid var(--kb-col-border);
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  max-height: 100%;
+  overflow: hidden;
+  transition: border-color var(--kb-transition),
+              box-shadow   var(--kb-transition);
+}
+
+.kanban__column--drag-over {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--primary) 20%, transparent);
+}
+
+/* ── Column title bar ─────────────────────────────── */
+.kanban__col-header {
+  display: flex;
+  align-items: center;
+  gap: var(--s-xs);
+  padding: var(--s-sm) var(--s-sm) var(--s-xs);
+  border-bottom: 1px solid var(--kb-col-border);
+  flex-shrink: 0;
+}
+
+.kanban__col-title {
+  font-family: var(--font-mono);
+  font-size: var(--f-xs);
+  font-weight: 600;
+  color: var(--fg-main);
+  flex: 1;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.kanban__col-count {
+  font-family: var(--font-mono);
+  font-size: var(--f-xs);
+  color: var(--fg-muted);
+  background: var(--bg-hover);
+  border-radius: 99px;
+  padding: 1px 7px;
+  flex-shrink: 0;
+}
+
+/* ── Cards container ─────────────────────────────── */
+.kanban__cards {
+  display: flex;
+  flex-direction: column;
+  gap: var(--kb-card-gap);
+  padding: var(--s-sm);
+  flex: 1;
+  overflow-y: auto;
+  min-height: 80px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+}
+
+/* ── Card ─────────────────────────────────────────── */
+.kanban__card {
+  background: var(--kb-card-bg);
+  border-radius: var(--kb-card-radius);
+  box-shadow: var(--kb-card-shadow);
+  padding: var(--s-sm);
+  cursor: grab;
+  display: flex;
+  align-items: flex-start;
+  gap: var(--s-xs);
+  position: relative;
+  transition: box-shadow var(--kb-transition),
+              transform  var(--kb-transition),
+              opacity    var(--kb-transition);
+  user-select: none;
+  flex-direction: column;
+}
+
+.kanban__card header {
+	display: flex;
+	align-items: center;
+	column-gap: var(--s-xs);
+	height: 24px;
+	justify-content: flex-start;
+	padding: 0;
+	border: none;
+}
+	
+.kanban__card:hover {
+  box-shadow: 0 3px 8px rgba(0,0,0,.12), 0 0 0 1px var(--border);
+}
+
+.kanban__card:active {
+  cursor: grabbing;
+}
+
+.kanban__card--dragging {
+  opacity: var(--kb-drag-opacity);
+  transform: rotate(1deg) scale(.98);
+  box-shadow: var(--kb-card-shadow-drag);
+}
+
+/* Ghost drop target */
+.kanban__card--ghost {
+  background: var(--kb-ghost-bg);
+  border: 1px dashed var(--kb-ghost-border);
+  box-shadow: none;
+  cursor: default;
+  pointer-events: none;
+}
+
+.kanban__card-drag {
+  color: var(--fg-muted);
+  cursor: grab;
+  font-size: 12px;
+  line-height: 1;
+  opacity: .4;
+  flex-shrink: 0;
+  padding-top: 2px;
+}
+
+/* ── Contenteditable shared behaviour ───────────── */
+.kanban__card-title,
+.kanban__card-desc {
+  display: block;
+  width: 100%;
+  outline: none;
+  border-radius: 3px;
+  padding: 2px 3px;
+  margin: 0 -3px;
+  transition: background var(--kb-transition);
+  cursor: text;
+  word-break: break-word;
+  white-space: pre-wrap;
+}
+
+.kanban__card-title:focus,
+.kanban__card-desc:focus {
+  background: var(--bg-hover);
+}
+
+/* ── Title ──────────────────────────────────────── */
+.kanban__card-title {
+  font-size: var(--f-xs);
+  color: var(--fg-main);
+  line-height: 1.45;
+  font-weight: 500;
+}
+
+/* ── Desc (Research/Outline+) ───────────────────── */
+.kanban__card-desc {
+  font-size: var(--f-xs);
+  color: var(--fg-muted);
+  line-height: 1.5;
+  margin-top: var(--s-xs);
+  border-top: 1px solid var(--border);
+  padding-top: var(--s-xs);
+}
+
+/* Placeholder via data attribute */
+.kanban__card-desc:empty::before {
+  content: attr(data-placeholder);
+  color: var(--fg-muted);
+  opacity: .4;
+  pointer-events: none;
+}
+
+/* Per-card context menu trigger */
+.kanban__card-menu-btn {
+  position: absolute;
+  top: var(--s-xs);
+  right: var(--s-xs);
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--fg-muted);
+  font-size: 14px;
+  line-height: 1;
+  padding: 0 2px;
+  opacity: 0;
+  border-radius: 4px;
+  transition: opacity var(--kb-transition), background var(--kb-transition);
+}
+
+.kanban__card:hover .kanban__card-menu-btn,
+.kanban__card-menu-btn:focus {
+  opacity: 1;
+}
+
+.kanban__card-menu-btn:hover {
+  background: var(--bg-hover);
+  color: var(--fg-main);
+}
+
+/* Floating context menu */
+.kanban__card-menu {
+  position: absolute;
+  right: var(--s-xs);
+  top: calc(var(--s-xs) + 20px);
+  z-index: 100;
+  background: var(--bg-main);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  box-shadow: 0 4px 12px rgba(0,0,0,.15);
+  overflow: hidden;
+  min-width: 120px;
+}
+
+.kanban__card-menu--hidden { display: none; }
+
+.kanban__menu-item {
+  display: block;
+  width: 100%;
+  padding: var(--s-xs) var(--s-sm);
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: var(--font-mono);
+  font-size: var(--f-xs);
+  color: var(--fg-main);
+  text-align: left;
+  transition: background var(--kb-transition);
+}
+
+.kanban__menu-item:hover { background: var(--bg-hover); }
+
+.kanban__menu-item--danger { color: var(--danger); }
+.kanban__menu-item--danger:hover { background: color-mix(in srgb, var(--danger) 10%, transparent); }
+
+/* ── Empty state ─────────────────────────────────── */
+.kanban__empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--s-xs);
+  padding: var(--s-lg) var(--s-sm);
+  color: var(--fg-muted);
+  font-family: var(--font-mono);
+  font-size: var(--f-xs);
+  opacity: .55;
+  pointer-events: none;
+  text-align: center;
+}
+
+.kanban__empty-icon {
+  font-size: 20px;
+  line-height: 1;
+}
+
+/* ── Quick-add form ──────────────────────────────── */
+.kanban__quick-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-xs);
+  padding: var(--s-sm) var(--s-md);
+  background: var(--bg-alt);
+  border-top: 1px solid var(--border);
+  border-radius: 0 0 var(--kb-col-radius) var(--kb-col-radius);
+  flex-shrink: 0;
+}
+
+.kanban__quick-form--hidden {
+  display: none;
+}
+
+.kanban__quick-input {
+  width: 100%;
+  background: var(--bg-main);
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  padding: 5px var(--s-sm);
+  font-family: var(--font-mono);
+  font-size: var(--f-xs);
+  color: var(--fg-main);
+  outline: none;
+  caret-color: var(--primary);
+  transition: border-color var(--kb-transition);
+}
+
+.kanban__quick-input:focus {
+  border-color: var(--primary);
+}
+
+.kanban__quick-input::placeholder {
+  color: var(--fg-muted);
+  opacity: .6;
+}
+
+.kanban__quick-actions {
+  display: flex;
+  gap: var(--s-xs);
+}
+
+/* ── Spinner (loading state) ─────────────────────── */
+.kanban__spinner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--s-xl);
+  color: var(--fg-muted);
+  font-family: var(--font-mono);
+  font-size: var(--f-xs);
+  gap: var(--s-sm);
+}
+
+.kanban__spinner::before {
+  content: '';
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border: 2px solid var(--border);
+  border-top-color: var(--primary);
+  border-radius: 50%;
+  animation: kanban-spin .7s linear infinite;
+}
+
+@keyframes kanban-spin {
+  to { transform: rotate(360deg); }
+}

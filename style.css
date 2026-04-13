@@ -11,4 +11,6 @@
 @import './css/components.css' layer(components);
 @import './css/pages.css'   layer(pages);
 @import './css/chat.css'   layer(pages);
+@import './css/kanban.css'   layer(pages);
+
 @import './css/utils.css'   layer(utilities);

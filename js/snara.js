@@ -17,6 +17,8 @@ import { SnaraRouter }   from './snara/router.js';
 
 import { SnaraChat }      from './snara/chatbot.js';
 import { SnaraAIToolbar } from './snara/ai-toolbar.js';
+import { SnaraKanban } from './kanban.js';
+
 import { SnaraNotes } from './notes.js';
 
 // ── Central config store ──────────────────────────
@@ -83,6 +85,7 @@ async function boot() {
   const exporter    = new SnaraExport();
   const chat        = new SnaraChat('#chatbot-root');
   const notes = new SnaraNotes('#notes-root');
+const kanban = new SnaraKanban('#kanban-root', AppConfig.apiPath);
 
 const aiToolbar = new SnaraAIToolbar('#popup', {
   getEntry:  () => ui.focusedEntry,
@@ -244,6 +247,13 @@ const aiToolbar = new SnaraAIToolbar('#popup', {
     } catch {}
   }
 
+  kanban.load(AppConfig.activeBookId);
+
+
+if (AppConfig.activeBookId) {
+  kanban.load(AppConfig.activeBookId);
+}
+  
   // ── 9. Boot router last ───────────────────────
   router.boot();
 }

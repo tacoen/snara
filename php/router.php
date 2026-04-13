@@ -69,6 +69,7 @@ require_once __DIR__ . '/editor-pref.php';
 require_once __DIR__ . '/ai.php';
 require_once __DIR__ . '/chatlog.php';
 require_once __DIR__ . '/notes.php';
+require_once __DIR__ . '/kanban.php';
 
 class Router {
 
@@ -90,6 +91,20 @@ class Router {
         try {
             switch ($action) {
 
+
+case 'kanban.get':
+    self::requireMethod($method, 'GET');
+    $bookId = (int) self::requireParam('bookId');
+    echo json_encode(Kanban::get($bookId));
+    break;
+
+case 'kanban.set':
+    self::requireMethod($method, 'POST');
+    $bookId = (int) self::requireParam('bookId');
+    Kanban::set($bookId, self::body());
+    echo json_encode(['ok' => true]);
+    break;
+	
                 // ── Notes ────────────────────────────────────
                 case 'notes.list':
                     self::requireMethod($method, 'GET');

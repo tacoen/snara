@@ -1,5 +1,39 @@
-<div id='kanban'>
 
-<h1>future features: kanban</h1>
+<div
+  id="kanban-root"
+  class="kanban"
+  data-bookid=""
+  data-api="/api.php"
+>
+  <header class="kanban__header">
+    <div class="kanban__header-left">
+      <span class="kanban__title">Story Board</span>
+      <span class="kanban__count" id="kanban-card-count">0 scenes</span>
+    </div>
+    <div class="kanban__header-right">
+      <button class="btn btn-primary kanban__add-btn" id="kanban-add-btn">
+        + Add Scene
+      </button>
+    </div>
+  </header>
 
+  <div class="kanban__board" id="kanban-board" role="list">
+
+  </div>
+
+
+  <div class="kanban__quick-form kanban__quick-form--hidden" id="kanban-quick-form">
+    <input
+      class="kanban__quick-input"
+      id="kanban-quick-input"
+      type="text"
+      placeholder="Scene title…"
+      maxlength="120"
+      aria-label="New scene title"
+    />
+    <div class="kanban__quick-actions">
+      <button class="btn btn-primary kanban__quick-save" id="kanban-quick-save">Add</button>
+      <button class="btn kanban__quick-cancel" id="kanban-quick-cancel">Cancel</button>
+    </div>
+  </div>
 </div>
