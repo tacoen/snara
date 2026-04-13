@@ -313,7 +313,7 @@
           in modal.css and are shared app-wide
    ═══════════════════════════════════════════════════ */
 
-.pref-modal { width: min(620px, calc(100vw - 32px)); max-height: 88dvh; }
+.pref-modal {width: min(60%, calc(100vw - 32px));max-height: 88dvh;}
 .pref-body  { padding: 0; gap: 0; }
 .pref-tabs  { padding: 0 var(--s-sm); border-bottom: 1px solid var(--border); }
 
@@ -323,9 +323,16 @@
   gap: var(--s-xs);
   padding: var(--s-md) var(--s-lg);
   border-bottom: 1px solid var(--border);
+  width: 50%;
 }
 .pref-section:last-child    { border-bottom: none; }
-.pref-section .cfg-heading  { margin-bottom: var(--s-xs); }
+
+.pref-body.tab-root {
+  display: flex;
+  flex-wrap: wrap;
+  flex-direction: row;
+  padding-top: var(--s-md);
+}
 
 .pref-row {
   display: flex;
@@ -336,10 +343,13 @@
 }
 
 .pref-var-label {
-  width: 90px;
-  flex-shrink: 0;
+  max-width: 60px;
+  flex-shrink: 1;
   font-size: var(--f-xs);
-  color: var(--fg-muted);
+  /* color: var(--fg-muted); */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .pref-var-name {
@@ -350,16 +360,16 @@
   border: 1px solid var(--border);
   border-radius: 4px;
   padding: 1px 6px;
-  flex-shrink: 0;
+  flex-shrink: 1;
   white-space: nowrap;
-  opacity: .75;
-  width: 168px;
+  /* opacity: .75; */
+  width: 88px;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
 .pref-color {
-  width: 34px;
+  width: 28px;
   height: 28px;
   padding: 2px;
   border: 1px solid var(--border);
@@ -376,6 +386,8 @@
   font-family: var(--font-mono);
   font-size: var(--f-xs);
   min-width: 0;
+  flex-grow: 1;
+  width: 100%;
 }
 
 /* ── Footer ── */

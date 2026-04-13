@@ -1,17 +1,3 @@
-/* ─────────────────────────────────────────────────
-   js/export.js — SnaraExport
-   Export panel for the Files › Export section.
-
-   Loads data/$bookId/*.json, extracts first h2 as
-   title, groups by act, lets user pick files and
-   export format.
-
-   Formats:
-     1. Markdown  (.md)   — native, immediate
-     2. HTML      (.html) — wrapped in minimal template
-     3. PDF       (.pdf)  — print-to-PDF via browser (later)
-     4. EPUB      (.epub) — basic zip structure (later)
-─────────────────────────────────────────────────── */
 
 import { AppConfig } from './snara.js';
 import { SnaraTool } from './snara/tool.js';
@@ -19,25 +5,19 @@ import icx           from './icons/ge-icon.js';
 import { esc, slug, download } from './helpers.js';
 import { _modalFooter } from './snara/modal.js';
 
-
 export class SnaraExport {
-
   static instance = null;
-
   constructor() {
     SnaraExport.instance = this;
-    this._chapters = [];   // [{ filename, act, title, order, entries }]
-    this._docs     = {};   // { filename: docJson } — cache
+    this._chapters = [];
+    this._docs     = {};
   }
-
-  // ── Public: called by SnaraFiles when export section opens ──
 
   async load() {
     const bookId = AppConfig.activeBookId;
     const ul     = document.getElementById('files-exp-list');
     const footer = document.getElementById('files-exp-footer');
     if (!ul) return;
-
     if (!bookId) {
       ul.innerHTML = '<li class="flist-empty">No active book — open a book first.</li>';
       return;
@@ -46,7 +26,6 @@ export class SnaraExport {
     ul.innerHTML = '<li class="flist-empty" style="opacity:.5">Loading chapters…</li>';
 
     try {
-      // 1. Get flat file list
       const listRes = await fetch(`${AppConfig.apiPath}?action=doc.list&bookId=${bookId}`);
       const filenames = await listRes.json();
 
@@ -55,20 +34,17 @@ export class SnaraExport {
         return;
       }
 
-      // 2. Fetch act.json for grouping (already built by backend on each save)
       let actMap = {};
       try {
         const actRes  = await fetch(`${AppConfig.dataPath}/${bookId}/conf/act.json`);
         const actData = await actRes.json();
         actData.forEach(row => { actMap[row.filename] = row.act || 'Uncategorized'; });
       } catch {
-        // act.json may not exist yet — fall back to ungrouped
+
       }
 
-      // 3. Fetch each doc to extract title + meta.order + entry count
       this._docs     = {};
       this._chapters = [];
-
       await Promise.all(filenames.map(async filename => {
         try {
           const res = await fetch(
@@ -94,7 +70,6 @@ export class SnaraExport {
         }
       }));
 
-      // 4. Sort by meta.order ASC within each act, then filename as tiebreaker
       this._chapters.sort((a, b) => {
         if (a.act !== b.act) return a.act.localeCompare(b.act);
         return a.order !== b.order ? a.order - b.order : a.filename.localeCompare(b.filename);
@@ -108,13 +83,6 @@ export class SnaraExport {
     }
   }
 
-  // ── Extract chapter title from article ────────
-  // act  = h1 → skip (that's the group label, not the chapter title)
-  // chapter = h2 ✓ prefer this
-  // scene   = h3 ✓ fallback
-  // beat    = h4 ✓ last resort
-  // then fall back to filename
-
   _extractTitle(doc) {
     const article = doc.article || [];
     for (const entry of article) {
@@ -125,8 +93,6 @@ export class SnaraExport {
     }
     return doc.filename || '—';
   }
-
-  // ── Render chapter checklist ──────────────────
 
   _renderList(ul) {
     const grouped  = {};
@@ -153,7 +119,6 @@ export class SnaraExport {
         </li>`).join('')}
     `).join('');
 
-    // Act-level checkbox toggles all its children
     ul.querySelectorAll('.fexp-act-cb').forEach(actCb => {
       actCb.addEventListener('change', () => {
         ul.querySelectorAll(`.fexp-item[data-act="${actCb.dataset.act}"] .fexp-cb`)
@@ -162,7 +127,6 @@ export class SnaraExport {
       });
     });
 
-    // Child checkbox syncs its act checkbox
     ul.querySelectorAll('.fexp-cb').forEach(cb => {
       cb.addEventListener('change', () => {
         const act   = cb.closest('.fexp-item').dataset.act;
@@ -173,7 +137,6 @@ export class SnaraExport {
       });
     });
 
-    // Select-all header checkbox
     const selAll = document.getElementById('files-exp-all');
     if (selAll) {
       selAll.checked = true;
@@ -190,12 +153,8 @@ export class SnaraExport {
     selAll.checked = all.every(cb => cb.checked);
   }
 
-  // ── Render export format footer ───────────────
-
   _renderFooter(footer) {
     if (!footer) return;
-    // Export panel has no Cancel/Save — use additionalHTML only, then
-    // render a footer-shaped div directly (no standard Save button here).
     footer.innerHTML = `
       <button class="cfg-btn mute" onclick="SnaraExport.instance.exportAs('md')">
         <i data-icon="download"></i> Markdown
@@ -212,23 +171,17 @@ export class SnaraExport {
     `;
     icx.delayreplace('#files-exp-footer [data-icon]');
   }
-  
-  
-  // ── Export ────────────────────────────────────
 
   async exportAs(fmt) {
     const selected = [...document.querySelectorAll('#files-exp-list .fexp-cb:checked')]
       .map(cb => cb.value);
-
     if (!selected.length) {
       alert('Select at least one chapter to export.');
       return;
     }
 
-    // Preserve meta.order sort from this._chapters
     const ordered = this._chapters.filter(ch => selected.includes(ch.filename));
 
-    // Gather docs — use cache, fetch if missing
     const bookId = AppConfig.activeBookId;
     for (const ch of ordered) {
       if (!this._docs[ch.filename]) {
@@ -247,8 +200,6 @@ export class SnaraExport {
     if (fmt === 'html') this._exportHtml(ordered);
   }
 
-  // ── Markdown export ───────────────────────────
-
   _exportMd(ordered) {
     const parts = ordered.map(ch => {
       const doc     = this._docs[ch.filename] || {};
@@ -264,11 +215,8 @@ export class SnaraExport {
     download(`${slug(bookTitle)}.md`, content, 'text/markdown');
   }
 
-  // ── HTML export ───────────────────────────────
-
   _exportHtml(ordered) {
     const bookTitle = AppConfig.activeBookTitle || 'Export';
-
     const body = ordered.map(ch => {
       const doc     = this._docs[ch.filename] || {};
       const article = doc.article || [];

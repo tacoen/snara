@@ -1,0 +1,65 @@
+:root {
+	
+  --tag-beat-bd: color-mix(in srgb, var(--tag-beat-fg), transparent 60%);
+  --tag-scene-bd: color-mix(in srgb, var(--tag-scene-fg), transparent 60%);
+  --tag-chapter-bd: color-mix(in srgb, var(--tag-chapter-fg), transparent 60%);
+  --tag-act-bd: color-mix(in srgb, var(--tag-act-fg), transparent 60%);
+
+  --tag-beat-bg: color-mix(in srgb, var(--tag-beat-fg), transparent 90%);
+  --tag-scene-bg: color-mix(in srgb, var(--tag-scene-fg), transparent 85%);
+  --tag-chapter-bg: color-mix(in srgb, var(--tag-chapter-fg), transparent 80%);
+  --tag-act-bg: color-mix(in srgb, var(--tag-act-fg), transparent 75%); 
+	
+  --entry-font:       var(--font-sans);
+  --article-fg:       var(--fg-main);
+  --entry-act-border:     var(--tag-act-bd);
+  --entry-chapter-border: var(--tag-chapter-bd);
+  --entry-scene-border:   var(--tag-scene-bd);
+  --entry-beat-border:    var(--tag-beat-bd);
+  --article-border:       var(--border);
+  --entry-act-fg:     var(--tag-act-fg);
+  --entry-chapter-fg: var(--tag-chapter-fg);
+  --entry-scene-fg:   var(--tag-scene-fg);
+  --entry-beat-fg:    var(--tag-beat-fg);
+  --entry-act-bg:     var(--tag-act-bg);
+  --entry-chapter-bg: var(--tag-chapter-bg);
+  --entry-scene-bg:   var(--tag-scene-bg);
+  --entry-beat-bg:    var(--tag-beat-bg);
+}
+
+/* ═══════════════════════════════════════════════════
+   components › editor — entry list, inline editor,
+   metadata panel, toolbar
+   DO:  use --entry-*-border/bg aliases for hierarchy
+   DON'T: hardcode narrative colours — use tag tokens
+   ═══════════════════════════════════════════════════ */
+
+.entry.act     { border-left-color: var(--entry-act-border); padding-left: var(--s-md); }
+.entry.chapter { border-left-color: var(--entry-chapter-border); padding-left: calc(2 * var(--s-md)); }
+.entry.scene   { border-left-color: var(--entry-scene-border); padding-left: calc(3 * var(--s-md)); }
+.entry.beat    { border-left-color: var(--entry-beat-border);  padding-left: calc(4 * var(--s-md)); }
+
+.tag-pill[data-tag='act'] { background-color: var(--entry-act-bg); }
+.tag-pill[data-tag='chapter'] { background-color: var(--entry-chapter-bg); }
+.tag-pill[data-tag='scene'] { background-color: var(--entry-scene-bg); }
+.tag-pill[data-tag='beat'] { background-color: var(--entry-beat-bg); }
+
+
+
+.tag-pill.active-scene,
+.pop-pill.scene.sel,   .pop-pill.scene:hover   { background: var(--entry-scene-fg); color: var(--bg-main)}
+.tag-pill.active-beat,
+.pop-pill.beat.sel,    .pop-pill.beat:hover     { background: var(--entry-beat-fg);  color: var(--bg-main)}
+.tag-pill.active-chapter,
+.pop-pill.chapter.sel, .pop-pill.chapter:hover  { background: var(--entry-chapter-fg);  color: var(--bg-main)}
+.tag-pill.active-act,
+.pop-pill.act.sel,     .pop-pill.act:hover      { background: var(--entry-act-fg); color: var(--bg-main) }
+
+/* Hierarchy indents + left-border colours.
+   Compact: one rule per level (padding + border-color only).
+   FIX: redundant hover rules re-stated the same border-color — dropped.
+   FIX: stray `f` character removed from .toc-beat a rule. */
+.toc-act     a { padding-left: var(--s-md);              border-left-color: var(--entry-act-border);     font-weight: 500; }
+.toc-chapter a { padding-left: calc(var(--s-md) * 2);   border-left-color: var(--entry-chapter-border); }
+.toc-scene   a { padding-left: calc(var(--s-md) * 3);   border-left-color: var(--entry-scene-border); }
+.toc-beat    a { padding-left: calc(var(--s-md) * 4);   border-left-color: var(--entry-beat-border); }

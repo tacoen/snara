@@ -14,11 +14,11 @@
    can be re-skinned by setting vars on its root el.   */
 .kanban {
   --kb-col-width:       240px;
-  --kb-col-gap:         var(--s-md);
+  --kb-col-gap:         var(--s-sm);
   --kb-col-bg:          var(--bg-alt);
   --kb-col-radius:      8px;
   --kb-col-border:      var(--border);
-  --kb-card-bg:         var(--bg-main);
+  --kb-card-bg:         color-mix(in srgb, var(--bg-main), transparent 70%);
   --kb-card-radius:     6px;
   --kb-card-shadow:     0 1px 3px rgba(0,0,0,.08), 0 0 0 1px var(--border);
   --kb-card-shadow-drag:0 8px 24px rgba(0,0,0,.18);
@@ -29,14 +29,14 @@
   --kb-drag-opacity:    .35;
   --kb-ghost-bg:        var(--selection);
   --kb-ghost-border:    var(--sel-border);
-
   display: flex;
   flex-direction: column;
   gap: var(--s-md);
   height: 100%;
-  padding: var(--s-md) var(--s-lg);
+  /* padding: 0; */
   font-family: var(--font-sans);
   overflow: hidden;
+  /* grid-template-rows: 48px auto; */
 }
 
 /* ── Header ──────────────────────────────────────── */
@@ -47,12 +47,13 @@
   height: var(--kb-header-height);
   flex-shrink: 0;
   border-bottom: 1px solid var(--border);
-  padding-bottom: var(--s-sm);
+  background: var(--bg-mate);
+  padding: 0 var(--s-md);
 }
 
 .kanban__header-left {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   gap: var(--s-sm);
 }
 
@@ -73,15 +74,16 @@
 /* ── Board (scrollable column strip) ─────────────── */
 .kanban__board {
   display: flex;
-  gap: var(--kb-col-gap);
+  /* gap: var(--kb-col-gap); */
   align-items: flex-start;
   overflow-x: auto;
   overflow-y: hidden;
-  flex: 1;
+  min-height: 90%;
   padding-bottom: var(--s-md);
   /* Smooth scrollbar */
   scrollbar-width: thin;
   scrollbar-color: var(--border) transparent;
+  padding: 0 var(--s-md) 0 var(--s-md);
 }
 
 .kanban__board::-webkit-scrollbar       { height: 6px; }
@@ -90,9 +92,8 @@
 /* ── Column ──────────────────────────────────────── */
 .kanban__column {
   background: var(--kb-col-bg);
-  width: var(--kb-col-width);
-  min-width: var(--kb-col-width);
-  border-radius: var(--kb-col-radius);
+  /* min-width: var(--kb-col-width); */
+  /* border-radius: var(--kb-col-radius); */
   border: 1px solid var(--kb-col-border);
   display: flex;
   flex-direction: column;
@@ -101,6 +102,9 @@
   overflow: hidden;
   transition: border-color var(--kb-transition),
               box-shadow   var(--kb-transition);
+  align-items: flex-start;
+  width: 20%;
+  height: 100%;
 }
 
 .kanban__column--drag-over {
@@ -115,7 +119,7 @@
   gap: var(--s-xs);
   padding: var(--s-sm) var(--s-sm) var(--s-xs);
   border-bottom: 1px solid var(--kb-col-border);
-  flex-shrink: 0;
+  width: 100%
 }
 
 .kanban__col-title {
@@ -145,11 +149,12 @@
 .kanban__cards {
   display: flex;
   flex-direction: column;
+  width: 100%;
   gap: var(--kb-card-gap);
-  padding: var(--s-sm);
+  padding: var(--s-xs) var(--s-sm);
   flex: 1;
   overflow-y: auto;
-  min-height: 80px;
+  min-height: 90px;
   scrollbar-width: thin;
   scrollbar-color: var(--border) transparent;
 }
@@ -157,10 +162,10 @@
 /* ── Card ─────────────────────────────────────────── */
 .kanban__card {
   background: var(--kb-card-bg);
-  border-radius: var(--kb-card-radius);
+  border-top-right-radius: var(--kb-card-radius);
+  border-bottom-right-radius: var(--kb-card-radius);
   box-shadow: var(--kb-card-shadow);
   padding: var(--s-sm);
-  cursor: grab;
   display: flex;
   align-items: flex-start;
   gap: var(--s-xs);
@@ -170,9 +175,11 @@
               opacity    var(--kb-transition);
   user-select: none;
   flex-direction: column;
+  width: 100%;
 }
 
 .kanban__card header {
+    cursor: grab;
 	display: flex;
 	align-items: center;
 	column-gap: var(--s-xs);
@@ -180,6 +187,7 @@
 	justify-content: flex-start;
 	padding: 0;
 	border: none;
+	background: none;
 }
 	
 .kanban__card:hover {
@@ -216,6 +224,8 @@
 }
 
 /* ── Contenteditable shared behaviour ───────────── */
+.kanban__card-ref,
+.kanban__card-rev,
 .kanban__card-title,
 .kanban__card-desc {
   display: block;
@@ -230,6 +240,20 @@
   white-space: pre-wrap;
 }
 
+.kanban__card-ref,
+.kanban__card-rev,
+.kanban__card-desc {
+  font-size: var(--f-xs);
+  /* color: var(--fg-muted); */
+  line-height: 1.5;
+  margin-top: var(--s-xs);
+  border-top: 1px solid var(--border);
+  padding-top: var(--s-xs);
+}
+
+}
+.kanban__card-ref:focus,
+.kanban__card-rev:focus,
 .kanban__card-title:focus,
 .kanban__card-desc:focus {
   background: var(--bg-hover);
@@ -241,19 +265,14 @@
   color: var(--fg-main);
   line-height: 1.45;
   font-weight: 500;
+  width: 100%;
 }
 
 /* ── Desc (Research/Outline+) ───────────────────── */
-.kanban__card-desc {
-  font-size: var(--f-xs);
-  color: var(--fg-muted);
-  line-height: 1.5;
-  margin-top: var(--s-xs);
-  border-top: 1px solid var(--border);
-  padding-top: var(--s-xs);
-}
 
 /* Placeholder via data attribute */
+.kanban__card-ref:empty::before,
+.kanban__card-rev:empty::before,
 .kanban__card-desc:empty::before {
   content: attr(data-placeholder);
   color: var(--fg-muted);
@@ -413,4 +432,85 @@
 
 @keyframes kanban-spin {
   to { transform: rotate(360deg); }
+}
+
+[data-col-id='backlog'].kanban__column { background-color: transparent; }
+[data-col-id='research'].kanban__column { background-color: color-mix(in srgb, var(--fg-muted), transparent 97%); }
+[data-col-id='drafting'].kanban__column { background-color: color-mix(in srgb, var(--primary), transparent 95%); }
+[data-col-id='review'].kanban__column { background-color: color-mix(in srgb, var(--danger), transparent 95%); }
+[data-col-id='done'].kanban__column { background-color: color-mix(in srgb, var(--success-fg), transparent 95%); }
+
+
+	
+/* ─────────────────────────────────────────────────
+   kanban-additions.css
+   Patch for: tacoen/snara — main branch (post-0.2.0)
+
+   Append to (or @import after) your existing kanban stylesheet.
+   All values are driven by CSS Custom Properties so per-instance
+   overrides remain possible via inline style on .kanban root.
+
+   New blocks:
+     .kanban__ref-panel   — "Add Reference" (Drafting column)
+     .kanban__rev-panel   — "Add Revision"  (Review column)
+     .kanban__done-btn    — "DONE" button    (Polished column)
+     .kanban__card[data-tag] — tag badge on card header
+─────────────────────────────────────────────────── */
+/* ─────────────────────────────────────────────────
+   kanban-additions.css
+   Patch for: tacoen/snara — main branch (post-0.2.0)
+
+   Append to (or @import after) your existing kanban stylesheet.
+   All values are driven by CSS Custom Properties so per-instance
+   overrides remain possible via inline style on .kanban root.
+
+   New blocks:
+     .kanban__card-ref    — Reference field     (Drafting column)
+     .kanban__card-rev    — Revision field  (Review column)
+     .kanban__done-btn    — "DONE" button    (Polished column)
+     .kanban__card[data-tag] — tag badge on card header
+─────────────────────────────────────────────────── */
+
+/* ── Shared custom properties (declared at block level) ─────── */
+.kagakanban {
+
+
+  /* DONE button */
+  --kanban-done-bg:            #28a745;
+  --kanban-done-bg-hover:      #1e7e34;
+  --kanban-done-color:         #ffffff;
+  --kanban-done-radius:        4px;
+}
+
+.kanban__card[data-tag="act"] { border-left: 3px solid var(--entry-act-fg); }
+.kanban__card[data-tag="chapter"] { border-left: 3px solid var(--entry-chapter-fg); }
+.kanban__card[data-tag="scene"] { border-left: 3px solid var(--entry-scene-fg); }
+.kanban__card[data-tag="beat"] { border-left: 3px solid var(--entry-beat-fg); }
+
+/* ── DONE button (.kanban__done-btn) ────────────────────────── */
+
+.kanban__done-btn {
+  display: block;
+  width: 100%;
+  margin-top: 8px;
+  padding: 6px 0;
+  background: var(--kanban-done-bg);
+  color: var(--kanban-done-color);
+  border: none;
+  border-radius: var(--kanban-done-radius);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  cursor: pointer;
+  text-align: center;
+  transition: background 0.18s, transform 0.1s;
+  user-select: none;
+}
+
+.kanban__done-btn:hover {
+  background: var(--kanban-done-bg-hover);
+}
+
+.kanban__done-btn:active {
+  transform: scale(0.97);
 }

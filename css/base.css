@@ -22,15 +22,6 @@
   --font-mono:  ui-monospace, SFMono-Regular, Menlo, Consolas, 'Courier New', monospace;
   --font-serif: Georgia, 'Times New Roman', serif;
 
-  /* Narrative hierarchy aliases (resolve via theme tokens below) */
-  --entry-font:           var(--font-sans);
-  --entry-act-border:     var(--tag-act-fg);
-  --entry-chapter-border: var(--tag-chapter-fg);
-  --entry-scene-border:   var(--tag-scene-fg);
-  --entry-beat-border:    var(--tag-beat-fg);
-  --article-border:       var(--tag-beat-bd);
-}
-
 /* ── Scrollbars ──
    Compact: 3 entry rules, 2 element rules.
    Custom scrollbars are cosmetic so they stay in vars. */

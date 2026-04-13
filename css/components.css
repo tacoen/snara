@@ -590,12 +590,7 @@ body.modal-open { overflow: hidden; }
   background: transparent;
   transition: background .1s, border-color .1s;
 }
-.cfg-color-row { padding: var(--s-sm) 0; border-bottom: 1px solid var(--border); }/* ═══════════════════════════════════════════════════
-   components › editor — entry list, inline editor,
-   metadata panel, toolbar
-   DO:  use --entry-*-border/bg aliases for hierarchy
-   DON'T: hardcode narrative colours — use tag tokens
-   ═══════════════════════════════════════════════════ */
+.cfg-color-row { padding: var(--s-sm) 0; border-bottom: 1px solid var(--border); }
 
 /* ── Entry list ── */
 .entries { flex-direction: column; padding: 0 0 var(--s-xl); }
@@ -626,13 +621,6 @@ body.modal-open { overflow: hidden; }
 
 /* FIX: .entry:focus defined twice — merged. */
 .entry:focus { background: var(--bg-alt); }
-
-/* FIX: narrative-level indent defined twice (first used raw --tag-* tokens,
-        second used correct --entry-* aliases). Kept aliases only. */
-.entry.act     { border-left-color: var(--entry-act-border); padding-left: var(--s-md); }
-.entry.chapter { border-left-color: var(--entry-chapter-border); padding-left: calc(2 * var(--s-md)); }
-.entry.scene   { border-left-color: var(--entry-scene-border); padding-left: calc(3 * var(--s-md)); }
-.entry.beat    { border-left-color: var(--entry-beat-border);  padding-left: calc(4 * var(--s-md)); }
 
 [data-editing="1"] { min-height: 80px; max-height: 320px; }
 
@@ -859,6 +847,7 @@ body.entry-edit #editor { height: 72px; }
 /* ── Floating popup toolbar ── */
 .popup-toolbar {
   position: fixed;
+  padding: 0 var(--s-sm);
   display: flex;
   flex-direction: row;
   flex-wrap: nowrap;
@@ -876,13 +865,13 @@ body.entry-edit #editor { height: 72px; }
 .popup-toolbar.visible { opacity: 1; pointer-events: all; }
 [hold].popup-toolbar { opacity: 1; pointer-events: all; }
 
-.popup-toolbar div {
+.popup-toolbar div.row {
   display: flex;
   /* flex-direction: column; */
   align-items: center;
   gap: var(--s-xs);
   /* FIX: broken multi-line padding value — consolidated. */
-  padding: var(--s-xs);
+  padding: 0 var(--s-xs);
 }
 
 .popup-toolbar .sep { margin-left: var(--s-md) }
@@ -906,23 +895,10 @@ body.entry-edit #editor { height: 72px; }
 }
 .pop-pill:hover { background: var(--bg-hover); color: var(--fg-main); }
 
-.pop-pill.scene  { color: var(--entry-scene-border); }
-.pop-pill.beat  { color: var(--entry-beat-border); }
-.pop-pill.chapter  { color: var(--entry-chapter-border); }
-.pop-pill.act  { color: var(--entry-act-border); }
-
-.tag-pill.active-scene,
-.pop-pill.scene.sel,   .pop-pill.scene:hover   { background: var(--entry-scene-border); color: var(--bg-main)}
-.tag-pill.active-beat,
-.pop-pill.beat.sel,    .pop-pill.beat:hover     { background: var(--entry-beat-border);  color: var(--bg-main)}
-.tag-pill.active-chapter,
-.pop-pill.chapter.sel, .pop-pill.chapter:hover  { background: var(--entry-chapter-border);  color: var(--bg-main)}
-.tag-pill.active-act,
-.pop-pill.act.sel,     .pop-pill.act:hover      { background: var(--entry-act-border); color: var(--bg-main) }
-
-
 .pop-remove       { font-size: 11px; padding: 1px var(--s-xs); color: var(--fg-muted); }
 .pop-remove:hover { color: var(--danger); background: none; }
+
+.pop-pill{ color: var(--fg-muted); }
 
 /* ── Tag pills (entry header) ── */
 .tag-pills {
@@ -940,7 +916,6 @@ body.entry-edit #editor { height: 72px; }
 }
 .tag-pill {
   border: 1px solid var(--border);
-  background: none;
   border-radius: 20px;
   padding: 1px var(--s-sm);
   font-family: var(--font-mono);
@@ -950,17 +925,15 @@ body.entry-edit #editor { height: 72px; }
   color: var(--fg-muted);
   cursor: pointer;
   transition: all .15s;
+  background: none;
 }
-.tag-pill:hover { background: var(--bg-hover); }/* ═══════════════════════════════════════════════════
-   components › table of contents
-   DO:  add new hierarchy levels via .toc-{level}
-        and extend --entry-{level}-border in vars.css
-   DON'T: use pixel indents — use multiples of --s-md
-   ═══════════════════════════════════════════════════ */
+
+.tag-pill:hover { background: var(--bg-hover); }
 
 aside.side-panel {
   padding: 0;
   font-size: var(--f-xs);
+  background: var(--bg-alt);
 }
 
 .toc-label {
@@ -1009,15 +982,6 @@ aside.side-panel {
   transition: color .12s, border-color .12s, background .12s;
 }
 .toc-item a:hover { color: var(--fg-main); background: var(--bg-hover); }
-
-/* Hierarchy indents + left-border colours.
-   Compact: one rule per level (padding + border-color only).
-   FIX: redundant hover rules re-stated the same border-color — dropped.
-   FIX: stray `f` character removed from .toc-beat a rule. */
-.toc-act     a { padding-left: var(--s-md);              border-left-color: var(--entry-act-border);     font-weight: 500; }
-.toc-chapter a { padding-left: calc(var(--s-md) * 2);   border-left-color: var(--entry-chapter-border); }
-.toc-scene   a { padding-left: calc(var(--s-md) * 3);   border-left-color: var(--entry-scene-border); }
-.toc-beat    a { padding-left: calc(var(--s-md) * 4);   border-left-color: var(--entry-beat-border); }
 
 /* Active (currently visible) item */
 .toc-item.toc-active a { color: var(--fg-main); background: var(--selection); }/* ═══════════════════════════════════════════════════
@@ -1167,9 +1131,9 @@ aside.side-panel {
   flex-shrink: 0;
 }
 .idx-row-icon  { font-size: 16px; color: var(--fg-muted); flex-shrink: 0; display: flex; align-items: center; }
-.idx-row-num   { font-family: var(--font-mono); font-size: 10px; color: var(--fg-muted); opacity: .5; width: 20px; text-align: right; flex-shrink: 0; }
+.idx-row-num   { font-family: var(--font-mono);font-size: 10px;color: var(--sel-border);opacity: .8;width: 20px;text-align: right;flex-shrink: 0;}
 .idx-row-main  { flex: 1; display: flex; flex-direction: column; gap: 1px; min-width: 0; }
-.idx-row-title { font-size: .875rem; color: var(--fg-main); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.idx-row-title { font-size: .875rem;color: var(--fg-main);white-space: nowrap;overflow: hidden;text-overflow: ellipsis;font-family: var(--entry-font);}
 .idx-row-sub   { font-family: var(--font-mono); font-size: 10px; color: var(--fg-muted); opacity: .65; }
 .idx-row-badge {
   font-family: var(--font-mono);

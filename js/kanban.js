@@ -1,29 +1,6 @@
-/* ─────────────────────────────────────────────────
-   js/snara/kanban.js — SnaraKanban
-   Branch: main  |  Repo: tacoen/snara
-   Base: [Unreleased post-0.2.0] · 2026-04-05
-
-   New in this revision:
-   ─ Drafting column   → "Add Reference" panel
-     Parses leading # prefix to set card.tag:
-       #    → act
-       ##   → chapter
-       ###  → scene
-       ####  → beat
-   ─ Review column     → "Add Revision" panel
-     Revision note stored as card.revision (single string)
-   ─ Done (Polished) column → "DONE" button
-     Immediately deletes the card (same as card.delete)
-
-   Usage / Public API unchanged:
-     import { SnaraKanban } from './snara/kanban.js';
-     const kanban = new SnaraKanban('#kanban-root', AppConfig.apiPath);
-     await kanban.load(bookId);
-─────────────────────────────────────────────────── */
 
 const TAG = '[SnaraKanban]';
 
-// Default columns seeded for a new book (mirrors kanban.php initial data)
 const DEFAULT_COLUMNS = [
   { id: 'backlog',   title: 'Backlog',         cards: [] },
   { id: 'research',  title: 'Research/Outline', cards: [] },
@@ -31,8 +8,6 @@ const DEFAULT_COLUMNS = [
   { id: 'review',    title: 'Review/Edit',      cards: [] },
   { id: 'done',      title: 'Polished',         cards: [] },
 ];
-
-// Reference tag map: leading # count → card.tag value
 const REF_TAG_MAP = {
   4: 'beat',
   3: 'scene',
@@ -41,47 +16,30 @@ const REF_TAG_MAP = {
 };
 
 export class SnaraKanban {
-
-  /** @type {SnaraKanban|null} */
   static instance = null;
-
-  // ── Constructor ────────────────────────────────────────────────
-
-  /**
-   * @param {string} rootSelector  CSS selector for the .kanban root element
-   * @param {string} apiPath       e.g. '/api.php'
-   */
   constructor(rootSelector, apiPath = '/api.php') {
-    /** @type {Element|null} */
     this._root = document.querySelector(rootSelector);
     if (!this._root) {
       console.error(`${TAG} Root element not found: "${rootSelector}"`);
       return;
     }
 
-    // Parse declarative config from data- attributes
     this._settings = this._parseSettings(this._root);
 
-    // Override apiPath: constructor param > data-api > fallback
     this._apiPath = apiPath
       || this._settings.api
       || '/api.php';
 
-    /** @type {number|null} */
     this._bookId = this._settings.bookid
       ? parseInt(this._settings.bookid, 10)
       : null;
 
-    /** @type {Array<{id:string, title:string, cards:Array<{id:string,title:string}>}>} */
     this._columns = [];
 
-    /** @type {Element|null} Actively dragged card element */
     this._dragCard = null;
 
-    /** @type {string|null} Column id the drag started from */
     this._dragSrcCol = null;
 
-    // Bound listener references (required for correct removeEventListener)
     this._onAddBtn      = this._handleAddBtn.bind(this);
     this._onQuickSave   = this._handleQuickSave.bind(this);
     this._onQuickCancel = this._handleQuickCancel.bind(this);
@@ -94,13 +52,6 @@ export class SnaraKanban {
     this._log('init', { rootSelector, apiPath: this._apiPath, settings: this._settings });
   }
 
-  // ── Settings parser ────────────────────────────────────────────
-
-  /**
-   * Reads data-* attributes off the root element into a typed object.
-   * @param {Element} el
-   * @returns {{ bookid: string|null, api: string|null }}
-   */
   _parseSettings(el) {
     return {
       bookid: el.dataset.bookid || null,
@@ -108,32 +59,19 @@ export class SnaraKanban {
     };
   }
 
-  // ── Static event binding (survives re-renders) ─────────────────
-
   _bindStatic() {
     const addBtn      = this._q('#kanban-add-btn');
     const quickSave   = this._q('#kanban-quick-save');
     const quickCancel = this._q('#kanban-quick-cancel');
     const quickInput  = this._q('#kanban-quick-input');
-
     addBtn?.addEventListener('click',    this._onAddBtn);
     quickSave?.addEventListener('click', this._onQuickSave);
     quickCancel?.addEventListener('click', this._onQuickCancel);
     quickInput?.addEventListener('keydown', this._onQuickKey);
-
-    // Event delegation on board — covers all dynamically rendered cards/columns
     const board = this._q('#kanban-board');
     board?.addEventListener('click', this._onDelegate);
   }
 
-  // ── Public API ─────────────────────────────────────────────────
-
-  /**
-   * Fetch board data for a book and render it.
-   * Safe to call again when the active book changes.
-   * @param {number} bookId
-   * @returns {Promise<void>}
-   */
   async load(bookId) {
     if (!bookId) {
       console.warn(`${TAG} load() called without bookId`);
@@ -151,12 +89,10 @@ export class SnaraKanban {
       );
 
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
-
       const data = await res.json();
       this._columns = Array.isArray(data) && data.length > 0
         ? data
         : structuredClone(DEFAULT_COLUMNS);
-
     } catch (err) {
       console.warn(`${TAG} load failed, using defaults:`, err);
       this._columns = structuredClone(DEFAULT_COLUMNS);
@@ -165,35 +101,25 @@ export class SnaraKanban {
     this._render();
   }
 
-  /**
-   * Remove all event listeners and null out DOM references.
-   * Call before removing the component from the page.
-   */
   destroy() {
     this._log('destroy called');
-
     const addBtn      = this._q('#kanban-add-btn');
     const quickSave   = this._q('#kanban-quick-save');
     const quickCancel = this._q('#kanban-quick-cancel');
     const quickInput  = this._q('#kanban-quick-input');
     const board       = this._q('#kanban-board');
-
     addBtn?.removeEventListener('click',    this._onAddBtn);
     quickSave?.removeEventListener('click', this._onQuickSave);
     quickCancel?.removeEventListener('click', this._onQuickCancel);
     quickInput?.removeEventListener('keydown', this._onQuickKey);
     board?.removeEventListener('click', this._onDelegate);
-
     this._dragCard   = null;
     this._dragSrcCol = null;
     this._columns    = [];
     this._root       = null;
-
     SnaraKanban.instance = null;
     this._log('destroy complete');
   }
-
-  // ── Rendering ──────────────────────────────────────────────────
 
   _renderSpinner() {
     const board = this._q('#kanban-board');
@@ -205,9 +131,7 @@ export class SnaraKanban {
   _render() {
     const board = this._q('#kanban-board');
     if (!board) return;
-
     board.innerHTML = '';
-
     this._columns.forEach(col => {
       board.appendChild(this._buildColumn(col));
     });
@@ -216,18 +140,11 @@ export class SnaraKanban {
     this._log('rendered', this._columns.length, 'columns');
   }
 
-  /**
-   * Build a column DOM element with its cards and drag listeners.
-   * @param {{ id:string, title:string, cards:Array }} col
-   * @returns {Element}
-   */
   _buildColumn(col) {
     const colEl = document.createElement('div');
     colEl.className     = 'kanban__column';
     colEl.dataset.colId = col.id;
     colEl.setAttribute('role', 'listitem');
-
-    // Column header
     const header = document.createElement('div');
     header.className = 'kanban__col-header';
     header.innerHTML = `
@@ -235,12 +152,9 @@ export class SnaraKanban {
       <span class="kanban__col-count">${col.cards.length}</span>
     `;
     colEl.appendChild(header);
-
-    // Cards container
     const cardsEl = document.createElement('div');
     cardsEl.className   = 'kanban__cards';
     cardsEl.dataset.colId = col.id;
-
     if (col.cards.length === 0) {
       cardsEl.appendChild(this._buildEmpty());
     } else {
@@ -249,7 +163,6 @@ export class SnaraKanban {
       });
     }
 
-    // Drag-over on cards container (not on column header)
     cardsEl.addEventListener('dragover', e => {
       e.preventDefault();
       e.dataTransfer.dropEffect = 'move';
@@ -273,38 +186,20 @@ export class SnaraKanban {
     return colEl;
   }
 
-  /**
-   * Build a card element.
-   * Column-specific panels are injected based on colId:
-   *   drafting → Reference panel  (sets card.tag via # prefix)
-   *   review   → Revision note    (card.revision, like card.desc)
-   *   done     → DONE button      (deletes card)
-   *
-   * @param {{ id:string, title:string, desc?:string, tag?:string, revisions?:string[] }} card
-   * @param {string} colId
-   * @returns {Element}
-   */
   _buildCard(card, colId) {
     const el  = document.createElement('div');
     const elh = document.createElement('header');
-
     el.className      = 'kanban__card';
     el.draggable      = true;
     el.dataset.cardId = card.id;
     el.dataset.colId  = colId;
-
-    // Reflect tag onto element attribute so CSS can key off it
     if (card.tag) el.dataset.tag = card.tag;
-
-    // ── Drag handle
     const handle = document.createElement('span');
     handle.className       = 'kanban__card-drag';
     handle.textContent     = '⠿';
     handle.setAttribute('aria-hidden', 'true');
     handle.contentEditable = 'false';
     elh.appendChild(handle);
-
-    // ── Title (all columns)
     const titleEl = document.createElement('span');
     titleEl.className       = 'kanban__card-title';
     titleEl.contentEditable = 'true';
@@ -319,7 +214,6 @@ export class SnaraKanban {
 
     el.appendChild(elh);
 
-    // ── Desc (Research/Outline and beyond)
     const COLS_WITH_DESC = ['research', 'drafting', 'review', 'done'];
     if (COLS_WITH_DESC.includes(colId)) {
       const descEl = document.createElement('span');
@@ -336,8 +230,6 @@ export class SnaraKanban {
       el.appendChild(descEl);
     }
 
-    // ── Column-specific panels ─────────────────────────────────
-
     if (colId === 'drafting') {
       const refEl = document.createElement('span');
       refEl.className       = 'kanban__card-ref';
@@ -348,7 +240,6 @@ export class SnaraKanban {
       refEl.addEventListener('blur', () => {
         const raw = refEl.textContent.trim().slice(0, 160);
         card.ref = raw;
-        // Parse leading # count → set card.tag
         const match = raw.match(/^(#{1,4})\s*/);
         if (match) {
           card.tag = REF_TAG_MAP[Math.min(match[1].length, 4)];
@@ -382,7 +273,6 @@ export class SnaraKanban {
       el.appendChild(this._buildDoneButton(card, colId));
     }
 
-    // ── Context menu button
     const menuBtn = document.createElement('button');
     menuBtn.className = 'kanban__card-menu-btn';
     menuBtn.setAttribute('aria-label', 'Card options');
@@ -391,7 +281,6 @@ export class SnaraKanban {
     menuBtn.textContent    = '⋯';
     el.appendChild(menuBtn);
 
-    // ── Context menu
     const menu = document.createElement('div');
     menu.className = 'kanban__card-menu kanban__card-menu--hidden';
     menu.dataset.menuFor = card.id;
@@ -404,7 +293,6 @@ export class SnaraKanban {
     `;
     el.appendChild(menu);
 
-    // ── Drag events
     el.addEventListener('dragstart', () => {
       this._dragCard   = el;
       this._dragSrcCol = colId;
@@ -420,18 +308,6 @@ export class SnaraKanban {
     return el;
   }
 
-  // ── Column-specific panel builders ────────────────────────────
-
-
-
-  /**
-   * DONE button for the Polished column.
-   * On click: calls _deleteCard() — removes card from data model, re-renders, saves.
-   *
-   * @param {{ id:string }} card
-   * @param {string} colId
-   * @returns {Element}
-   */
   _buildDoneButton(card, colId) {
     const btn = document.createElement('button');
     btn.className = 'kanban__done-btn';
@@ -440,13 +316,7 @@ export class SnaraKanban {
     btn.dataset.colId  = colId;
     btn.setAttribute('aria-label', 'Mark as done and remove card');
     btn.textContent = '✓ DONE';
-
-    // mousedown stop-propagation prevents accidental drag trigger
     btn.addEventListener('mousedown', e => e.stopPropagation());
-    // click is handled via delegation in _handleDelegate for consistency,
-    // but we also bind directly here so destroy() doesn't need special cleanup
-    // (the element is discarded on next _render()).
-
     return btn;
   }
 
@@ -460,20 +330,11 @@ export class SnaraKanban {
     return el;
   }
 
-  // ── Drag-and-drop helpers ──────────────────────────────────────
-
-  /**
-   * Insert a ghost placeholder at the correct drop position.
-   * @param {DragEvent} e
-   * @param {Element}   cardsEl
-   */
   _insertDragGhost(e, cardsEl) {
     if (!this._dragCard) return;
-
     const siblings = [...cardsEl.querySelectorAll(
       '.kanban__card:not(.kanban__card--ghost):not(.kanban__card--dragging)'
     )];
-
     let insertBefore = null;
     for (const sibling of siblings) {
       const rect = sibling.getBoundingClientRect();
@@ -501,53 +362,31 @@ export class SnaraKanban {
     this._root?.querySelectorAll('.kanban__card--ghost').forEach(g => g.remove());
   }
 
-  /**
-   * Commit the drop: move card in data model + re-render + save.
-   * @param {Element} targetCardsEl
-   * @param {string}  targetColId
-   */
   _commitDrop(targetCardsEl, targetColId) {
     if (!this._dragCard) return;
-
     const cardId   = this._dragCard.dataset.cardId;
     const srcColId = this._dragSrcCol;
     const ghost    = targetCardsEl.querySelector('.kanban__card--ghost');
-
     const allCards  = [...targetCardsEl.querySelectorAll(
       '.kanban__card:not(.kanban__card--ghost):not(.kanban__card--dragging)'
     )];
     const insertIdx = ghost ? allCards.indexOf(ghost) : allCards.length;
-
     const srcCol = this._columns.find(c => c.id === srcColId);
     const tgtCol = this._columns.find(c => c.id === targetColId);
     if (!srcCol || !tgtCol) return;
-
     const cardIdx = srcCol.cards.findIndex(c => c.id === cardId);
     if (cardIdx === -1) return;
-
     const [card] = srcCol.cards.splice(cardIdx, 1);
     const safeIdx = Math.max(0, insertIdx === -1 ? tgtCol.cards.length : insertIdx);
     tgtCol.cards.splice(safeIdx, 0, card);
-
     this._render();
     this._save();
   }
 
-  // ── Event delegation on board ─────────────────────────────────
-
-  /**
-   * Single delegated click handler for the entire board.
-   * Handles:
-   *   - card context menu toggle / menu item actions
-   *   - card.done   (DONE button in Polished column)
-   * @param {MouseEvent} e
-   */
   _handleDelegate(e) {
     const menuBtn  = e.target.closest('.kanban__card-menu-btn');
     const menuItem = e.target.closest('.kanban__menu-item');
     const doneBtn  = e.target.closest('.kanban__done-btn');
-
-    // ── DONE button (Polished column)
     if (doneBtn) {
       e.stopPropagation();
       const cardId = doneBtn.dataset.cardId;
@@ -556,7 +395,6 @@ export class SnaraKanban {
       return;
     }
 
-    // ── Toggle card context menu
     if (menuBtn) {
       e.stopPropagation();
       const cardId = menuBtn.dataset.cardId;
@@ -564,12 +402,10 @@ export class SnaraKanban {
       return;
     }
 
-    // ── Menu item action
     if (menuItem) {
       const action = menuItem.dataset.action;
       const cardId = menuItem.dataset.cardId;
       const colId  = menuItem.dataset.colId;
-
       if (action === 'card.delete') {
         this._deleteCard(cardId, colId);
       }
@@ -577,7 +413,6 @@ export class SnaraKanban {
       return;
     }
 
-    // ── Click anywhere else → close menus
     if (!e.target.closest('.kanban__card-menu')) {
       this._closeAllMenus();
     }
@@ -599,13 +434,10 @@ export class SnaraKanban {
     });
   }
 
-  // ── Quick-add form ─────────────────────────────────────────────
-
   _handleAddBtn() {
     const form  = this._q('#kanban-quick-form');
     const input = this._q('#kanban-quick-input');
     if (!form) return;
-
     form.classList.remove('kanban__quick-form--hidden');
     input?.focus();
   }
@@ -613,7 +445,6 @@ export class SnaraKanban {
   _handleQuickSave() {
     const input = this._q('#kanban-quick-input');
     const title = input?.value.trim();
-
     if (!title) {
       input?.focus();
       return;
@@ -627,7 +458,6 @@ export class SnaraKanban {
     this._hideQuickForm();
   }
 
-  /** @param {KeyboardEvent} e */
   _handleQuickKey(e) {
     if (e.key === 'Enter')  this._handleQuickSave();
     if (e.key === 'Escape') this._handleQuickCancel();
@@ -640,15 +470,8 @@ export class SnaraKanban {
     if (input) input.value = '';
   }
 
-  // ── Data mutations ─────────────────────────────────────────────
-
-  /**
-   * Add a new card to the first column (Backlog).
-   * @param {string} title
-   */
   _addCard(title) {
     if (!this._columns.length) return;
-
     const card = {
       id:         'c' + Date.now() + '_' + Math.random().toString(36).slice(2, 7),
       title:      title.slice(0, 120),
@@ -661,26 +484,14 @@ export class SnaraKanban {
     this._save();
   }
 
-  /**
-   * Delete a card by id from its column.
-   * Used by context-menu delete AND the Polished DONE button.
-   * @param {string} cardId
-   * @param {string} colId
-   */
   _deleteCard(cardId, colId) {
     const col = this._columns.find(c => c.id === colId);
     if (!col) return;
-
     col.cards = col.cards.filter(c => c.id !== cardId);
     this._render();
     this._save();
   }
 
-  // ── Persistence ────────────────────────────────────────────────
-
-  /**
-   * POST current board state to api.php?action=kanban.set
-   */
   async _save() {
     if (!this._bookId) {
       console.warn(`${TAG} _save() skipped — no bookId`);
@@ -704,30 +515,17 @@ export class SnaraKanban {
     }
   }
 
-  // ── UI helpers ─────────────────────────────────────────────────
-
   _updateCount() {
     const countEl = this._q('#kanban-card-count');
     if (!countEl) return;
-
     const total = this._columns.reduce((n, col) => n + col.cards.length, 0);
     countEl.textContent = total === 1 ? '1 scene' : `${total} scenes`;
   }
 
-  /**
-   * Scoped querySelector — only searches within this component's root.
-   * @param {string} selector
-   * @returns {Element|null}
-   */
   _q(selector) {
     return this._root?.querySelector(selector) ?? null;
   }
 
-  /**
-   * HTML-escape a string to prevent XSS.
-   * @param {string} str
-   * @returns {string}
-   */
   _escape(str) {
     return String(str)
       .replace(/&/g, '&amp;')
@@ -737,14 +535,11 @@ export class SnaraKanban {
       .replace(/'/g, '&#39;');
   }
 
-  // ── Debug logger ───────────────────────────────────────────────
-  // Enable:  localStorage.setItem('debug', 'kanban')  then reload
-
   _log(...args) {
     try {
       if (localStorage.getItem('debug') === 'kanban') {
         console.log(TAG, ...args);
       }
-    } catch { /* storage unavailable */ }
+    } catch {  }
   }
 }
