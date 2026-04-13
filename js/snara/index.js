@@ -107,6 +107,7 @@ _ensureDOM() {
         const title = row.dataset.bookTitle;
         this._setActiveBook(id, title);
         closeModal('book-index-modal');
+        this.openChapterIndex();
       };
       row.addEventListener('click', activate);
       row.addEventListener('keydown', e => { if (e.key === 'Enter') activate(); });
@@ -134,7 +135,8 @@ _ensureDOM() {
 
       this._setActiveBook(data.id, title);
       closeModal('book-index-modal');
-    } catch(e) {
+      this.openChapterIndex();
+	} catch(e) {
       btn.disabled    = false;
       btn.textContent = 'Create';
       console.error('[snara] book create failed:', e);
