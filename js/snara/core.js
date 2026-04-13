@@ -1,30 +1,19 @@
-/* ─────────────────────────────────────────────────
-   snara-core.js — SnaraEditor
-   Manages the write area, entries, and toolbar.
-   Depends on: SnaraTool, SnaraUI, SnaraStruct
-─────────────────────────────────────────────────── */
+
 import { SnaraTool }   from './tool.js';
 import { SnaraUI }     from './ui.js';
 import { SnaraStruct } from './struct.js';
-
 export class SnaraEditor {
-
   static CLASSES  = SnaraStruct.CLASSES;
-  static instance = null;          // ← singleton ref for ui.js loadDocument
-
+  static instance = null;
   constructor() {
     SnaraEditor.instance = this;
-
     this.editorEl   = document.getElementById('editor');
     this.entriesEl  = document.querySelector('.entries');
     this.editorArea = document.querySelector('.editor-area');
     this.activeTag  = null;
-
     this._bindEditor();
     this.bindAllExistingEntries();
   }
-
-  // ── Editor input ──────────────────────────────
 
   _bindEditor() {
     this.editorEl.addEventListener('keydown', e => {
@@ -42,8 +31,6 @@ export class SnaraEditor {
     document.querySelectorAll('.entry').forEach(div => this._bindEntryEvents(div));
   }
 
-  // ── Tag selection ─────────────────────────────
-
   setTag(cls) {
     document.querySelectorAll('.tag-pill').forEach(p =>
       SnaraStruct.CLASSES.forEach(c => p.classList.remove(`active-${c}`))
@@ -54,8 +41,6 @@ export class SnaraEditor {
       ?.classList.add(`active-${cls}`);
   }
 
-  // ── Build a single entry div from { md, cls } ─
-
   _buildEntry(md, cls) {
     const div = document.createElement('div');
     div.contentEditable = 'true';
@@ -65,15 +50,11 @@ export class SnaraEditor {
     return div;
   }
 
-  // ── Submit new entry ──────────────────────────
-
   submit() {
     const raw = this.editorEl.innerText.trim();
     if (!raw) return;
-
     const blocks  = SnaraStruct.split(raw, this.activeTag);
     let   lastDiv = null;
-
     for (const { md, cls } of blocks) {
       const div = this._buildEntry(md, cls);
       this.entriesEl.appendChild(div);
@@ -85,12 +66,9 @@ export class SnaraEditor {
     lastDiv?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   }
 
-  // ── Entry event binding ───────────────────────
-
   _bindEntryEvents(div) {
     div.addEventListener('focus', () => {
       SnaraUI.instance.focusEntry(div);
-
       if (!div.dataset.editing) {
         div.dataset.editing = '1';
         document.body.classList.add('entry-edit');
@@ -152,8 +130,6 @@ export class SnaraEditor {
     }
     div.blur();
   }
-
-  // ── Toolbar actions ───────────────────────────
 
   fmt(cmd) {
     this.editorEl.focus();

@@ -1,19 +1,3 @@
-/* ─────────────────────────────────────────────────
-   snara/files.js — SnaraFiles
-   Sections:
-     import  → data/$bookId/import/   (staged raw files)
-     export  → chapter checklist
-     gallery → data/$bookId/image/
-     cache   → data/$bookId/cache/
-
-   Extends SnaraComponent.
-   Removed vs. old version:
-     ✗ static instance = null        (inherited)
-     ✗ SnaraFiles.instance = this    (inherited)
-     ✗ import { closeModal }         (use window.closeModal)
-     ✗ _ensureModal()                (renamed → _ensureDOM)
-     ✗ 5 constructor DOM calls       (moved → _init)
-─────────────────────────────────────────────────── */
 
 import { SnaraComponent }                 from './component.js';
 import { AppConfig }                      from '../snara.js';
@@ -24,7 +8,6 @@ import { openModal,_modalHeader, _modalFooter } from './modal.js';
 import { esc, fmtDate, fmtSize, iconFor } from '../helpers.js';
 
 export class SnaraFiles extends SnaraComponent {
-
   constructor() {
     super('files-import-modal');
     this._dragSrc         = null;
@@ -35,13 +18,13 @@ export class SnaraFiles extends SnaraComponent {
   }
 
   _init() {
-    this._switching       = false;   // ← must exist before switchSection
+    this._switching       = false;
     this._initialized     = false;
     this._bookChangeBound = false;
     super._init();
     this._bindDropzones();
     this._bindFileInputs();
-    this._bindBookChange();          // ← now idempotent
+    this._bindBookChange();
     this.switchSection('import');
   }
 
@@ -56,14 +39,11 @@ export class SnaraFiles extends SnaraComponent {
     document.getElementById('app-overlay').appendChild(modal);
   }
 
-  // ── Book change ───────────────────────────────────────────
-
-  // AFTER — bind once, guard against stacking
   _bindBookChange() {
-    if (this._bookChangeBound) return;   // ← prevent duplicate listeners
+    if (this._bookChangeBound) return;
     this._bookChangeBound = true;
     window.addEventListener('bookchange', () => {
-      if (this._switching) return;       // ← re-entrancy guard
+      if (this._switching) return;
       this._reloadSection();
     });
   }
@@ -76,15 +56,11 @@ export class SnaraFiles extends SnaraComponent {
     if (sec === 'cache')   this._loadCacheList();
   }
 
-  // ── Section switching ─────────────────────────────────────
-
   switchSection(sec) {
-    if (this._switching) return;                              // ← re-entrancy guard
-    if (this._section === sec && this._initialized) return;  // ← no-op if same section
+    if (this._switching) return;
+    if (this._section === sec && this._initialized) return;
     this._switching = true;
-
     this._section = sec;
-
     document.querySelectorAll('.fnav-item').forEach(b =>
       b.classList.toggle('active', b.dataset.section === sec)
     );
@@ -95,10 +71,8 @@ export class SnaraFiles extends SnaraComponent {
     const titles = { import: 'Import', export: 'Export', gallery: 'Gallery', cache: 'Cache' };
     const titleEl = document.getElementById('files-section-title');
     if (titleEl) titleEl.textContent = titles[sec] || sec;
-
     this._renderTopActions(sec);
-    this._reloadSection();   // ← centralised, not duplicated
-
+    this._reloadSection();
     icx.delayreplace(`#fpanel-${sec} [data-icon]`);
     icx.delayreplace('#files-topbar-actions [data-icon]');
 
@@ -119,9 +93,6 @@ export class SnaraFiles extends SnaraComponent {
   }
 
   _triggerInput(id) { document.getElementById(id)?.click(); }
-
-  // ── Dropzone & file input ─────────────────────────────────
-
   _bindDropzones() {
     const wire = (id, type) => {
       const el = document.getElementById(id);
@@ -156,8 +127,6 @@ export class SnaraFiles extends SnaraComponent {
     }
   }
 
-  // ── Upload dispatcher ─────────────────────────────────────
-
   async _uploadFiles(files, type) {
     if (type === 'gallery') {
       SnaraGallery.instance?.uploadFiles(files);
@@ -166,7 +135,6 @@ export class SnaraFiles extends SnaraComponent {
 
     const bookId = AppConfig.activeBookId;
     if (!bookId) { alert('No active book — open a book first.'); return; }
-
     for (const file of files) {
       const ext = file.name.split('.').pop().toLowerCase();
       if (!['txt', 'md'].includes(ext)) {
@@ -192,13 +160,10 @@ export class SnaraFiles extends SnaraComponent {
     this._loadImpList();
   }
 
-  // ── Import list ───────────────────────────────────────────
-
   async _loadImpList() {
     const bookId = AppConfig.activeBookId;
     const ul     = document.getElementById('files-imp-list');
     if (!ul) return;
-
     if (!bookId) {
       ul.innerHTML = '<li class="flist-empty">No active book.</li>';
       return;
@@ -235,7 +200,6 @@ export class SnaraFiles extends SnaraComponent {
 
       ul.addEventListener('click', this._impListClick.bind(this), { once: true });
       icx.delayreplace('#files-imp-list [data-icon]');
-
     } catch (e) {
       ul.innerHTML = `<li class="flist-empty" style="color:var(--danger)">Error: ${esc(e.message)}</li>`;
     }
@@ -252,12 +216,9 @@ export class SnaraFiles extends SnaraComponent {
     const { action, filename } = btn.dataset;
     if (action === 'preview-import') this._openPreview(filename);
     else if (action === 'delete-import') this._deleteImportFile(filename, btn.closest('li'));
-
     document.getElementById('files-imp-list')
       ?.addEventListener('click', this._impListClick.bind(this), { once: true });
   }
-
-  // ── Import preview modal ──────────────────────────────────
 
   async _openPreview(filename) {
     const bookId = AppConfig.activeBookId;
@@ -269,11 +230,9 @@ export class SnaraFiles extends SnaraComponent {
       <div class="modal-body" style="display:flex;align-items:center;justify-content:center;padding:2rem">
         <span style="font-size:var(--f-xs);color:var(--fg-muted)">Parsing file…</span>
       </div>`;
-    // wire close button produced by _modalHeader
     modal.querySelector('#modal-close').dataset.action = 'close';
     openModal('files-import-modal');
     icx.delayreplace('#files-import-modal [data-icon]');
-
     let text;
     try {
       const res = await fetch(
@@ -331,7 +290,6 @@ export class SnaraFiles extends SnaraComponent {
         </button>
       `)}`;
 
-    // Wire standard close targets produced by _modalHeader / _modalFooter
     modal.querySelector('#modal-close').dataset.action  = 'close';
     modal.querySelector('#modal-cancel').dataset.action = 'close';
 
@@ -354,8 +312,6 @@ export class SnaraFiles extends SnaraComponent {
     });
   }
 
-  // ── Preview error state ───────────────────────────────────
-
   _showPreviewError(modal, msg) {
     modal.innerHTML = `
       ${_modalHeader('Import error')}
@@ -367,14 +323,11 @@ export class SnaraFiles extends SnaraComponent {
     icx.delayreplace('#files-import-modal [data-icon]');
   }
 
-  // ── Confirm import ────────────────────────────────────────
-
   async _confirmImport(modal, srcFilename) {
     const bookId   = AppConfig.activeBookId;
     const blocks   = modal._blocks;
     const filename = document.getElementById('imp-filename')?.value.trim()
       || srcFilename.replace(/\.[^.]+$/, '').replace(/\s+/g, '-').toLowerCase();
-
     if (!bookId) { alert('No active book.'); return; }
 
     const checked = [...modal.querySelectorAll('.imp-block-cb')]
@@ -382,11 +335,9 @@ export class SnaraFiles extends SnaraComponent {
       .filter(Boolean);
 
     if (!checked.length) { alert('No blocks selected.'); return; }
-
     const btn = modal.querySelector('#imp-confirm-btn');
     btn.disabled    = true;
     btn.textContent = 'Importing…';
-
     const article = checked.map(b => ({
       class:   b.cls,
       content: marked.parse(b.md, { breaks: true }),
@@ -400,19 +351,16 @@ export class SnaraFiles extends SnaraComponent {
       });
       const json = await res.json();
       if (!res.ok || json.error) throw new Error(json.error || `HTTP ${res.status}`);
-
       this.close();
-
       try {
         await fetch(
           `${AppConfig.apiPath}?action=import.delete&bookId=${bookId}&filename=${encodeURIComponent(srcFilename)}`,
           { method: 'DELETE' }
         );
-      } catch { /* non-fatal */ }
+      } catch {  }
 
       this._loadImpList();
       window.dispatchEvent(new CustomEvent('chapteradded', { detail: { bookId, filename } }));
-
     } catch (e) {
       btn.disabled  = false;
       btn.innerHTML = '<i data-icon="download"></i> Import';
@@ -424,14 +372,10 @@ export class SnaraFiles extends SnaraComponent {
     }
   }
 
-  // ── Delete import file ────────────────────────────────────
-
   _deleteImportFile(filename, li) {
     const bookId = AppConfig.activeBookId;
     if (!bookId) return;
-
     const btn = li.querySelector('[data-action="delete-import"]');
-
     if (!li.classList.contains('delete')) {
       li.classList.add('delete');
       if (btn) {
@@ -458,7 +402,6 @@ export class SnaraFiles extends SnaraComponent {
       <button class="cfg-btn" style="padding:2px 8px;font-size:11px;border-color:var(--danger);color:var(--danger)" data-action="del-yes">Yes, delete</button>
     `;
     document.body.appendChild(confirm);
-
     confirm.querySelector('[data-action="del-no"]').addEventListener('click', () => {
       li.classList.remove('delete');
       confirm.remove();
@@ -491,13 +434,10 @@ export class SnaraFiles extends SnaraComponent {
     });
   }
 
-  // ── Cache list ────────────────────────────────────────────
-
   async _loadCacheList() {
     const bookId = AppConfig.activeBookId;
     const ul     = document.getElementById('files-cache-list');
     if (!ul) return;
-
     if (!bookId) {
       ul.innerHTML = '<li class="flist-empty">No active book.</li>';
       return;
@@ -547,8 +487,6 @@ export class SnaraFiles extends SnaraComponent {
     }
   }
 
-  // ── Rebuild cache ─────────────────────────────────────────
-
   async rebuildCache() {
     const bookId = AppConfig.activeBookId;
     if (!bookId) { alert('No active book.'); return; }
@@ -577,7 +515,6 @@ export class SnaraFiles extends SnaraComponent {
     footer.after(prog);
 
     if (btn) { btn.disabled = true; btn.textContent = 'Rebuilding…'; }
-
     try {
       const res   = await fetch(`${AppConfig.apiPath}?action=cache.rebuild&bookId=${bookId}`, {
         method: 'POST',
@@ -612,12 +549,10 @@ export class SnaraFiles extends SnaraComponent {
     }
   }
 
-  // ── Delete bar helpers ────────────────────────────────────
-
   _updateDeleteBar(sec) {
     const barId = sec === 'import' ? 'files-delete-bar' : `files-delete-bar-${sec}`;
     const bar   = document.getElementById(barId);
     if (bar) bar.hidden = true;
   }
 
-} // ← end of class
+}

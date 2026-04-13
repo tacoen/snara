@@ -2,24 +2,18 @@ import { AppConfig } from '../snara.js';
 import icx           from '../icons/ge-icon.js';
 import { openModal, closeModal } from './modal.js';
 import { esc, fmtDate } from '../helpers.js';
-
-
 function ensureModal(id) {
   if (document.getElementById(id)) return document.getElementById(id);
-
   const overlay = document.createElement('div');
   overlay.className = 'app-overlay';
   overlay.id = id + '-overlay';
-
   const modal = document.createElement('div');
   modal.className = 'app-modal idx-modal';
   modal.id = id;
   modal.setAttribute('role', 'dialog');
   modal.setAttribute('aria-modal', 'true');
-
   document.body.appendChild(overlay);
   document.body.appendChild(modal);
-
   overlay.addEventListener('click', () => closeModal(id));
   document.addEventListener('keydown', e => {
     if (e.key === 'Escape' && modal.classList.contains('open')) closeModal(id);
@@ -28,18 +22,14 @@ function ensureModal(id) {
   return modal;
 }
 
-
 export class SnaraIndex {
-
   static instance = null;
-
   constructor() {
     SnaraIndex.instance = this;
     this.activeBookId    = AppConfig.activeBookId ?? null;
     this.activeBookTitle = AppConfig.activeBookTitle ?? '';
     this._ensureDOM();
   }
-
 
 _ensureDOM() {
   ['book-index-modal', 'chapter-index-modal'].forEach(id => {
@@ -50,9 +40,7 @@ _ensureDOM() {
     modal.setAttribute('hidden', '');
     modal.setAttribute('role', 'dialog');
     modal.setAttribute('aria-modal', 'true');
-
 	document.getElementById('app-overlay').appendChild(modal);
-
   });
 }
 
@@ -61,9 +49,7 @@ _ensureDOM() {
     modal.innerHTML = this._shell('book-index-modal', 'Books', this._bookIndexBody('loading'));
     openModal('book-index-modal');
     icx.delayreplace('#book-index-modal [data-icon]');
-
     modal.querySelector('#idx-new-book')?.addEventListener('click', () => this._createBook(modal));
-
     try {
       const res   = await fetch(AppConfig.apiPath + '?action=book.index');
       const books = await res.json();
@@ -148,7 +134,6 @@ async _createChapter(modal) {
   const raw   = input?.value.trim();
   if (!raw) { input?.focus(); return; }
 
-  // Slugify: lowercase, spaces → dashes, strip unsafe chars
   const filename = raw
     .toLowerCase()
     .replace(/\s+/g, '-')
@@ -157,12 +142,10 @@ async _createChapter(modal) {
     .slice(0, 80);
 
   if (!filename) { input?.focus(); return; }
-
   const bookId = this.activeBookId;
   const btn    = modal.querySelector('#idx-new-chapter');
   btn.disabled    = true;
   btn.textContent = 'creating…';
-
   try {
     const res  = await fetch(AppConfig.apiPath + '?action=doc.save', {
       method:  'POST',
@@ -171,12 +154,9 @@ async _createChapter(modal) {
     });
     const data = await res.json();
     if (!res.ok || data.error) throw new Error(data.error || `HTTP ${res.status}`);
-
     input.value     = '';
     btn.disabled    = false;
     btn.textContent = 'Create';
-
-    // Reload list to show the new chapter
     const [chapRes, states] = await Promise.all([
       fetch(AppConfig.apiPath + `?action=book.chapters&id=${encodeURIComponent(bookId)}`),
       this._loadStates(bookId),
@@ -199,23 +179,19 @@ async _createChapter(modal) {
 
   _setActiveBook(id, title) {
     const switching = this.activeBookId != id;
-
     this.activeBookId    = id;
     this.activeBookTitle = title;
     AppConfig.activeBookId    = id;
     AppConfig.activeBookTitle = title;
-
 window.dispatchEvent(new CustomEvent('bookchange', {
   detail: { bookId: AppConfig.activeBookId, title: AppConfig.activeBookTitle }
 }));
 
     const label = document.getElementById('active-book-label');
     if (label) label.textContent = title || `Book ${id}`;
-
     if (switching) {
       const entries = document.querySelector('.entries');
       if (entries) entries.innerHTML = '';
-
       const fn = document.getElementById('filename');
       if (fn) fn.innerText = '';
     }
@@ -238,15 +214,14 @@ window.dispatchEvent(new CustomEvent('bookchange', {
     modal.innerHTML = this._shell('chapter-index-modal', `${title}`,
       `<p class="idx-empty idx-loading">Loading chapters…</p>`);
     openModal('chapter-index-modal');
-	
-	modal.querySelector('#idx-new-chapter')?.addEventListener('click', () => this._createChapter(modal));	
+
+	modal.querySelector('#idx-new-chapter')?.addEventListener('click', () => this._createChapter(modal));
 
 modal.querySelector('#idx-new-chapter-file')?.addEventListener('keydown', e => {
   if (e.key === 'Enter') this._createChapter(modal);
 });
 
     try {
-      // Fetch chapters and persisted states in parallel
       const [chapRes, states] = await Promise.all([
         fetch(AppConfig.apiPath + `?action=book.chapters&id=${encodeURIComponent(this.activeBookId)}`),
         this._loadStates(this.activeBookId),
@@ -255,7 +230,6 @@ modal.querySelector('#idx-new-chapter-file')?.addEventListener('keydown', e => {
       const chapters = await chapRes.json();
       if (chapters.error) throw new Error(chapters.error);
 
-      // Execute pending deletions before rendering
       const toDelete = chapters.filter(ch => states[ch.filename] === 'delete');
       if (toDelete.length > 0) {
         await Promise.all(toDelete.map(ch =>
@@ -266,14 +240,12 @@ modal.querySelector('#idx-new-chapter-file')?.addEventListener('keydown', e => {
               + `&bookId=${encodeURIComponent(this.activeBookId)}`,
             { method: 'DELETE' }
           ).then(() => {
-            // Clear the state entry so a future file with the same name isn't auto-deleted
             delete states[ch.filename];
             this._saveState(this.activeBookId, ch.filename, 'unlock');
           })
         ));
       }
 
-      // Render only surviving chapters
       const surviving = chapters.filter(ch => states[ch.filename] !== 'delete');
       modal.querySelector('.idx-body').innerHTML = this._chapterListHTML(surviving);
       this._bindChapterRows(modal, states);
@@ -285,8 +257,6 @@ modal.querySelector('#idx-new-chapter-file')?.addEventListener('keydown', e => {
 
     icx.delayreplace('#chapter-index-modal [data-icon]');
   }
-
-  // ── Chapter list grouped by act ───────────────
 
   _chapterListHTML(chapters) {
     if (!chapters.length) {
@@ -339,15 +309,10 @@ modal.querySelector('#idx-new-chapter-file')?.addEventListener('keydown', e => {
     return html;
   }
 
-  // ── Bind chapter rows ─────────────────────────
-  // Accepts the already-loaded states map — no second fetch needed.
-
 _bindDnd(modal, bookId) {
   const body = modal.querySelector('.idx-body');
   let dragSrc = null;
-
   const rows = () => [...body.querySelectorAll('.idx-row:not([hidden])')];
-
   body.querySelectorAll('.idx-row').forEach(row => {
     row.addEventListener('dragstart', e => {
       dragSrc = row;
@@ -373,16 +338,11 @@ _bindDnd(modal, bookId) {
       e.preventDefault();
       if (!dragSrc || dragSrc === row) return;
       row.classList.remove('idx-row-drag-over');
-
-      // Reorder DOM
       const allRows = rows();
       const fromIdx = allRows.indexOf(dragSrc);
       const toIdx   = allRows.indexOf(row);
-
       if (fromIdx < toIdx) row.after(dragSrc);
       else                 row.before(dragSrc);
-
-      // Renumber and persist
       this._renumberAndSave(modal, bookId);
     });
   });
@@ -392,13 +352,10 @@ _renumberAndSave(modal, bookId) {
   const rows = [...modal.querySelectorAll('.idx-body .idx-row:not([hidden])')];
   rows.forEach((row, i) => {
     const numEl = row.querySelector('.idx-row-num');
-    if (numEl) numEl.textContent = i;           // 0-based
+    if (numEl) numEl.textContent = i;
     row.dataset.order = i;
-
     const filename = row.dataset.filename;
     if (!filename) return;
-
-    // Patch meta.order via lightweight endpoint
     fetch(AppConfig.apiPath + '?action=doc.setOrder', {
       method:  'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -409,8 +366,6 @@ _renumberAndSave(modal, bookId) {
 
   _bindChapterRows(modal, states = {}) {
     const bookId = this.activeBookId;
-
-    // Apply persisted states to the rendered tool spans
     modal.querySelectorAll('.idx-row').forEach(row => {
       const filename = row.dataset.filename;
       const tool     = row.querySelector('.idx-row-tool');
@@ -426,8 +381,6 @@ _renumberAndSave(modal, bookId) {
     modal.querySelectorAll('.idx-row').forEach(row => {
       const filename = row.dataset.filename;
       const tool     = row.querySelector('.idx-row-tool');
-
-      // Row click → load (blocked when locked)
       const onRowClick = (e) => {
         if (e.target.closest('.idx-row-tool')) return;
         if (tool?.dataset.state === 'lock') return;
@@ -437,8 +390,6 @@ _renumberAndSave(modal, bookId) {
 
       row.addEventListener('click', onRowClick);
       row.addEventListener('keydown', e => { if (e.key === 'Enter') onRowClick(e); });
-
-      // Tool click → cycle state
       if (tool) {
         tool.addEventListener('click', e => {
           e.stopPropagation();
@@ -452,8 +403,6 @@ _renumberAndSave(modal, bookId) {
       }
     });
   }
-
-  // ── State persistence ─────────────────────────
 
   async _loadStates(bookId) {
     if (!bookId) return {};
@@ -476,12 +425,9 @@ _renumberAndSave(modal, bookId) {
     }).catch(() => {});
   }
 
-  // ── Shell ─────────────────────────────────────
-
   _shell(id, heading, bodyHTML) {
     return `
       <div class="modal-header">
-        
 		<div class='flex'>
 		<span class="modal-title">${esc(heading)}</span>
 

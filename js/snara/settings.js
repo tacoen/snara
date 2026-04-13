@@ -1,25 +1,3 @@
-/* ─────────────────────────────────────────────────
-   snara/settings.js — SnaraSettings
-   four-tab config modal:
-     General  — app/infra keys  (config.json)
-     Defaults — per-book defaults (default.json)
-     Editor   — font + entry tag colors (conf/editor.json)
-	 AI chat
-
-   Save strategy: _snap holds all tab values.
-   Each tab snapshots on switch + at save() time.
-   save() reads _snap only — never the DOM directly.
-
-   Color resolution: openModal() runs BEFORE _render()
-   so the modal is visible when resolveToHex() calls
-   getComputedStyle — var(--*) chains resolve correctly.
-
-   applyEditorPrefs: vars.css already defines the
-   defaults for --entry-*-bg and --entry-*-border.
-   The JS only needs to override when the user has
-   saved a custom value. Transparent bg is skipped
-   (CSS default is already transparent).
-─────────────────────────────────────────────────── */
 
 import { SnaraComponent }         from './component.js';
 import { AppConfig, AppDefaults } from '../snara.js';
@@ -27,12 +5,6 @@ import { SnaraUI }                from './ui.js';
 import icx                        from '../icons/ge-icon.js';
 import { esc, splitCsv }          from '../helpers.js';
 import { _modalHeader, _modalFooter } from './modal.js';
-
-// ── Resolve any CSS color value → #rrggbb ─────────────────────────────
-// Appends a throw-away element to <body> so the full cascade applies,
-// then reads getComputedStyle().color which is always a concrete rgb().
-// Works for var(--*) at any nesting depth, hex, rgb(), named colors.
-// Must be called while the modal is visible (not [hidden]).
 function resolveToHex(value) {
   if (!value || value === 'transparent') return '#000000';
   if (/^#[0-9a-fA-F]{3,8}$/.test(value)) {
@@ -52,14 +24,11 @@ function resolveToHex(value) {
 }
 
 export class SnaraSettings extends SnaraComponent {
-
   constructor() {
     super('settings-modal', { defaultTab: 'defaults' });
     this._editorPrefs = null;
-    this._snap = { general: null, defaults: null, editor: null, ai: null };	
+    this._snap = { general: null, defaults: null, editor: null, ai: null };
   }
-
-  // ── DOM is static in partials/settings.html ──────────────────────
 
   _ensureDOM() {
     const el = document.getElementById(this.modalId);
@@ -67,13 +36,8 @@ export class SnaraSettings extends SnaraComponent {
     if (el.dataset.defaultTab) this._activeTab = el.dataset.defaultTab;
   }
 
-  // ── Open ─────────────────────────────────────────────────────────
-  // openModal() FIRST — modal must be visible before _render()
-  // so resolveToHex() can call getComputedStyle correctly.
-
   async open() {
     await this._loadEditorPrefs();
-
     this._snap.general = {
       apiPath:    AppConfig.apiPath,
       dataPath:   AppConfig.dataPath,
@@ -89,28 +53,21 @@ export class SnaraSettings extends SnaraComponent {
       metaFields:       (AppDefaults.metaFields || []).join(', '),
     };
     this._snap.editor = this._editorPrefs ? { ...this._editorPrefs } : {};
-	
 	    this._snap.ai = await this._loadAiConfig();
-
-    // ── visible FIRST ───────────────────────────────────────────────
     const { openModal } = await import('./modal.js');
     openModal(this.modalId);
 
-    // ── render AFTER — resolveToHex() works now ─────────────────────
     this._render();
   }
-
-  // ── Render shell ─────────────────────────────────────────────────
 
   _render() {
     const body = document.getElementById('settings-body');
     if (!body) return;
-
     body.innerHTML = `
       <div class="cfg-tabs">
         <button class="cfg-tab${this._activeTab === 'defaults' ? ' active' : ''}" data-tab="defaults">Defaults</button>
         <button class="cfg-tab${this._activeTab === 'editor'   ? ' active' : ''}" data-tab="editor">Editor</button>
-        <button class="cfg-tab${this._activeTab === 'ai' ? ' active' : ''}" data-tab="ai">AI Chat</button>		
+        <button class="cfg-tab${this._activeTab === 'ai' ? ' active' : ''}" data-tab="ai">AI Chat</button>
         <button class="cfg-tab${this._activeTab === 'general'  ? ' active' : ''}" data-tab="general">General</button>
       </div>
       <div class="cfg-tab-content" id="cfg-tab-content">
@@ -127,23 +84,18 @@ export class SnaraSettings extends SnaraComponent {
     if (tab === 'general')  return this._renderGeneral();
     if (tab === 'defaults') return this._renderDefaults();
     if (tab === 'editor')   return this._renderEditor();
-    if (tab === 'ai') return this._renderAi();	
+    if (tab === 'ai') return this._renderAi();
     return '';
   }
-
-  // ── Tab switching — snapshot BEFORE switching ─────────────────────
 
   _switchTab(newTab) {
     this._snapshotTab(this._activeTab);
     this._activeTab = newTab;
-
     document.querySelectorAll('#settings-body .cfg-tab').forEach(b =>
       b.classList.toggle('active', b.dataset.tab === newTab)
     );
-
     const content = document.getElementById('cfg-tab-content');
     if (!content) return;
-    // Modal already visible — resolveToHex works immediately
     content.innerHTML = this._renderTab(newTab);
     this._bindCurrentTab();
     icx.delayreplace('#settings-body [data-icon]');
@@ -165,13 +117,11 @@ export class SnaraSettings extends SnaraComponent {
     }
   }
 
-  // ── Snapshot active tab into _snap ────────────────────────────────
-
 _snapshotTab(tab) {
   if (tab === 'general')  this._snapshotGeneral();
   if (tab === 'defaults') this._snapshotDefaults();
   if (tab === 'editor')   this._snapshotEditor();
-  if (tab === 'ai')       this._snapshotAi();       // ← add this
+  if (tab === 'ai')       this._snapshotAi();
 }
 
   _snapshotGeneral() {
@@ -180,7 +130,6 @@ _snapshotTab(tab) {
     const theme    = document.querySelector('#cfg-theme .cfg-seg.active');
     const classes  = document.getElementById('cfg-classes');
     if (!apiPath && !theme) return;
-
     const headingMap = [];
     document.querySelectorAll('.cfg-hmap-row').forEach(row => {
       const prefix = row.querySelector('.cfg-hmap-prefix')?.value ?? '';
@@ -204,7 +153,6 @@ _snapshotTab(tab) {
     const intervalEl = document.getElementById('cfg-autosaveInterval');
     const metaEl     = document.getElementById('cfg-metaFields');
     if (!actEl && !tagEl) return;
-
     this._snap.defaults = {
       act:              actEl?.value                         ?? this._snap.defaults?.act              ?? AppDefaults.act,
       defaultTag:       tagEl?.dataset.val                   ?? this._snap.defaults?.defaultTag       ?? AppDefaults.defaultTag,
@@ -217,7 +165,6 @@ _snapshotTab(tab) {
   _snapshotEditor() {
     const fontGroup = document.getElementById('cfg-entry-font');
     if (!fontGroup) return;
-
     const font = fontGroup.querySelector('.cfg-seg.active')?.dataset.val || 'var(--font-sans)';
     const tags = {};
 
@@ -235,8 +182,6 @@ _snapshotTab(tab) {
     this._editorPrefs = this._snap.editor;
   }
 
-  // ── General tab ───────────────────────────────────────────────────
-
   _renderGeneral() {
     const c = AppConfig;
     return `
@@ -251,7 +196,6 @@ _snapshotTab(tab) {
           <input class="cfg-input" id="cfg-dataPath" value="${esc(c.dataPath)}">
         </div>
       </section>
-
       <section class="cfg-section">
         <h3 class="cfg-heading">Appearance</h3>
         <div class="cfg-row">
@@ -272,7 +216,6 @@ _snapshotTab(tab) {
             value="${esc((c.classes || []).join(', '))}">
         </div>
       </section>
-
       <section class="cfg-section">
         <h3 class="cfg-heading">Heading map</h3>
         <div id="cfg-headingMap" class="cfg-hmap">
@@ -282,8 +225,6 @@ _snapshotTab(tab) {
       </section>
     `;
   }
-
-  // ── Defaults tab ──────────────────────────────────────────────────
 
   _renderDefaults() {
     const d = AppDefaults;
@@ -333,8 +274,6 @@ _snapshotTab(tab) {
     `;
   }
 
-  // ── Editor tab ────────────────────────────────────────────────────
-
   _renderEditor() {
     const p    = this._editorPrefs || {};
     const font = p.font || 'var(--font-sans)';
@@ -363,7 +302,6 @@ _snapshotTab(tab) {
           </span>
         </div>
       </section>
-
       <section class="cfg-section">
         <h3 class="cfg-heading">Entry colors
           <span class="cfg-hint">background &amp; left-border per tag</span>
@@ -373,9 +311,6 @@ _snapshotTab(tab) {
     `;
   }
 
-  // ── Tag color row ─────────────────────────────────────────────────
-  // Called while modal is already visible — resolveToHex() works.
-
   _renderTagColorRow(id) {
     const label = id.charAt(0).toUpperCase() + id.slice(1);
     const p     = this._editorPrefs || {};
@@ -383,14 +318,11 @@ _snapshotTab(tab) {
     const defaultBorder = id === 'beat' ? 'var(--tag-beat-fg)' : `var(--tag-${id}-fg)`;
     const curBg         = p[id]?.bg     || 'transparent';
     const curBorder     = p[id]?.border || defaultBorder;
-
     const bgIsNone  = curBg === 'transparent';
     const bgHex     = bgIsNone ? '#ffffff' : resolveToHex(curBg);
     const borderHex = resolveToHex(curBorder);
-
     return `
       <div class="cfg-color-row">
-
         <div class="cfg-row" style="margin-bottom:var(--s-sm)">
           <span class="cfg-label" style="display:flex;align-items:center;gap:8px;font-weight:500;color:var(--fg-main)">
             <span class="cfg-color-preview" data-tag="${id}" style="
@@ -400,7 +332,6 @@ _snapshotTab(tab) {
             ">${label}</span>
           </span>
         </div>
-
         <div class="cfg-row" style="margin-bottom:var(--s-xs)">
           <label class="cfg-label" style="font-size:10px;opacity:.7">Background</label>
           <div style="display:flex;align-items:center;gap:var(--s-sm)">
@@ -435,8 +366,6 @@ _snapshotTab(tab) {
       </div>`;
   }
 
-  // ── Heading map row ───────────────────────────────────────────────
-
   _hmapRow({ prefix = '', cls = '' } = {}, i = Date.now()) {
     return `
       <div class="cfg-hmap-row">
@@ -446,8 +375,6 @@ _snapshotTab(tab) {
         <button class="cfg-hmap-remove" title="Remove rule"><i data-icon="x"></i></button>
       </div>`;
   }
-
-  // ── Bind color pickers ────────────────────────────────────────────
 
   _bindColorPickers() {
     document.querySelectorAll('#settings-body .cfg-color-input').forEach(input => {
@@ -490,8 +417,6 @@ _snapshotTab(tab) {
     if (bdPicker) strip.style.borderLeftColor = bdPicker.value;
   }
 
-  // ── Bind segmented buttons ────────────────────────────────────────
-
   _bindSegmented() {
     document.querySelectorAll('#settings-body .cfg-segmented').forEach(group => {
       group.addEventListener('click', e => {
@@ -508,16 +433,12 @@ _snapshotTab(tab) {
     });
   }
 
-  // ── Bind toggle (autosave) ────────────────────────────────────────
-
   _bindToggle() {
     document.getElementById('cfg-autosave')?.addEventListener('click', function () {
       this.classList.toggle('on');
       this.setAttribute('aria-pressed', this.classList.contains('on'));
     });
   }
-
-  // ── Bind heading map add / remove ─────────────────────────────────
 
   _bindHmapAdd() {
     document.getElementById('cfg-hmap-add')?.addEventListener('click', () => {
@@ -538,21 +459,17 @@ _snapshotTab(tab) {
     });
   }
 
-  // ── Save ─────────────────────────────────────────────────────────
-
   async save() {
     this._snapshotTab(this._activeTab);
-
     const btn = document.getElementById('cfg-save-btn');
     btn.disabled    = true;
     btn.textContent = 'saving…';
-
     try {
       await Promise.all([
         this._saveGeneral(),
         this._saveDefaults(),
         this._saveEditor(),
-        this._saveAi(),		
+        this._saveAi(),
       ]);
       btn.textContent = 'saved ✓';
     } catch (e) {
@@ -619,13 +536,6 @@ _snapshotTab(tab) {
     });
   }
 
-// ── AI Chat tab ──────────────────────────────────────────────
- 
-  /**
-   * Fetch current AI config from the backend.
-   * Returns { url, model, key_set } — key itself is never sent.
-   * Falls back to safe defaults when the endpoint is unavailable.
-   */
   async _loadAiConfig() {
     try {
       const res = await fetch(AppConfig.apiPath + '?action=ai.get');
@@ -635,82 +545,61 @@ _snapshotTab(tab) {
       return { url: '', model: '', key_set: false };
     }
   }
-  
-    /**
-   * Render the AI Chat settings tab.
-   * Follows the exact same cfg-section / cfg-row / cfg-label / cfg-hint
-   * pattern used by _renderGeneral() and _renderDefaults().
-   */
- 
+
  _renderAi() {
     const ai = this._snap.ai ?? {};
     const keyLabel = ai.key_set
       ? '<span class="cfg-ai-key-ok">configured ✓</span>'
       : '<span class="cfg-ai-key-missing">not set</span>';
- 
+
     return `
       <section class="cfg-section">
         <h3 class="cfg-heading">AI Backend
           <span class="cfg-hint">set your key in <code>json/conf/ai.json</code> — never sent to the browser</span>
         </h3>
- 
+
         <div class="cfg-row">
           <label class="cfg-label" for="cfg-ai-url">Endpoint URL</label>
           <input class="cfg-input cfg-input-full" id="cfg-ai-url"
-            placeholder="https://api.groq.com/openai/v1/chat/completions"
+            placeholder="https:
             value="${esc(ai.url ?? '')}">
         </div>
- 
         <div class="cfg-row">
           <label class="cfg-label" for="cfg-ai-model">Model</label>
           <input class="cfg-input" id="cfg-ai-model"
             placeholder="llama-3.3-70b-versatile"
             value="${esc(ai.model ?? '')}">
         </div>
- 
+
         <div class="cfg-row">
           <label class="cfg-label">API Key</label>
           <span class="cfg-input cfg-input--readonly">${keyLabel}</span>
         </div>
       </section>
- 
-
     `;
   }
- 
-  /**
-   * Snapshot the AI tab DOM into _snap.ai.
-   * Called by _snapshotTab() when the active tab is 'ai'.
-   */
+
   _snapshotAi() {
     const urlEl   = document.getElementById('cfg-ai-url');
     const modelEl = document.getElementById('cfg-ai-model');
-    if (!urlEl && !modelEl) return;          // tab not rendered yet
- 
+    if (!urlEl && !modelEl) return;
     this._snap.ai = {
-      ...this._snap.ai,                      // preserve key_set from load
+      ...this._snap.ai,
       url:   urlEl?.value.trim()   ?? this._snap.ai?.url   ?? '',
       model: modelEl?.value.trim() ?? this._snap.ai?.model ?? '',
     };
   }
- 
-  /**
-   * Persist url + model to the backend via ai.set.
-   * Skipped silently when the snap is empty (tab was never opened).
-   */
+
   async _saveAi() {
     this._snapshotAi();
     const s = this._snap.ai;
-    if (!s || (!s.url && !s.model)) return;  // nothing to save
- 
+    if (!s || (!s.url && !s.model)) return;
     await fetch(AppConfig.apiPath + '?action=ai.set', {
       method:  'POST',
       headers: { 'Content-Type': 'application/json' },
       body:    JSON.stringify({ url: s.url, model: s.model }),
     });
   }
- 
-  // ── Load editor prefs from server ─────────────────────────────────
 
   async _loadEditorPrefs() {
     const bookId = AppConfig.activeBookId;
@@ -724,42 +613,21 @@ _snapshotTab(tab) {
     }
   }
 
-  // ── Static: apply saved custom properties to :root ───────────────
-  // vars.css already defines the defaults:
-  //   --entry-act-bg:         transparent
-  //   --entry-act-border:     var(--tag-act-bd)
-  //   --entry-chapter-border: var(--tag-chapter-fg)
-  //   --entry-scene-border:   var(--tag-scene-fg)
-  //
-  // So we only set a property when the user has saved a custom value.
-  // transparent bg is skipped — CSS default is already transparent.
-
   static applyEditorPrefs(prefs) {
     if (!prefs) return;
     const r = document.documentElement;
-
     if (prefs.font) r.style.setProperty('--entry-font', prefs.font);
-
-
     for (const tag of ['act', 'chapter', 'scene', 'beat']) {
       const t = prefs[tag];
-	  
-	  
       if (!t) continue;
-      // Only override bg if it's a real color (not transparent — CSS handles that)
-
       if (t.bg && t.bg !== 'transparent') {
         r.style.setProperty(`--entry-${tag}-bg`, t.bg);
       } else {
-        // Remove any previous override — let vars.css default (transparent) apply
         r.style.removeProperty(`--entry-${tag}-bg`);
       }
-      // Always set border — user may have changed it from the CSS default
 
       if (t.border) {
-
 		  console.log(t.border);
-		  
 			t.border = `var(--tag-${tag}-bd)`
         r.style.setProperty(`--entry-${tag}-border`, t.border);
       } else {

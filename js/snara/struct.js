@@ -1,51 +1,18 @@
-/* ─────────────────────────────────────────────────
-   struct.js — SnaraStruct
-   Novel hierarchy classifier + multi-entry splitter.
-
-   Hierarchy (largest → smallest):
-     act     → # Heading 1
-     chapter → ## Heading 2
-     scene   → ### Heading 3
-     beat    → #### Heading 4  |  default (no heading)
-
-   Both CLASSES and HEADING_MAP are configurable via
-   SnaraStruct.configure() — called at boot time with
-   values loaded from config.json.
-─────────────────────────────────────────────────── */
 
 export class SnaraStruct {
-
-  // ── Defaults (overridden by configure()) ──────
-
   static CLASSES = ['act', 'chapter', 'scene', 'beat'];
-
   static HEADING_MAP = [
     { prefix: '#### ', cls: 'beat'    },
     { prefix: '### ',  cls: 'scene'   },
     { prefix: '## ',   cls: 'chapter' },
     { prefix: '# ',    cls: 'act'     },
   ];
-
-  // ── Runtime configuration ─────────────────────
-
-  /**
-   * Apply settings from config.json.
-   *
-   * config.classes    — array of class names, largest→smallest
-   *                     e.g. ["act","chapter","scene","beat"]
-   *
-   * config.headingMap — array of { prefix, cls } objects
-   *                     e.g. [{ prefix:"#### ", cls:"beat" }, ...]
-   *
-   * Either or both keys may be absent; missing keys keep defaults.
-   */
   static configure(config = {}) {
     if (Array.isArray(config.classes) && config.classes.length > 0) {
       SnaraStruct.CLASSES = config.classes;
     }
 
     if (Array.isArray(config.headingMap) && config.headingMap.length > 0) {
-      // Validate each entry has prefix + cls strings
       const valid = config.headingMap.filter(
         e => typeof e.prefix === 'string' && typeof e.cls === 'string'
       );
@@ -53,14 +20,12 @@ export class SnaraStruct {
     }
   }
 
-  // ── Detection ─────────────────────────────────
-
   static detect(md) {
     const firstLine = md.trimStart().split('\n')[0];
     for (const { prefix, cls } of SnaraStruct.HEADING_MAP) {
       if (firstLine.startsWith(prefix)) return cls;
     }
-    // Default to the last (smallest) class
+
     return SnaraStruct.CLASSES[SnaraStruct.CLASSES.length - 1] ?? 'beat';
   }
 
@@ -69,15 +34,11 @@ export class SnaraStruct {
     return SnaraStruct.detect(md);
   }
 
-  // ── Splitting ─────────────────────────────────
-
   static split(md, activeTag = null) {
     const lines = md.split('\n');
-
-    // Build a regex from current HEADING_MAP prefixes
     const hashes = SnaraStruct.HEADING_MAP
-      .map(e => e.prefix.trimEnd())          // e.g. '####', '###', …
-      .sort((a, b) => b.length - a.length)   // longest first to avoid partial match
+      .map(e => e.prefix.trimEnd())
+      .sort((a, b) => b.length - a.length)
       .map(h => h.replace(/#/g, '#'))
       .join('|');
     const headingRe = new RegExp(`^(${hashes}) `);

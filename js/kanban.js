@@ -1,24 +1,24 @@
 /* ─────────────────────────────────────────────────
    js/snara/kanban.js — SnaraKanban
+   Branch: main  |  Repo: tacoen/snara
+   Base: [Unreleased post-0.2.0] · 2026-04-05
 
-   A fully encapsulated Kanban board component.
+   New in this revision:
+   ─ Drafting column   → "Add Reference" panel
+     Parses leading # prefix to set card.tag:
+       #    → act
+       ##   → chapter
+       ###  → scene
+       ####  → beat
+   ─ Review column     → "Add Revision" panel
+     Revision note stored as card.revision (single string)
+   ─ Done (Polished) column → "DONE" button
+     Immediately deletes the card (same as card.delete)
 
-   Usage:
+   Usage / Public API unchanged:
      import { SnaraKanban } from './snara/kanban.js';
      const kanban = new SnaraKanban('#kanban-root', AppConfig.apiPath);
      await kanban.load(bookId);
-
-   Multiple instances (different books, different roots):
-     new SnaraKanban('#kanban-1', '/api.php');
-     new SnaraKanban('#kanban-2', '/api.php');
-
-   API endpoints consumed:
-     GET  ?action=kanban.get&bookId=$n   → [column, …]
-     POST ?action=kanban.set&bookId=$n   ← [column, …]
-
-   Public API:
-     load(bookId)    → Promise<void>   Fetch + render board
-     destroy()       → void            Remove all listeners, null refs
 ─────────────────────────────────────────────────── */
 
 const TAG = '[SnaraKanban]';
@@ -31,6 +31,14 @@ const DEFAULT_COLUMNS = [
   { id: 'review',    title: 'Review/Edit',      cards: [] },
   { id: 'done',      title: 'Polished',         cards: [] },
 ];
+
+// Reference tag map: leading # count → card.tag value
+const REF_TAG_MAP = {
+  4: 'beat',
+  3: 'scene',
+  2: 'chapter',
+  1: 'act',
+};
 
 export class SnaraKanban {
 
@@ -74,11 +82,11 @@ export class SnaraKanban {
     this._dragSrcCol = null;
 
     // Bound listener references (required for correct removeEventListener)
-    this._onAddBtn    = this._handleAddBtn.bind(this);
-    this._onQuickSave = this._handleQuickSave.bind(this);
+    this._onAddBtn      = this._handleAddBtn.bind(this);
+    this._onQuickSave   = this._handleQuickSave.bind(this);
     this._onQuickCancel = this._handleQuickCancel.bind(this);
-    this._onQuickKey  = this._handleQuickKey.bind(this);
-    this._onDelegate  = this._handleDelegate.bind(this);
+    this._onQuickKey    = this._handleQuickKey.bind(this);
+    this._onDelegate    = this._handleDelegate.bind(this);
 
     this._bindStatic();
     SnaraKanban.instance = this;
@@ -95,8 +103,8 @@ export class SnaraKanban {
    */
   _parseSettings(el) {
     return {
-      bookid: el.dataset.bookid  || null,
-      api:    el.dataset.api     || null,
+      bookid: el.dataset.bookid || null,
+      api:    el.dataset.api    || null,
     };
   }
 
@@ -108,7 +116,7 @@ export class SnaraKanban {
     const quickCancel = this._q('#kanban-quick-cancel');
     const quickInput  = this._q('#kanban-quick-input');
 
-    addBtn?.addEventListener('click',   this._onAddBtn);
+    addBtn?.addEventListener('click',    this._onAddBtn);
     quickSave?.addEventListener('click', this._onQuickSave);
     quickCancel?.addEventListener('click', this._onQuickCancel);
     quickInput?.addEventListener('keydown', this._onQuickKey);
@@ -215,7 +223,7 @@ export class SnaraKanban {
    */
   _buildColumn(col) {
     const colEl = document.createElement('div');
-    colEl.className  = 'kanban__column';
+    colEl.className     = 'kanban__column';
     colEl.dataset.colId = col.id;
     colEl.setAttribute('role', 'listitem');
 
@@ -230,7 +238,7 @@ export class SnaraKanban {
 
     // Cards container
     const cardsEl = document.createElement('div');
-    cardsEl.className = 'kanban__cards';
+    cardsEl.className   = 'kanban__cards';
     cardsEl.dataset.colId = col.id;
 
     if (col.cards.length === 0) {
@@ -250,7 +258,6 @@ export class SnaraKanban {
     });
 
     cardsEl.addEventListener('dragleave', e => {
-      // Only fire if we're leaving the container entirely
       if (!cardsEl.contains(e.relatedTarget)) {
         colEl.classList.remove('kanban__column--drag-over');
       }
@@ -267,99 +274,181 @@ export class SnaraKanban {
   }
 
   /**
-   * @param {{ id:string, title:string }} card
+   * Build a card element.
+   * Column-specific panels are injected based on colId:
+   *   drafting → Reference panel  (sets card.tag via # prefix)
+   *   review   → Revision note    (card.revision, like card.desc)
+   *   done     → DONE button      (deletes card)
+   *
+   * @param {{ id:string, title:string, desc?:string, tag?:string, revisions?:string[] }} card
    * @param {string} colId
    * @returns {Element}
    */
-_buildCard(card, colId) {
-  const el = document.createElement('div');
-  const elh = document.createElement('header');
+  _buildCard(card, colId) {
+    const el  = document.createElement('div');
+    const elh = document.createElement('header');
 
-  el.className      = 'kanban__card';
-  el.draggable      = true;
-  el.dataset.cardId = card.id;
-  el.dataset.colId  = colId;
+    el.className      = 'kanban__card';
+    el.draggable      = true;
+    el.dataset.cardId = card.id;
+    el.dataset.colId  = colId;
 
-  // ── Drag handle
-  const handle = document.createElement('span');
-  handle.className    = 'kanban__card-drag';
-  handle.textContent  = '⠿';
-  handle.setAttribute('aria-hidden', 'true');
-  // Prevent drag handle from triggering contenteditable
-  handle.contentEditable = 'false';
-  
-  elh.appendChild(handle);
+    // Reflect tag onto element attribute so CSS can key off it
+    if (card.tag) el.dataset.tag = card.tag;
 
-  // ── Title (all columns)
-  const titleEl = document.createElement('span');
-  titleEl.className       = 'kanban__card-title';
-  titleEl.contentEditable = 'true';
-  titleEl.textContent     = card.title ?? '';
-  titleEl.setAttribute('aria-label', 'Scene title');
-  titleEl.addEventListener('blur', () => {
-    card.title = titleEl.textContent.trim().slice(0, 120);
-    this._save();
-  });
-  // Prevent drag firing while typing
-  titleEl.addEventListener('mousedown', e => e.stopPropagation());
+    // ── Drag handle
+    const handle = document.createElement('span');
+    handle.className       = 'kanban__card-drag';
+    handle.textContent     = '⠿';
+    handle.setAttribute('aria-hidden', 'true');
+    handle.contentEditable = 'false';
+    elh.appendChild(handle);
 
-  elh.appendChild(titleEl);
-  el.appendChild(elh);
-
-  // ── Desc (Research/Outline and beyond)
-  const COLS_WITH_DESC = ['research', 'drafting', 'review', 'done'];
-  if (COLS_WITH_DESC.includes(colId)) {
-    const descEl = document.createElement('span');
-    descEl.className       = 'kanban__card-desc';
-    descEl.contentEditable = 'true';
-    descEl.textContent     = card.desc ?? '';
-    descEl.setAttribute('aria-label', 'Scene description');
-    descEl.setAttribute('data-placeholder', 'Add a note…');
-    descEl.addEventListener('blur', () => {
-      card.desc = descEl.textContent.trim();
+    // ── Title (all columns)
+    const titleEl = document.createElement('span');
+    titleEl.className       = 'kanban__card-title';
+    titleEl.contentEditable = 'true';
+    titleEl.textContent     = card.title ?? '';
+    titleEl.setAttribute('aria-label', 'Scene title');
+    titleEl.addEventListener('blur', () => {
+      card.title = titleEl.textContent.trim().slice(0, 120);
       this._save();
     });
-    descEl.addEventListener('mousedown', e => e.stopPropagation());
-    el.appendChild(descEl);
+    titleEl.addEventListener('mousedown', e => e.stopPropagation());
+    elh.appendChild(titleEl);
+
+    el.appendChild(elh);
+
+    // ── Desc (Research/Outline and beyond)
+    const COLS_WITH_DESC = ['research', 'drafting', 'review', 'done'];
+    if (COLS_WITH_DESC.includes(colId)) {
+      const descEl = document.createElement('span');
+      descEl.className       = 'kanban__card-desc';
+      descEl.contentEditable = 'true';
+      descEl.textContent     = card.desc ?? '';
+      descEl.setAttribute('aria-label', 'Scene description');
+      descEl.setAttribute('data-placeholder', 'Add a note…');
+      descEl.addEventListener('blur', () => {
+        card.desc = descEl.textContent.trim();
+        this._save();
+      });
+      descEl.addEventListener('mousedown', e => e.stopPropagation());
+      el.appendChild(descEl);
+    }
+
+    // ── Column-specific panels ─────────────────────────────────
+
+    if (colId === 'drafting') {
+      const refEl = document.createElement('span');
+      refEl.className       = 'kanban__card-ref';
+      refEl.contentEditable = 'true';
+      refEl.textContent     = card.ref ?? '';
+      refEl.setAttribute('aria-label', 'Reference');
+      refEl.setAttribute('data-placeholder', 'Add leading #');
+      refEl.addEventListener('blur', () => {
+        const raw = refEl.textContent.trim().slice(0, 160);
+        card.ref = raw;
+        // Parse leading # count → set card.tag
+        const match = raw.match(/^(#{1,4})\s*/);
+        if (match) {
+          card.tag = REF_TAG_MAP[Math.min(match[1].length, 4)];
+          el.dataset.tag = card.tag;
+        } else {
+          card.tag = '';
+          delete el.dataset.tag;
+        }
+        this._save();
+      });
+      refEl.addEventListener('mousedown', e => e.stopPropagation());
+      el.appendChild(refEl);
+    }
+
+    if (colId === 'review') {
+      const revEl = document.createElement('span');
+      revEl.className       = 'kanban__card-rev';
+      revEl.contentEditable = 'true';
+      revEl.textContent     = card.revision ?? '';
+      revEl.setAttribute('aria-label', 'Revision note');
+      revEl.setAttribute('data-placeholder', 'Add a revision…');
+      revEl.addEventListener('blur', () => {
+        card.revision = revEl.textContent.trim();
+        this._save();
+      });
+      revEl.addEventListener('mousedown', e => e.stopPropagation());
+      el.appendChild(revEl);
+    }
+
+    if (colId === 'done') {
+      el.appendChild(this._buildDoneButton(card, colId));
+    }
+
+    // ── Context menu button
+    const menuBtn = document.createElement('button');
+    menuBtn.className = 'kanban__card-menu-btn';
+    menuBtn.setAttribute('aria-label', 'Card options');
+    menuBtn.dataset.cardId = card.id;
+    menuBtn.dataset.colId  = colId;
+    menuBtn.textContent    = '⋯';
+    el.appendChild(menuBtn);
+
+    // ── Context menu
+    const menu = document.createElement('div');
+    menu.className = 'kanban__card-menu kanban__card-menu--hidden';
+    menu.dataset.menuFor = card.id;
+    menu.innerHTML = `
+      <button class="kanban__menu-item kanban__menu-item--danger"
+        data-action="card.delete"
+        data-card-id="${this._escape(card.id)}"
+        data-col-id="${this._escape(colId)}"
+      >Delete</button>
+    `;
+    el.appendChild(menu);
+
+    // ── Drag events
+    el.addEventListener('dragstart', () => {
+      this._dragCard   = el;
+      this._dragSrcCol = colId;
+      requestAnimationFrame(() => el.classList.add('kanban__card--dragging'));
+    });
+    el.addEventListener('dragend', () => {
+      el.classList.remove('kanban__card--dragging');
+      this._removeGhosts();
+      this._dragCard   = null;
+      this._dragSrcCol = null;
+    });
+
+    return el;
   }
 
-  // ── Context menu button
-  const menuBtn = document.createElement('button');
-  menuBtn.className = 'kanban__card-menu-btn';
-  menuBtn.setAttribute('aria-label', 'Card options');
-  menuBtn.dataset.cardId = card.id;
-  menuBtn.dataset.colId  = colId;
-  menuBtn.textContent    = '⋯';
-  el.appendChild(menuBtn);
+  // ── Column-specific panel builders ────────────────────────────
 
-  // ── Context menu
-  const menu = document.createElement('div');
-  menu.className = 'kanban__card-menu kanban__card-menu--hidden';
-  menu.dataset.menuFor = card.id;
-  menu.innerHTML = `
-    <button class="kanban__menu-item kanban__menu-item--danger"
-      data-action="card.delete"
-      data-card-id="${this._escape(card.id)}"
-      data-col-id="${this._escape(colId)}"
-    >Delete</button>
-  `;
-  el.appendChild(menu);
 
-  // ── Drag events
-  el.addEventListener('dragstart', () => {
-    this._dragCard   = el;
-    this._dragSrcCol = colId;
-    requestAnimationFrame(() => el.classList.add('kanban__card--dragging'));
-  });
-  el.addEventListener('dragend', () => {
-    el.classList.remove('kanban__card--dragging');
-    this._removeGhosts();
-    this._dragCard   = null;
-    this._dragSrcCol = null;
-  });
 
-  return el;
-}
+  /**
+   * DONE button for the Polished column.
+   * On click: calls _deleteCard() — removes card from data model, re-renders, saves.
+   *
+   * @param {{ id:string }} card
+   * @param {string} colId
+   * @returns {Element}
+   */
+  _buildDoneButton(card, colId) {
+    const btn = document.createElement('button');
+    btn.className = 'kanban__done-btn';
+    btn.dataset.action = 'card.done';
+    btn.dataset.cardId = card.id;
+    btn.dataset.colId  = colId;
+    btn.setAttribute('aria-label', 'Mark as done and remove card');
+    btn.textContent = '✓ DONE';
+
+    // mousedown stop-propagation prevents accidental drag trigger
+    btn.addEventListener('mousedown', e => e.stopPropagation());
+    // click is handled via delegation in _handleDelegate for consistency,
+    // but we also bind directly here so destroy() doesn't need special cleanup
+    // (the element is discarded on next _render()).
+
+    return btn;
+  }
 
   _buildEmpty() {
     const el = document.createElement('div');
@@ -375,7 +464,6 @@ _buildCard(card, colId) {
 
   /**
    * Insert a ghost placeholder at the correct drop position.
-   * Avoids appending behind itself if already in this column.
    * @param {DragEvent} e
    * @param {Element}   cardsEl
    */
@@ -395,7 +483,6 @@ _buildCard(card, colId) {
       }
     }
 
-    // Get or create ghost
     let ghost = cardsEl.querySelector('.kanban__card--ghost');
     if (!ghost) {
       ghost = document.createElement('div');
@@ -416,38 +503,30 @@ _buildCard(card, colId) {
 
   /**
    * Commit the drop: move card in data model + re-render + save.
-   * @param {Element} targetCardsEl  The .kanban__cards container dropped onto
+   * @param {Element} targetCardsEl
    * @param {string}  targetColId
    */
   _commitDrop(targetCardsEl, targetColId) {
     if (!this._dragCard) return;
 
-    const cardId    = this._dragCard.dataset.cardId;
-    const srcColId  = this._dragSrcCol;
-    const ghost     = targetCardsEl.querySelector('.kanban__card--ghost');
+    const cardId   = this._dragCard.dataset.cardId;
+    const srcColId = this._dragSrcCol;
+    const ghost    = targetCardsEl.querySelector('.kanban__card--ghost');
 
-    // Determine insertion index from ghost position
     const allCards  = [...targetCardsEl.querySelectorAll(
       '.kanban__card:not(.kanban__card--ghost):not(.kanban__card--dragging)'
     )];
-    const insertIdx = ghost
-      ? allCards.indexOf(ghost)    // indexOf returns -1 if not found
-      : allCards.length;
+    const insertIdx = ghost ? allCards.indexOf(ghost) : allCards.length;
 
-    // Mutate data model
-    const srcCol    = this._columns.find(c => c.id === srcColId);
-    const tgtCol    = this._columns.find(c => c.id === targetColId);
+    const srcCol = this._columns.find(c => c.id === srcColId);
+    const tgtCol = this._columns.find(c => c.id === targetColId);
     if (!srcCol || !tgtCol) return;
 
-    const cardIdx   = srcCol.cards.findIndex(c => c.id === cardId);
+    const cardIdx = srcCol.cards.findIndex(c => c.id === cardId);
     if (cardIdx === -1) return;
 
-    const [card]    = srcCol.cards.splice(cardIdx, 1);
-
-    // If same column + ghost would come after card's original position,
-    // the splice already shifted indices — no correction needed because
-    // we rebuilt the list without the card first.
-    const safeIdx   = Math.max(0, insertIdx === -1 ? tgtCol.cards.length : insertIdx);
+    const [card] = srcCol.cards.splice(cardIdx, 1);
+    const safeIdx = Math.max(0, insertIdx === -1 ? tgtCol.cards.length : insertIdx);
     tgtCol.cards.splice(safeIdx, 0, card);
 
     this._render();
@@ -458,14 +537,26 @@ _buildCard(card, colId) {
 
   /**
    * Single delegated click handler for the entire board.
+   * Handles:
+   *   - card context menu toggle / menu item actions
+   *   - card.done   (DONE button in Polished column)
    * @param {MouseEvent} e
    */
   _handleDelegate(e) {
-    const menuBtn    = e.target.closest('.kanban__card-menu-btn');
-    const menuItem   = e.target.closest('.kanban__menu-item');
-    const card       = e.target.closest('.kanban__card');
+    const menuBtn  = e.target.closest('.kanban__card-menu-btn');
+    const menuItem = e.target.closest('.kanban__menu-item');
+    const doneBtn  = e.target.closest('.kanban__done-btn');
 
-    // Toggle card context menu
+    // ── DONE button (Polished column)
+    if (doneBtn) {
+      e.stopPropagation();
+      const cardId = doneBtn.dataset.cardId;
+      const colId  = doneBtn.dataset.colId;
+      if (cardId && colId) this._deleteCard(cardId, colId);
+      return;
+    }
+
+    // ── Toggle card context menu
     if (menuBtn) {
       e.stopPropagation();
       const cardId = menuBtn.dataset.cardId;
@@ -473,11 +564,11 @@ _buildCard(card, colId) {
       return;
     }
 
-    // Menu item action
+    // ── Menu item action
     if (menuItem) {
-      const action  = menuItem.dataset.action;
-      const cardId  = menuItem.dataset.cardId;
-      const colId   = menuItem.dataset.colId;
+      const action = menuItem.dataset.action;
+      const cardId = menuItem.dataset.cardId;
+      const colId  = menuItem.dataset.colId;
 
       if (action === 'card.delete') {
         this._deleteCard(cardId, colId);
@@ -486,7 +577,7 @@ _buildCard(card, colId) {
       return;
     }
 
-    // Click anywhere else → close menus
+    // ── Click anywhere else → close menus
     if (!e.target.closest('.kanban__card-menu')) {
       this._closeAllMenus();
     }
@@ -559,8 +650,10 @@ _buildCard(card, colId) {
     if (!this._columns.length) return;
 
     const card = {
-      id:    'c' + Date.now() + '_' + Math.random().toString(36).slice(2, 7),
-      title: title.slice(0, 120),
+      id:         'c' + Date.now() + '_' + Math.random().toString(36).slice(2, 7),
+      title:      title.slice(0, 120),
+      references: [],
+      revisions:  [],
     };
 
     this._columns[0].cards.push(card);
@@ -570,6 +663,7 @@ _buildCard(card, colId) {
 
   /**
    * Delete a card by id from its column.
+   * Used by context-menu delete AND the Polished DONE button.
    * @param {string} cardId
    * @param {string} colId
    */
@@ -586,8 +680,6 @@ _buildCard(card, colId) {
 
   /**
    * POST current board state to api.php?action=kanban.set
-   * Reads DOM order to capture drag-reorder before calling.
-   * (Order is already canonical in this._columns after _commitDrop.)
    */
   async _save() {
     if (!this._bookId) {
@@ -624,7 +716,6 @@ _buildCard(card, colId) {
 
   /**
    * Scoped querySelector — only searches within this component's root.
-   * Prevents collisions with other instances on the same page.
    * @param {string} selector
    * @returns {Element|null}
    */
@@ -633,7 +724,7 @@ _buildCard(card, colId) {
   }
 
   /**
-   * HTML-escape a string to prevent XSS when injecting into innerHTML.
+   * HTML-escape a string to prevent XSS.
    * @param {string} str
    * @returns {string}
    */

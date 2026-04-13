@@ -1,29 +1,19 @@
-/* ─────────────────────────────────────────────────
-   js/snara/gallery.js — SnaraGallery
-   4-column masonry-style grid for images & videos.
-   Features: upload, rename (with autocomplete from
-   meta), delete (same confirm-bar pattern as import).
-─────────────────────────────────────────────────── */
+
 import { AppConfig } from '../snara.js';
 import icx           from '../icons/ge-icon.js';
 import { esc } from '../helpers.js';
 
 export class SnaraGallery {
-
   static instance = null;
-
   constructor() {
     SnaraGallery.instance = this;
-    this._terms = [];   // autocomplete terms
+    this._terms = [];
   }
-
-  // ── Public: load gallery for active book ─────
 
   async load() {
     const bookId = AppConfig.activeBookId;
     const grid   = document.getElementById('gallery-grid');
     if (!grid) return;
-
     if (!bookId) {
       grid.innerHTML = '<p class="flist-empty">No active book.</p>';
       return;
@@ -31,7 +21,6 @@ export class SnaraGallery {
 
     grid.innerHTML = '<p class="flist-empty" style="opacity:.5">Loading…</p>';
 
-    // Prefetch autocomplete terms in background
     this._fetchTerms(bookId);
 
     try {
@@ -46,16 +35,12 @@ export class SnaraGallery {
       grid.innerHTML = '';
       files.forEach(f => grid.appendChild(this._makeCard(f, bookId)));
 
-      // Replace icons after all cards are in the DOM
       icx.delayreplace('#gallery-grid [data-icon]');
 
     } catch (e) {
       grid.innerHTML = `<p class="flist-empty" style="color:var(--danger)">Error: ${esc(e.message)}</p>`;
     }
   }
-
-  // ── Card ──────────────────────────────────────
-  // NOTE: does NOT call icx.delayreplace — caller does it after DOM insertion
 
   _makeCard(f, bookId) {
     const isVideo = f.mime.startsWith('video/');
@@ -65,7 +50,6 @@ export class SnaraGallery {
     card.className        = 'gallery-card';
     card.dataset.filename = f.filename;
 
-    // Media element
     if (isVideo) {
       const vid = document.createElement('video');
       vid.src     = url;
@@ -83,7 +67,6 @@ export class SnaraGallery {
       card.appendChild(img);
     }
 
-    // Overlay bar with filename + tools
     const bar = document.createElement('div');
     bar.className = 'gallery-bar';
     bar.innerHTML = `
@@ -93,8 +76,6 @@ export class SnaraGallery {
         <button class="gtool" data-action="delete" title="Delete"><i data-icon="trash"></i></button>
       </div>`;
     card.appendChild(bar);
-
-    // Bind tool buttons
     bar.querySelector('[data-action="rename"]').addEventListener('click', e => {
       e.stopPropagation();
       this._openRename(card, f.filename, bookId);
@@ -108,14 +89,10 @@ export class SnaraGallery {
     return card;
   }
 
-  // ── Rename ────────────────────────────────────
-
   _openRename(card, filename, bookId) {
     card.querySelector('.gallery-rename-box')?.remove();
-
     const ext      = filename.split('.').pop();
     const basename = filename.slice(0, -(ext.length + 1));
-
     const box = document.createElement('div');
     box.className = 'gallery-rename-box';
     box.innerHTML = `
@@ -128,7 +105,6 @@ export class SnaraGallery {
       </div>`;
     card.appendChild(box);
 
-    // Icons in rename box (none currently, but safe to call)
     icx.delayreplace('#gallery-grid [data-icon]');
 
     const input    = box.querySelector('input');
@@ -158,12 +134,10 @@ export class SnaraGallery {
         });
         const json = await res.json();
         if (!res.ok || json.error) throw new Error(json.error || `HTTP ${res.status}`);
-
         const newFilename = json.filename;
         card.dataset.filename = newFilename;
         card.querySelector('.gallery-name').textContent = newFilename;
         card.querySelector('.gallery-name').title       = newFilename;
-
         const newUrl = `${AppConfig.dataPath}/${bookId}/image/${encodeURIComponent(newFilename)}`;
         const media  = card.querySelector('img, video');
         if (media) media.src = newUrl;
@@ -190,7 +164,6 @@ export class SnaraGallery {
     const matches = q
       ? this._terms.filter(t => t.toLowerCase().includes(q)).slice(0, 20)
       : this._terms.slice(0, 20);
-
     datalist.innerHTML = matches
       .map(t => `<option value="${esc(t)}">`)
       .join('');
@@ -206,12 +179,9 @@ export class SnaraGallery {
     }
   }
 
-  // ── Delete (same confirm-bar pattern as import) ─
-
   _confirmDelete(card, filename, bookId) {
     if (!card.classList.contains('gallery-deleting')) {
       card.classList.add('gallery-deleting');
-
       const bar = document.createElement('div');
       bar.className = 'del-confirm';
       bar.innerHTML = `
@@ -246,8 +216,6 @@ export class SnaraGallery {
     }
   }
 
-  // ── Upload files ──────────────────────────────
-
   async uploadFiles(files) {
     const bookId = AppConfig.activeBookId;
     if (!bookId) { alert('No active book — open a book first.'); return; }
@@ -276,11 +244,8 @@ export class SnaraGallery {
         if (grid) {
           const empty = grid.querySelector('.flist-empty');
           if (empty) empty.remove();
-
           const card = this._makeCard(json.file, bookId);
           grid.prepend(card);
-
-          // Replace icons after card is in the DOM
           icx.delayreplace('#gallery-grid [data-icon]');
         }
 
@@ -289,7 +254,6 @@ export class SnaraGallery {
       }
     }
 
-    // Bust autocomplete cache so new filenames appear
     this._fetchTerms(bookId);
   }
 }
