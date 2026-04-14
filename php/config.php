@@ -169,23 +169,17 @@ class Config {
 
   // ── Private helpers ───────────────────────────
 
-  private static function _initBookDefault(int $bookId): void {
-    $src = self::globalDefaultFile();
-    $dst = self::bookDefaultFile($bookId);
-    $dir = dirname($dst);
+private static function _initBookDefault(int $bookId): void {
+  $dst = self::bookDefaultFile($bookId);
+  $dir = dirname($dst);
 
-    if (!is_dir($dir)) mkdir($dir, 0755, true);
+  if (!is_dir($dir)) mkdir($dir, 0755, true);
 
-    if (file_exists($src)) {
-      copy($src, $dst);
-    } else {
-      file_put_contents($dst, json_encode(
-        ['defaults' => self::defaultsDefaults()],
-        JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE
-      ));
-    }
-  }
-
+  file_put_contents($dst, json_encode(
+    ['defaults' => self::defaultsDefaults()],
+    JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE
+  ));
+}
   // ── Book directory scaffolding ───────────────────
   // Creates all required subdirs under data/$bookId/
   // Safe to call multiple times (is_dir checks prevent re-creation).

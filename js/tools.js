@@ -25,7 +25,7 @@ export class SnaraTools {
       li.className = `toc-item toc-${level}`;
 
       const a = document.createElement('a');
-      a.href        = `#${anchor}`;
+      a.href        = `#${anchor}`+ "_" + Date.now();
       a.textContent = text;
       a.addEventListener('click', e => {
         e.preventDefault();

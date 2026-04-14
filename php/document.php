@@ -72,11 +72,14 @@ class Document {
     }
 
     // Rebuild act.json for this book
-    if ($bookId) {
-      self::rebuildActIndex($bookId);
-      Cache::clearChapters($bookId);   // ← ADD THIS LINE
-    }
+
  
+ if ($bookId) {
+  self::rebuildActIndex($bookId);
+  Cache::clearChapters($bookId);
+  self::rebuildStoryCache($bookId, 'characters');
+  self::rebuildStoryCache($bookId, 'settings');
+}
  
   }
 
@@ -85,12 +88,52 @@ class Document {
     if (file_exists($path)) unlink($path);
 
     // Rebuild act.json after deletion
-    if ($bookId) {
-      self::rebuildActIndex($bookId);
-      Cache::clearChapters($bookId);   // ← ADD THIS LINE
-    }
+if ($bookId) {
+  self::rebuildActIndex($bookId);
+  Cache::clearChapters($bookId);
+  self::rebuildStoryCache($bookId, 'characters');
+  self::rebuildStoryCache($bookId, 'settings');
+}
  
   }
+
+
+public static function rebuildStoryCache(int $bookId, string $field): void {
+  $dir   = self::dir($bookId);
+  $files = glob($dir . '/*.json') ?: [];
+  $index = [];
+
+  foreach ($files as $file) {
+    if (strpos($file, '/conf/') !== false) continue;
+
+    $raw = @file_get_contents($file);
+    if (!$raw) continue;
+    $doc = json_decode($raw, true);
+    if (!is_array($doc)) continue;
+
+    $raw_val = $doc['meta'][$field] ?? '';
+    if (!$raw_val) continue;
+
+    $values = array_values(array_unique(array_filter(
+      array_map('trim', explode(',', $raw_val))
+    )));
+
+    if (!empty($values)) {
+      $index[] = [
+        'filename' => $doc['filename'] ?? basename($file, '.json'),
+        'values'   => $values,
+      ];
+    }
+  }
+
+  $cacheDir  = Config::dataDir() . '/' . $bookId . '/cache';
+  if (!is_dir($cacheDir)) mkdir($cacheDir, 0755, true);
+
+  file_put_contents(
+    $cacheDir . '/story-' . $field . '.json',
+    json_encode($index, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE)
+  );
+}
   
 public static function setOrder(string $filename, int $order, ?int $bookId = null): void {
   $path = self::path($filename, $bookId);
@@ -146,11 +189,14 @@ public static function setOrder(string $filename, int $order, ?int $bookId = nul
       ];
     }
 
-    Config::ensureBookDirs($bookId);
-    file_put_contents(
-      $dir . '/conf/act.json',
-      json_encode($result, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE)
-    );
+    // ? Config::ensureBookDirs($bookId);
+$cacheDir = Config::dataDir() . '/' . $bookId . '/cache';
+if (!is_dir($cacheDir)) mkdir($cacheDir, 0755, true);
+file_put_contents(
+  $cacheDir . '/act.json',
+  json_encode($result, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE)
+);
+
   }
 
 
@@ -166,10 +212,11 @@ public static function setOrder(string $filename, int $order, ?int $bookId = nul
 
   // ── Act index reader (used by Book::chapters) ─
 
-  public static function readActIndex(int $bookId): array {
-    $path = self::dir($bookId) . '/conf/act.json';
-    if (!file_exists($path)) return [];
-    $data = json_decode(file_get_contents($path), true);
-    return is_array($data) ? $data : [];
-  }
+public static function readActIndex(int $bookId): array {
+  $path = Config::dataDir() . '/' . $bookId . '/cache/act.json';
+  if (!file_exists($path)) return [];
+  $data = json_decode(file_get_contents($path), true);
+  return is_array($data) ? $data : [];
+}
+
 }

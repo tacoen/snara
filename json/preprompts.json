@@ -9,7 +9,7 @@
     },
     {
         "label": "Characters",
-        "value": "Create a character list from the provided text, sort by their roles"
+        "value": "Based on the text below, provide two sections: 1. A comma-separated list of individual character names. 2. A list of those same characters, each with a brief detail. Strictly exclude any plural groups or collective characters. Provide only the requested content without headers, introductions, or closing remarks."
     },
     {
         "label": "Professional",

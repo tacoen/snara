@@ -156,7 +156,7 @@ function buildFullCss(saved) {
 
 //  const rootBlock = `:root {\n${alignedVarsBlock(rootSpacing)}\n\n${alignedVarsBlock(rootFonts)}\n}`;
 
-  const rootBlock = `/* snara theme */`+ '\n\n';
+  const rootBlock = `/* snara pref theme */`+ '\n\n';
   const { base: lb, tags: lt } = split(lightVars);
   const lightLines = alignedVarsBlock(lb) + '\n\n' + _tagGroupLines(lt, tagBeat, tagScene, tagChapter, tagAct);
   const lightBlock = `:root {\n\n${lightLines}\n\n}`;

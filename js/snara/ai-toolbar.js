@@ -1,41 +1,15 @@
-/**
- * SnaraAIToolbar
- * ──────────────────────────────────────────────────────────────────────────
- * Wires .ai-1 … .ai-4 popup buttons to json/preprompts.json.
- * On click: fetches AI response, creates a new contenteditable div.entry.beat
- * inserted immediately after the focused entry, fully bound via bindEntry.
- *
- * Public API
- *   const t = new SnaraAIToolbar('#popup', {
- *     getEntry:  () => ui.focusedEntry,
- *     bindEntry: (el) => editor._bindEntryEvents(el),
- *   })
- *   t.setActiveEntry(el)   ← optional explicit override
- *   t.destroy()
- * ──────────────────────────────────────────────────────────────────────────
- */
+
 export class SnaraAIToolbar {
-
-  /** @type {HTMLElement|null}       */ #root;
-  /** @type {HTMLElement|null}       */ #activeEntry = null;
-  /** @type {Function|null}          */ #getEntry;
-  /** @type {Function|null}          */ #bindEntry;
-  /** @type {Array<{label:string, value:string}>} */ #prompts = [];
-  /** @type {boolean}                */ #busy = false;
-  /** @type {AbortController|null}   */ #abort = null;
-  /** @type {string}                 */ #endpoint;
-  /** @type {string}                 */ #promptsUrl;
-  /** @type {Function}               */ #boundClick;
-
-  /**
-   * @param {string|HTMLElement} root
-   * @param {{
-   *   getEntry?:  () => HTMLElement|null,
-   *   bindEntry?: (el: HTMLElement) => void,
-   *   preprompts?: string,
-   *   endpoint?:  string
-   * }} [opts]
-   */
+   #root;
+   #activeEntry = null;
+   #getEntry;
+   #bindEntry;
+   #prompts = [];
+   #busy = false;
+   #abort = null;
+   #endpoint;
+   #promptsUrl;
+   #boundClick;
   constructor(root, opts = {}) {
     this.#root       = typeof root === 'string'
       ? document.querySelector(root)
@@ -56,9 +30,6 @@ export class SnaraAIToolbar {
     this.#loadPrompts();
   }
 
-  // ── Public ─────────────────────────────────────────────────────────────
-
-  /** Optional explicit override — not required when getEntry is provided. */
   setActiveEntry(el) {
     this.#activeEntry = el instanceof HTMLElement ? el : null;
   }
@@ -70,8 +41,6 @@ export class SnaraAIToolbar {
     this.#activeEntry = null;
     this.#prompts     = [];
   }
-
-  // ── Private ────────────────────────────────────────────────────────────
 
   async #loadPrompts() {
     try {
@@ -105,14 +74,12 @@ export class SnaraAIToolbar {
 
   async #dispatch(prompt) {
     if (this.#busy) return;
-
     const entry = this.#activeEntry ?? this.#getEntry?.();
     if (!entry) {
       console.warn('[SnaraAIToolbar] No focused entry found.');
       return;
     }
 
-    // Create response div — same structure as every other rendered entry.
     const responsediv = document.createElement('div');
     responsediv.className       = 'entry beat ai-response';
     responsediv.contentEditable = 'true';
@@ -120,7 +87,6 @@ export class SnaraAIToolbar {
 
     entry.insertAdjacentElement('afterend', responsediv);
 
-    // Register click-to-popup + markdown behaviour — same as _renderDocument does.
     this.#bindEntry?.(responsediv);
 
     this.#abort?.abort();
@@ -130,7 +96,6 @@ export class SnaraAIToolbar {
     try {
       const selection = window.getSelection()?.toString().trim();
       const context   = selection || entry.innerText.trim();
-
       const res = await fetch(this.#endpoint, {
         method:  'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -139,7 +104,6 @@ export class SnaraAIToolbar {
       });
 
       if (!res.ok) throw new Error(`Server error ${res.status}`);
-
       const data = await res.json();
       const text = (
         data?.choices?.[0]?.message?.content ??
@@ -148,7 +112,6 @@ export class SnaraAIToolbar {
         data?.message ??
         ''
       ).trim();
-
       const output = `#### AI Response:\n\n${text}`;
       responsediv.innerHTML = typeof marked !== 'undefined'
         ? marked.parse(output)

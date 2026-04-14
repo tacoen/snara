@@ -91,12 +91,23 @@ export class SnaraUI {
       article.push({ class: cls, content: html });
     });
 
-    const meta = {};
-    document.querySelectorAll('.meta-field').forEach(row => {
-      const key = row.querySelector('.field-key')?.innerText.trim();
-      const val = row.querySelector('.field-val')?.innerText.trim();
-      if (key) meta[key] = val || '';
-    });
+// Replace the meta collect block in saveDocument():
+const meta = {};
+document.querySelectorAll('.meta-field').forEach(row => {
+  const key = row.dataset.key || row.querySelector('.field-key')?.innerText.trim();
+  if (!key) return;
+
+  const pillContainer = row.querySelector('.field-pills');
+  if (pillContainer) {
+    // Pill field — collect all pill spans, ignore the input
+    const vals = [...pillContainer.querySelectorAll('.field-pill')]
+      .map(p => p.firstChild.textContent.trim())
+      .filter(Boolean);
+    meta[key] = vals.join(', ');
+  } else {
+    meta[key] = row.querySelector('.field-val')?.innerText.trim() || '';
+  }
+});
 
     const payload = { filename, bookId, meta, article };
     if (btn) { btn.disabled = true; btn.classList.add('saving'); }
@@ -172,26 +183,22 @@ _renderDocument(data) {
       this.entriesEl.appendChild(div);
     });
 
-    const metaFields = this.metaEl.querySelector('.meta-fields');
-    if (metaFields && data.meta && typeof data.meta === 'object') {
-      metaFields.innerHTML = '';
-      Object.entries(data.meta).forEach(([key, val]) => {
-        const row = document.createElement('div');
-        row.className = 'meta-field';
-        row.innerHTML = `
-          <span class="field-key" contenteditable spellcheck="false">${esc(key)}</span>
-          <span class="field-sep">:</span>
-          <span class="field-val" contenteditable spellcheck="false">${esc(val)}</span>
-          <button class="field-remove" onclick="removeField(this)" title="Remove field">✕</button>
-        `;
-        metaFields.appendChild(row);
-      });
-    }
+const metaFields = this.metaEl.querySelector('.meta-fields');
+if (metaFields && data.meta && typeof data.meta === 'object') {
+  metaFields.innerHTML = '';
+  Object.entries(data.meta).forEach(([key, val]) => {
+    metaFields.appendChild(this._buildMetaRow(key, val));
+  });
+}
+
+document.getElementById('add-field-btn').onclick = () => this.addField();
+
 
     this.switchTab('editor');
     this.entriesEl.scrollTop = 0;
   }
 
+/*
   addField() {
     const list = document.querySelector('.meta-fields');
     const row  = document.createElement('div');
@@ -206,10 +213,92 @@ _renderDocument(data) {
     icx.delayreplace('.meta-field:last-child [data-icon]');
     row.querySelector('.field-key').focus();
   }
+*/
+  
+// New method — builds one meta row based on field type
+_buildMetaRow(key, val) {
+  const PILL_FIELDS = ['characters', 'settings'];
+  const isOrder     = key === 'order';
+  const isPill      = PILL_FIELDS.includes(key);
 
-  removeField(btn) {
-    btn.closest('.meta-field').remove();
+  const row = document.createElement('div');
+  row.className = 'meta-field';
+
+  if (isOrder) {
+    row.dataset.key = key;          // readonly — key never changes
+    row.innerHTML = `
+      <span class="field-key">${esc(key)}</span>
+      <span class="field-sep">:</span>
+      <span class="field-val field-val--readonly">${esc(val)}</span>
+    `;
+    return row;
   }
+
+  if (isPill) {
+    row.dataset.key = key;          // pill key is fixed (characters/settings)
+    const pills = String(val || '').split(',').map(s => s.trim()).filter(Boolean);
+    row.innerHTML = `
+      <span class="field-key">${esc(key)}</span>
+      <span class="field-sep">:</span>
+      <div class="field-pills">
+        ${pills.map(p => `
+          <span class="field-pill">
+            ${esc(p)}<button class="pill-remove" data-val="${esc(p)}" title="Remove">×</button>
+          </span>`).join('')}
+        <input class="pill-input" type="text" placeholder="add…" spellcheck="false">
+      </div>
+      <button class="field-remove" title="Remove field">✕</button>
+    `;
+    const input = row.querySelector('.pill-input');
+    input.addEventListener('keydown', e => {
+      if (e.key === 'Enter' || e.key === ',') {
+        e.preventDefault();
+        const v = input.value.replace(',', '').trim();
+        if (v) { this._addPill(input, v); input.value = ''; }
+      }
+    });
+    row.querySelector('.field-pills').addEventListener('click', e => {
+      if (e.target.classList.contains('pill-remove')) {
+        e.target.closest('.field-pill').remove();
+      }
+    });
+    row.querySelector('.field-remove').addEventListener('click', () => row.remove());
+    return row;
+  }
+
+  // Default — contenteditable, key is editable so do NOT fix dataset.key
+  // saveDocument() reads key from .field-key innerText for these rows
+  row.innerHTML = `
+    <span class="field-key" contenteditable spellcheck="false">${esc(key)}</span>
+    <span class="field-sep">:</span>
+    <span class="field-val" contenteditable spellcheck="false">${esc(val)}</span>
+    <button class="field-remove" title="Remove field">✕</button>
+  `;
+  row.querySelector('.field-remove').addEventListener('click', () => row.remove());
+  return row;
+}
+
+
+_addPill(inputEl, value) {
+  const pill = document.createElement('span');
+  pill.className = 'field-pill';
+  pill.innerHTML = `${esc(value)}<button class="pill-remove" data-val="${esc(value)}" title="Remove">×</button>`;
+  pill.querySelector('.pill-remove').addEventListener('click', () => pill.remove());
+  inputEl.parentElement.insertBefore(pill, inputEl);
+}
+
+addField() {
+  const list = document.querySelector('.meta-fields');
+  const row  = this._buildMetaRow('field', '');
+  list.appendChild(row);
+  icx.delayreplace('.meta-field:last-child [data-icon]');
+  row.querySelector('.field-key')?.focus();
+}
+
+removeField(btn) {
+  btn.closest('.meta-field').remove();
+}  
+
 
   _initTheme() {
     SnaraTool.applyTheme(SnaraTool.savedTheme());

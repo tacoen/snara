@@ -193,7 +193,6 @@ button.mute:is(:hover, :focus) { background: var(--bg-hover); color: var(--fg-ma
 
 body.modal-open { overflow: hidden; }
 
-/* ── Overlay backdrop ── */
 #app-overlay {
   position: fixed;
   inset: 0;

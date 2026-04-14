@@ -395,3 +395,58 @@
 @media (max-width:  900px) { .notes { --notes-cols: 3; } }
 @media (max-width:  600px) { .notes { --notes-cols: 2; } }
 @media (max-width:  400px) { .notes { --notes-cols: 1; } }
+
+
+/* ── Pill fields ── */
+.field-pills {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--s-xs);
+  flex: 1;
+  padding: var(--s-xs) 0;
+}
+
+.field-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  background: var(--selection);
+  border: 1px solid var(--sel-border);
+  border-radius: 4px;
+  padding: 1px var(--s-xs);
+  font-size: var(--f-xs);
+  font-family: var(--font-mono);
+  color: var(--fg-main);
+}
+
+.pill-remove {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--fg-muted);
+  font-size: 11px;
+  padding: 0 1px;
+  line-height: 1;
+}
+.pill-remove:hover { color: var(--danger); }
+
+.pill-input {
+  border: none;
+  outline: none;
+  background: transparent;
+  font-size: var(--f-xs);
+  font-family: var(--font-mono);
+  color: var(--fg-main);
+  min-width: 60px;
+  width: 80px;
+}
+
+.field-val--readonly {
+  color: var(--fg-muted);
+  font-family: var(--font-mono);
+  font-size: var(--f-xs);
+  padding: 1px var(--s-xs);
+  cursor: default;
+  user-select: none;
+}

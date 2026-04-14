@@ -117,6 +117,7 @@ const aiToolbar = new SnaraAIToolbar('#popup', {
       meta:    document.getElementById('meta-area'),
       files:   document.getElementById('files-area'),
       kanban:  document.getElementById('kanban-area'),
+      about:   document.getElementById('about-area'),
       chatbot: document.getElementById('chatbot-area'),
       notes:   document.getElementById('notes-area'),
     };

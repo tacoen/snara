@@ -43,6 +43,10 @@ $title  = 'Snara';
 
 	<?php include __DIR__ . '/partials/editor-side.html'; ?>
 
+	<main id='about-area' class="content-area" hidden>
+		<?php include __DIR__ . '/partials/about.html'; ?>
+	</main>
+	
 	<main id='kanban-area' class="content-area" hidden>
 		<?php include __DIR__ . '/partials/kanban.html'; ?>
 	</main>

@@ -114,6 +114,7 @@ aside,
 #kanban-area,
 #meta-area,
 #files-area,
+#about-area,
 #notes-area,
 #chatbot-area {
 	grid-column: span 2;
