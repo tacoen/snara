@@ -217,7 +217,7 @@
   gap: var(--s-xs);
   padding: var(--s-xs) var(--s-sm);
   border-bottom: 1px solid var(--notes-card-border);
-  background: var(--bg-mate);
+  background: var(--bg-muted);
 }
  
 .notes__card-title {

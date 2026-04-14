@@ -4,11 +4,20 @@
   --tag-scene-bd: color-mix(in srgb, var(--tag-scene-fg), transparent 60%);
   --tag-chapter-bd: color-mix(in srgb, var(--tag-chapter-fg), transparent 60%);
   --tag-act-bd: color-mix(in srgb, var(--tag-act-fg), transparent 60%);
+  
 
   --tag-beat-bg: color-mix(in srgb, var(--tag-beat-fg), transparent 90%);
   --tag-scene-bg: color-mix(in srgb, var(--tag-scene-fg), transparent 85%);
   --tag-chapter-bg: color-mix(in srgb, var(--tag-chapter-fg), transparent 80%);
   --tag-act-bg: color-mix(in srgb, var(--tag-act-fg), transparent 75%); 
+
+  --success-bd: color-mix(in srgb, var(--success), transparent 60%);  
+  --danger-bd: color-mix(in srgb, var(--danger), transparent 60%);  
+  --primary-bd: color-mix(in srgb, var(--primary), transparent 60%);  
+
+  --success-bg: color-mix(in srgb, var(--success), transparent 95%);  
+  --danger-bg: color-mix(in srgb, var(--danger), transparent 95%);  
+  --primary-bg: color-mix(in srgb, var(--primary), transparent 95%);  
 	
   --entry-font:       var(--font-sans);
   --article-fg:       var(--fg-main);
@@ -59,7 +68,13 @@
    Compact: one rule per level (padding + border-color only).
    FIX: redundant hover rules re-stated the same border-color — dropped.
    FIX: stray `f` character removed from .toc-beat a rule. */
+   
 .toc-act     a { padding-left: var(--s-md);              border-left-color: var(--entry-act-border);     font-weight: 500; }
 .toc-chapter a { padding-left: calc(var(--s-md) * 2);   border-left-color: var(--entry-chapter-border); }
 .toc-scene   a { padding-left: calc(var(--s-md) * 3);   border-left-color: var(--entry-scene-border); }
 .toc-beat    a { padding-left: calc(var(--s-md) * 4);   border-left-color: var(--entry-beat-border); }
+
+input[data-var='--success'] { background-color: var(--success-bg); border: 1px solid var(--success-bd); }
+
+input[data-var='--primary'] { background-color: var(--primary-bg); border: 1px solid var(--primary-bd); }
+input[data-var='--danger'] { background-color: var(--danger-bg); border: 1px solid var(--danger-bd); }

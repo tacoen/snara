@@ -46,8 +46,8 @@
   justify-content: space-between;
   height: var(--kb-header-height);
   flex-shrink: 0;
-  border-bottom: 1px solid var(--border);
-  background: var(--bg-mate);
+  /* border-bottom: 1px solid var(--border); */
+  background: var(--bg-muted);
   padding: 0 var(--s-md);
 }
 
@@ -78,7 +78,7 @@
   align-items: flex-start;
   overflow-x: auto;
   overflow-y: hidden;
-  min-height: 90%;
+  min-height: calc(100dvh - 115px);
   padding-bottom: var(--s-md);
   /* Smooth scrollbar */
   scrollbar-width: thin;
@@ -438,7 +438,7 @@
 [data-col-id='research'].kanban__column { background-color: color-mix(in srgb, var(--fg-muted), transparent 97%); }
 [data-col-id='drafting'].kanban__column { background-color: color-mix(in srgb, var(--primary), transparent 95%); }
 [data-col-id='review'].kanban__column { background-color: color-mix(in srgb, var(--danger), transparent 95%); }
-[data-col-id='done'].kanban__column { background-color: color-mix(in srgb, var(--success-fg), transparent 95%); }
+[data-col-id='done'].kanban__column { background-color: color-mix(in srgb, var(--success), transparent 95%); }
 
 
 	

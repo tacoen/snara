@@ -53,6 +53,15 @@ html {
   -webkit-font-smoothing: antialiased;
 }
 
+body {
+	margin:0;
+	padding:0;
+	font-family: var( --font-sans);
+	color: var(--fg-main);
+	background: var(--bg-main);
+}
+
+
 /* Force consistent stroke on all inline SVG icons */
 svg { stroke-width: 1.5px !important; }
 

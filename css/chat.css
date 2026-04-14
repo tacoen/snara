@@ -21,7 +21,7 @@
 .chatbot {
   /* --chatbot-window-h:  460px; */
   /* --chatbot-aside-w:   210px; */
-  --chatbot-header-bg: var(--bg-mate);   /* dark surface — no base equiv in light theme */
+  --chatbot-header-bg: var(--bg-muted);   /* dark surface — no base equiv in light theme */
   display:               grid;
   grid-template-rows: 48px calc(100% - 148px) 100px;
   grid-template-columns: auto 15rem;
@@ -181,7 +181,7 @@
   align-items: flex-start;
   gap:         var(--s-xs);
   padding:     var(--s-sm) var(--s-md);
-  background:  var(--bg-mate);
+  background:  var(--bg-muted);
   border-top:  1px solid var(--border);
   flex-direction: column;
   flex-wrap: nowrap;
@@ -281,7 +281,7 @@
 .chat-side {
   grid-area:      aside;
   border-left:    1px solid var(--border);
-  background:     var(--bg-mate);
+  background:     var(--bg-muted);
   overflow-y:     auto;
   display:        flex;
   flex-direction: column;

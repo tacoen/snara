@@ -4,7 +4,7 @@
    DON'T: style content inside a shell here
    ═══════════════════════════════════════════════════ */
 
-#app { background: var(--bg-mate); }
+#app {/* background: var(--bg-muted); */}
 
 /* ── App grids ──
    .grid-v — 40px icon strip | content
@@ -43,6 +43,7 @@ nav {
   top: 0;
   z-index: 200;
   height: calc(100dvh - 8px);
+  background-color: var(--bg-alt);
 }
 
 nav > div {
@@ -71,9 +72,9 @@ nav.embed {
   justify-content: flex-start;
   padding: var(--s-xs) 0;
   width: auto;
-  border-left: 1px solid var(--bg-mate);
-  background: var(--border);
-  box-shadow: inset 3px 0 4px rgba(0,0,0,.5);
+  border-left: 1px solid var(--bg-muted);
+  background: var(--bg-alt);
+  box-shadow: inset 2px 0 4px var(--overlay);
 }
 
 /* ── Sticky header bar ──
@@ -84,9 +85,9 @@ header {
   justify-content: space-between;
   gap: var(--s-md);
   padding: 0 var(--s-sm);
-  height: 42px;
+  height: 40px;
   border-bottom: 1px solid var(--border);
-  background: var(--bg-main);
+  background: var(--bg-alt);
   flex-shrink: 0;
   position: sticky;
   top: 0;

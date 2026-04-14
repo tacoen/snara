@@ -16,7 +16,7 @@ html[theme="light"] {
   --sel-border: #818cf8;
   --success-bg: #f0fdf4;
   --success-fg: #16a34a;
-  --bg-mate:    color-mix(in srgb, var(--border), transparent 50%);
+  --bg-muted:    color-mix(in srgb, var(--border), transparent 50%);
   
   --tag-act-bg:     #ecfeff; --tag-act-fg:     #0891b2; --tag-act-bd:     #a5f3fc;
   --tag-chapter-bg: #eef2ff; --tag-chapter-fg: #4f46e5; --tag-chapter-bd: #c7d2fe;
@@ -40,7 +40,7 @@ html[theme="dark"] {
   --sel-border: #6366f1;
   --success-bg: rgba(34, 197, 94, 0.1);
   --success-fg: #4ade80;
-  --bg-mate:    color-mix(in srgb, var(--border), transparent 50%);
+  --bg-muted:    color-mix(in srgb, var(--border), transparent 50%);
   
   --tag-act-bg:     rgba(6, 182, 212, 0.1);  --tag-act-fg:     #22d3ee; --tag-act-bd:     #22d3ee;
   --tag-chapter-bg: rgba(99, 102, 241, 0.1); --tag-chapter-fg: #a5f3fc; --tag-chapter-bd: #818cf8;

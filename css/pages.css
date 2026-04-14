@@ -20,8 +20,7 @@
   justify-content: flex-start;
   padding: var(--s-xs) 0;
   width: auto;
-  border-left: 1px solid var(--bg-mate);
-  background: var(--border);
+  border-left: 1px solid var(--bg-muted);
 }
 
 .fnav-group-label {
@@ -52,7 +51,7 @@
 }
 .fnav-item svg       { width: 20px; height: 20px; flex-shrink: 0; opacity: .7; }
 .fnav-item:hover     { color: var(--fg-main); background: var(--bg-main); }
-.fnav-item.active    { color: var(--fg-main); background: var(--bg-alt); font-weight: 500; }
+.fnav-item.active    { color: var(--fg-main);background: var(--bg-muted);font-weight: 500;color: var(--fg-main);font-weight: 600;text-shadow: 1px 1px 3px #000000;}
 
 /* ── Main panel ── */
 #files-main {
@@ -313,7 +312,6 @@
           in modal.css and are shared app-wide
    ═══════════════════════════════════════════════════ */
 
-.pref-modal {width: min(60%, calc(100vw - 32px));max-height: 88dvh;}
 .pref-body  { padding: 0; gap: 0; }
 .pref-tabs  { padding: 0 var(--s-sm); border-bottom: 1px solid var(--border); }
 
@@ -427,3 +425,6 @@
   transition: background .15s, color .15s;
 }
 #pref-btn:hover { background: var(--bg-hover); color: var(--fg-main); }
+
+
+#pref-modal { width: 80%; max-height: 95dvh; margin-left:10%; }
