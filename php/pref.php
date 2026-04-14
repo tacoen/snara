@@ -41,7 +41,19 @@ class Pref {
     ];
   }
 
-  public static function set(array $data): void {
+
+public static function set(): void {
+  $css = file_get_contents('php://input');
+  if (!$css) return;
+
+  $path = Config::root() . '/data/custom.css';
+  $dir  = dirname($path);
+  if (!is_dir($dir)) mkdir($dir, 0755, true);
+
+  file_put_contents($path, $css);
+}
+
+  public static function OLDset(array $data): void {
     $clean = [
       'root'  => self::sanitizeScope($data['root']  ?? []),
       'light' => self::sanitizeScope($data['light'] ?? []),

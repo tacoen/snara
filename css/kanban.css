@@ -28,7 +28,7 @@
   --kb-add-icon-size:   14px;
   --kb-drag-opacity:    .35;
   --kb-ghost-bg:        var(--selection);
-  --kb-ghost-border:    var(--sel-border);
+  --kb-ghost-border:    var(--fg-link);
   display: flex;
   flex-direction: column;
   gap: var(--s-md);

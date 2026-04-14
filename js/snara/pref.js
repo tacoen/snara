@@ -19,7 +19,6 @@ const FALLBACKS = {
   '--overlay': 'rgba(0, 0, 0, 0.6)',
   '--shadow': 'rgba(0, 0, 0, 0.9)',
   '--selection': '#ddf4ff',
-  '--sel-border': '#54aeff',
   '--tag-act-fg': '#662211',
   '--tag-chapter-fg': '#993311',
   '--tag-scene-fg': '#bb4422',
@@ -34,7 +33,7 @@ export const getPropValue = (propertyName) => {
     .getPropertyValue(prop)
     .trim();
 
-  console.log(`[pref.js] ${prop} → "${value}"`);
+  // console.log(`[pref.js] ${prop} → "${value}"`);
   if (value) return value;
   console.warn(`[pref.js] CSS property ${prop} not found!`);
   return FALLBACKS[prop] || '#ffffff';
@@ -53,94 +52,35 @@ const getPropValueForTheme = (propertyName, forcedTheme) => {
   return value;
 };
 
+const ROOT_VARS = ['--s-xs','--s-sm','--s-md','--s-lg','--s-xl','--f-xs','--f-sm','--f-md'];
+const THEME_VARS = ['--bg-main','--bg-alt','--bg-muted','--bg-hover','--fg-main','--fg-muted',
+                    '--fg-link','--border','--primary','--danger','--success','--overlay',
+                    '--selection','--tag-act-fg','--tag-chapter-fg','--tag-scene-fg','--tag-beat-fg'];
+
+const fromKeys = (keys, theme) =>
+  Object.fromEntries(keys.map(k => [k, theme ? getPropValueForTheme(k, theme) : getPropValue(k)]));
+
 export const getLiveDefaults = () => {
   readingThemeValues = true;
-  console.log('[pref.js] Reading LIVE defaults from color.css (light + dark)');
   const result = {
-    root: {
-      '--s-xs': getPropValue('--s-xs'),
-      '--s-sm': getPropValue('--s-sm'),
-      '--s-md': getPropValue('--s-md'),
-      '--s-lg': getPropValue('--s-lg'),
-      '--s-xl': getPropValue('--s-xl'),
-      '--f-xs': getPropValue('--f-xs'),
-      '--f-sm': getPropValue('--f-sm'),
-      '--f-md': getPropValue('--f-md'),
-    },
-
-    light: {
-      '--bg-main':    getPropValueForTheme('--bg-main', 'light'),
-      '--bg-alt':     getPropValueForTheme('--bg-alt', 'light'),
-      '--bg-muted':    getPropValueForTheme('--bg-muted', 'light'),
-      '--bg-hover':   getPropValueForTheme('--bg-hover', 'light'),
-      '--fg-main':    getPropValueForTheme('--fg-main', 'light'),
-      '--fg-muted':   getPropValueForTheme('--fg-muted', 'light'),
-      '--fg-link':    getPropValueForTheme('--fg-link', 'light'),
-      '--border':     getPropValueForTheme('--border', 'light'),
-      '--primary':    getPropValueForTheme('--primary', 'light'),
-      '--danger':     getPropValueForTheme('--danger', 'light'),
-      '--success': getPropValueForTheme('--success', 'light'),
-      '--overlay':    getPropValueForTheme('--overlay', 'light'),
-      '--selection':  getPropValueForTheme('--selection', 'light'),
-      '--sel-border': getPropValueForTheme('--sel-border', 'light'),
-      '--tag-act-fg':     getPropValueForTheme('--tag-act-fg', 'light'),
-      '--tag-chapter-fg': getPropValueForTheme('--tag-chapter-fg', 'light'),
-      '--tag-scene-fg':   getPropValueForTheme('--tag-scene-fg', 'light'),
-      '--tag-beat-fg':    getPropValueForTheme('--tag-beat-fg', 'light'),
-    },
-
-    dark: {
-      '--bg-main':    getPropValueForTheme('--bg-main', 'dark'),
-      '--bg-alt':     getPropValueForTheme('--bg-alt', 'dark'),
-      '--bg-muted':    getPropValueForTheme('--bg-muted', 'dark'),
-      '--bg-hover':   getPropValueForTheme('--bg-hover', 'dark'),
-      '--fg-main':    getPropValueForTheme('--fg-main', 'dark'),
-      '--fg-muted':   getPropValueForTheme('--fg-muted', 'dark'),
-      '--fg-link':    getPropValueForTheme('--fg-link', 'dark'),
-      '--border':     getPropValueForTheme('--border', 'dark'),
-      '--primary':    getPropValueForTheme('--primary', 'dark'),
-      '--danger':     getPropValueForTheme('--danger', 'dark'),
-      '--success': getPropValueForTheme('--success', 'dark'),
-      '--overlay':    getPropValueForTheme('--overlay', 'dark'),
-      '--selection':  getPropValueForTheme('--selection', 'dark'),
-      '--sel-border': getPropValueForTheme('--sel-border', 'dark'),
-      '--tag-act-fg':     getPropValueForTheme('--tag-act-fg', 'dark'),
-      '--tag-chapter-fg': getPropValueForTheme('--tag-chapter-fg', 'dark'),
-      '--tag-scene-fg':   getPropValueForTheme('--tag-scene-fg', 'dark'),
-      '--tag-beat-fg':    getPropValueForTheme('--tag-beat-fg', 'dark'),
-    },
+    root:  fromKeys(ROOT_VARS),
+    light: fromKeys(THEME_VARS, 'light'),
+    dark:  fromKeys(THEME_VARS, 'dark'),
   };
-
   readingThemeValues = false;
   return result;
 };
 
 export let DEFAULTS = getLiveDefaults();
 
-const SCROLLBAR_CSS = `
-::-webkit-scrollbar {
-  width: 8px;
-}
-
-.entry::-webkit-scrollbar {
-  width: 4px;
-}
-
-.entry::-webkit-scrollbar-thumb {
-  background: var(--border);
-  border-radius: 10px;
-}
-
-.entry::-webkit-scrollbar-thumb:hover {
-  background: var(--bg-hover);
-}
-`;
+const SCROLLBAR_CSS = ``;
 
 const COMMON_UI_GROUPS = [
   { heading: 'Backgrounds', vars: [
     { name: '--bg-main',  label: 'Main',  type: 'color' },
     { name: '--bg-alt',   label: 'Alt',   type: 'color' },
     { name: '--bg-muted',  label: 'Muted',  type: 'color' },
+    { name: '--border',     label: 'Border',     type: 'color' },
   ]},
   { heading: 'Foregrounds', vars: [
     { name: '--fg-main',  label: 'Main',  type: 'color' },
@@ -148,19 +88,15 @@ const COMMON_UI_GROUPS = [
     { name: '--fg-muted', label: 'Muted', type: 'color' },
   ]},
   { heading: 'Interaction', vars: [
-    { name: '--bg-hover', label: 'Hover', type: 'color' },
-    { name: '--sel-border', label: 'Sel border', type: 'color' },
+    { name: '--bg-hover', label: 'Hover', type: 'text' },
     { name: '--selection',  label: 'Selection',  type: 'text' },
     { name: '--overlay',    label: 'Overlay',    type: 'text'  },
     { name: '--shadow',    label: 'Shadow',    type: 'text'  },
   ]},
   { heading: 'Chrome', vars: [
-    { name: '--border',     label: 'Border',     type: 'color' },
     { name: '--primary',    label: 'Primary',    type: 'color' },
     { name: '--danger',     label: 'Danger',     type: 'color' },
     { name: '--success',     label: 'success',     type: 'color' },
-  ]},
-  { heading: 'Tag', vars: [
     { name: '--tag-act-fg',     label: 'Act',     type: 'color' },
     { name: '--tag-chapter-fg', label: 'Chapter', type: 'color' },
     { name: '--tag-scene-fg',   label: 'Scene',   type: 'color' },
@@ -218,13 +154,15 @@ function buildFullCss(saved) {
   const rootSpacing = Object.fromEntries(Object.entries(rootVars).filter(([k]) => k.startsWith('--s-')));
   const rootFonts   = Object.fromEntries(Object.entries(rootVars).filter(([k]) => k.startsWith('--f-')));
 
-  const rootBlock = `:root {\n${alignedVarsBlock(rootSpacing)}\n\n${alignedVarsBlock(rootFonts)}\n}`;
+//  const rootBlock = `:root {\n${alignedVarsBlock(rootSpacing)}\n\n${alignedVarsBlock(rootFonts)}\n}`;
+
+  const rootBlock = `/* snara theme */`+ '\n\n';
   const { base: lb, tags: lt } = split(lightVars);
   const lightLines = alignedVarsBlock(lb) + '\n\n' + _tagGroupLines(lt, tagBeat, tagScene, tagChapter, tagAct);
   const lightBlock = `:root {\n\n${lightLines}\n\n}`;
   const { base: db, tags: dt } = split(darkVars);
   const darkLines = alignedVarsBlock(db) + '\n\n' + _tagGroupLines(dt, tagBeat, tagScene, tagChapter, tagAct);
-  const darkBlock = `html[theme="dark"] {\n${darkLines}\n\n}`;
+  const darkBlock = `html[data-theme="dark"] {\n${darkLines}\n\n}`;
   return [rootBlock, lightBlock, darkBlock, SCROLLBAR_CSS].join('\n\n');
 }
 
@@ -236,7 +174,7 @@ function _tagGroupLines(tags, ...groups) {
       return Object.keys(sub).length ? alignedVarsBlock(sub) : '';
     })
     .filter(Boolean)
-    .join('\n\n');
+    .join('\n');
 }
 
 function toHex(value) {
@@ -424,16 +362,17 @@ export class SnaraPref {
     });
   }
 
-  _snapshotTab() {
-    const tab = this._activeTab;
-    const out = {};
-    this.modal.querySelectorAll('.pref-input[data-canonical]').forEach(inp => {
-      const name = inp.dataset.var;
-      const val = inp.value.trim();
-      if (name && val) out[name] = val;
-    });
-    this._saved[tab] = out;
-  }
+_snapshotTab() {
+  const tab = this._activeTab;
+  const out = {};
+  this.modal.querySelectorAll('.pref-input[data-canonical]').forEach(inp => {
+    const name = inp.dataset.var;
+    const val  = inp.value.trim();
+    if (name && val) out[name] = val;
+  });
+  // Merge with existing — preserves server-loaded values for unvisited tabs
+  this._saved[tab] = { ...(this._saved[tab] ?? {}), ...out };
+}
 
   _resetCurrentTab() {
     const tab = this._activeTab;
@@ -473,7 +412,7 @@ export class SnaraPref {
 function refreshDefaults() {
   if (readingThemeValues) return;
   DEFAULTS = getLiveDefaults();
-  console.log('✅ pref.js defaults refreshed from color.css');
+  // console.log('✅ pref.js defaults refreshed from color.css');
 }
 
 window.addEventListener('load', refreshDefaults);
@@ -486,4 +425,4 @@ observer.observe(document.documentElement, {
   attributeFilter: ['data-theme', 'theme']
 });
 
-console.log('✅ pref.js fully loaded – infinite loop fixed');
+// console.log('✅ pref.js fully loaded – infinite loop fixed');

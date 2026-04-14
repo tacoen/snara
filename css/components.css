@@ -356,7 +356,7 @@ body.modal-open { overflow: hidden; }
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: .1em;
-  color: var(--fg-muted);
+  color: var(--fg-main);
   padding-bottom: var(--s-xs);
   margin-bottom: var(--s-xs);
   border-bottom: 1px solid var(--border);
@@ -373,7 +373,7 @@ body.modal-open { overflow: hidden; }
 .cfg-label {
   font-family: var(--font-mono);
   font-size: var(--f-xs);
-  color: var(--fg-muted);
+  color: var(--fg-link);
   flex-shrink: 0;
   width: 110px;
 }
@@ -1131,7 +1131,7 @@ aside.side-panel {
   flex-shrink: 0;
 }
 .idx-row-icon  { font-size: 16px; color: var(--fg-muted); flex-shrink: 0; display: flex; align-items: center; }
-.idx-row-num   { font-family: var(--font-mono);font-size: 10px;color: var(--sel-border);opacity: .8;width: 20px;text-align: right;flex-shrink: 0;}
+.idx-row-num   { font-family: var(--font-mono);font-size: 10px;color: var(--fg-link);opacity: .8;width: 20px;text-align: right;flex-shrink: 0;}
 .idx-row-main  { flex: 1; display: flex; flex-direction: column; gap: 1px; min-width: 0; }
 .idx-row-title { font-size: .875rem;color: var(--fg-main);white-space: nowrap;overflow: hidden;text-overflow: ellipsis;font-family: var(--entry-font);}
 .idx-row-sub   { font-family: var(--font-mono); font-size: 10px; color: var(--fg-muted); opacity: .65; }

@@ -75,6 +75,9 @@
 .toc-beat    a { padding-left: calc(var(--s-md) * 4);   border-left-color: var(--entry-beat-border); }
 
 input[data-var='--success'] { background-color: var(--success-bg); border: 1px solid var(--success-bd); }
-
 input[data-var='--primary'] { background-color: var(--primary-bg); border: 1px solid var(--primary-bd); }
 input[data-var='--danger'] { background-color: var(--danger-bg); border: 1px solid var(--danger-bd); }
+input[data-var="--tag-act-fg"] { background-color: var(--tag-act-bg); border: 1px solid var(--tag-act-bd); }
+input[data-var="--tag-chapter-fg"] { background-color: var(--tag-chapter-bg); border: 1px solid var(--tag-chapter-bd); }
+input[data-var="--tag-scene-fg"] { background-color: var(--tag-scene-bg); border: 1px solid var(--tag-scene-bd); }
+input[data-var="--tag-beat-fg"] { background-color: var(--tag-beat-bg); border: 1px solid var(--tag-beat--bd); }

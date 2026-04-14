@@ -6,7 +6,10 @@
 @layer base, layout, components, pages, utilities;
 
 @import './css/custome/snara-color.css'    layer(base);
+@import './data/custome.css'    layer(base);
+
 @import './css/base.css'    layer(base);
+
 @import './css/layout.css'  layer(layout);
 @import './css/components.css' layer(components);
 @import './css/pages.css'   layer(pages);

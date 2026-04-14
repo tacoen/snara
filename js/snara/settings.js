@@ -627,7 +627,7 @@ _snapshotTab(tab) {
       }
 
       if (t.border) {
-		  console.log(t.border);
+		  //console.log(t.border);
 			t.border = `var(--tag-${tag}-bd)`
         r.style.setProperty(`--entry-${tag}-border`, t.border);
       } else {

@@ -16,7 +16,6 @@ html[theme="light"] {
   --overlay:    rgba(0,0,0,.6);
   --shadow:    rgba(0,0,0,.9);
   --selection:  #ddf4ff;
-  --sel-border: #54aeff;
   --success: #2da44e;
   --tag-act-fg:     #662211;
   --tag-chapter-fg: #993311; 
@@ -28,7 +27,7 @@ html[theme="light"] {
 html[data-theme="dark"],
 html[theme="dark"] {
   --bg-main:    #0d0911;
-  --bg-muted:    #1a1a1c;
+  --bg-muted:   #1a1a1c;
   --bg-alt:     #131421;
   --bg-hover:   #21262d;
   --fg-main:    #c9d1d9;
@@ -40,7 +39,6 @@ html[theme="dark"] {
   --overlay:    rgba(0,0,0,.75);
   --shadow:    rgba(0,0,0,.95);
   --selection:  rgba(56,139,253,.15);
-  --sel-border: #388bfd;
   --success: #3fb950;
   --tag-act-fg:     #ffcc33; 
   --tag-chapter-fg: #ff9933; 

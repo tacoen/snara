@@ -13,7 +13,6 @@ html[theme="light"] {
   --danger:     #b33939;
   --overlay:    rgba(45, 51, 42, 0.4);
   --selection:  #e2f3eb;
-  --sel-border: #8ec3a7;
   --success-bg: #e7f5e9;
   --success-fg: #2e7d32;
   --bg-muted:    color-mix(in srgb, var(--border), transparent 50%);
@@ -37,7 +36,6 @@ html[theme="dark"] {
   --danger:     #ff6b6b;
   --overlay:    rgba(0,0,0,.8);
   --selection:  rgba(82, 183, 136, 0.2);
-  --sel-border: #52b788;
   --success-bg: rgba(45, 164, 78, 0.15);
   --success-fg: #74c69d;
   --bg-muted:    color-mix(in srgb, var(--border), transparent 50%);
