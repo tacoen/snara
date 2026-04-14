@@ -22,7 +22,7 @@ Everything runs on your own server with flat-file storage. No database, no heavy
 - Kanban board (scaffolded)
 - Simple REST API backend
 
-**Fully self-hosted** — your stories never leave your server.
+**Fully self-hosted on your own server** — complete privacy and full ownership of your stories.
 
 ---
 
