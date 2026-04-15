@@ -4,83 +4,67 @@ import { openModal, closeModal } from './modal.js';
 import { esc } from '../helpers.js';
 import { _modalHeader, _modalFooter } from './modal.js';
 
-const FALLBACKS = {
-  '--bg-main': '#ffffff',
-  '--bg-alt': '#f6f8fa',
-  '--bg-muted': '#fcfcfc',
-  '--bg-hover': '#f0f2f5',
-  '--fg-main': '#24292f',
-  '--fg-muted': '#57606a',
-  '--fg-link': '#0969da',
-  '--border': '#d0d7de',
-  '--primary': '#0969da',
-  '--danger': '#cf222e',
-  '--success': '#2da44e',
-  '--overlay': 'rgba(0, 0, 0, 0.6)',
-  '--shadow': 'rgba(0, 0, 0, 0.9)',
-  '--selection': '#ddf4ff',
-  '--tag-act-fg': '#662211',
-  '--tag-chapter-fg': '#993311',
-  '--tag-scene-fg': '#bb4422',
-  '--tag-beat-fg': '#cc1111',
+// ── Static DEFAULTS — never mutated by DOM ────────
+const DEFAULTS = {
+  root: {
+    '--s-xs': '0.25rem',
+    '--s-sm': '0.5rem',
+    '--s-md': '1rem',
+    '--s-lg': '1.25rem',
+    '--s-xl': '1.5rem',
+    '--f-xs': '0.75rem',
+    '--f-sm': '1rem',
+    '--f-md': '1.25rem',
+  },
+  light: {
+    '--bg-main':        '#ffffff',
+    '--bg-alt':         '#f6f8fa',
+    '--bg-muted':       '#fcfcfc',
+    '--bg-hover':       '#f0f2f5',
+    '--fg-main':        '#24292f',
+    '--fg-muted':       '#57606a',
+    '--fg-link':        '#0969da',
+    '--border':         '#d0d7de',
+    '--primary':        '#0969da',
+    '--danger':         '#cf222e',
+    '--success':        '#2da44e',
+    '--overlay':        'rgba(0, 0, 0, 0.6)',
+    '--shadow':         'rgba(0, 0, 0, 0.9)',
+    '--selection':      '#ddf4ff',
+    '--tag-act-fg':     '#662211',
+    '--tag-chapter-fg': '#993311',
+    '--tag-scene-fg':   '#bb4422',
+    '--tag-beat-fg':    '#cc1111',
+  },
+  dark: {
+    '--bg-main':        '#0d1117',
+    '--bg-alt':         '#161b22',
+    '--bg-muted':       '#14181f',
+    '--bg-hover':       '#21262d',
+    '--fg-main':        '#c9d1d9',
+    '--fg-muted':       '#8b949e',
+    '--fg-link':        '#58a6ff',
+    '--border':         '#30363d',
+    '--primary':        '#1f6feb',
+    '--danger':         '#f85149',
+    '--success':        '#3fb950',
+    '--overlay':        'rgba(0, 0, 0, 0.75)',
+    '--shadow':         'rgba(0, 0, 0, 0.95)',
+    '--selection':      'rgba(56, 139, 253, 0.15)',
+    '--tag-act-fg':     '#ffcc33',
+    '--tag-chapter-fg': '#ff9933',
+    '--tag-scene-fg':   '#ff6b6b',
+    '--tag-beat-fg':    '#cc5522',
+  },
 };
 
-let readingThemeValues = false;
-
-export const getPropValue = (propertyName) => {
-  const prop = propertyName.startsWith('--') ? propertyName : `--${propertyName}`;
-  const value = getComputedStyle(document.documentElement)
-    .getPropertyValue(prop)
-    .trim();
-
-  // console.log(`[pref.js] ${prop} → "${value}"`);
-  if (value) return value;
-  console.warn(`[pref.js] CSS property ${prop} not found!`);
-  return FALLBACKS[prop] || '#ffffff';
-};
-
-const getPropValueForTheme = (propertyName, forcedTheme) => {
-  if (!forcedTheme || readingThemeValues) return getPropValue(propertyName);
-  const html = document.documentElement;
-  const originalTheme = html.getAttribute('data-theme') || html.getAttribute('theme');
-  html.setAttribute('data-theme', forcedTheme);
-  void html.offsetHeight;
-  const value = getPropValue(propertyName);
-  if (originalTheme) html.setAttribute('data-theme', originalTheme);
-  else html.removeAttribute('data-theme');
-  void html.offsetHeight;
-  return value;
-};
-
-const ROOT_VARS = ['--s-xs','--s-sm','--s-md','--s-lg','--s-xl','--f-xs','--f-sm','--f-md'];
-const THEME_VARS = ['--bg-main','--bg-alt','--bg-muted','--bg-hover','--fg-main','--fg-muted',
-                    '--fg-link','--border','--primary','--danger','--success','--overlay',
-                    '--selection','--tag-act-fg','--tag-chapter-fg','--tag-scene-fg','--tag-beat-fg'];
-
-const fromKeys = (keys, theme) =>
-  Object.fromEntries(keys.map(k => [k, theme ? getPropValueForTheme(k, theme) : getPropValue(k)]));
-
-export const getLiveDefaults = () => {
-  readingThemeValues = true;
-  const result = {
-    root:  fromKeys(ROOT_VARS),
-    light: fromKeys(THEME_VARS, 'light'),
-    dark:  fromKeys(THEME_VARS, 'dark'),
-  };
-  readingThemeValues = false;
-  return result;
-};
-
-export let DEFAULTS = getLiveDefaults();
-
-const SCROLLBAR_CSS = ``;
-
+// ── Groups define what appears in the modal ───────
 const COMMON_UI_GROUPS = [
   { heading: 'Backgrounds', vars: [
-    { name: '--bg-main',  label: 'Main',  type: 'color' },
-    { name: '--bg-alt',   label: 'Alt',   type: 'color' },
-    { name: '--bg-muted',  label: 'Muted',  type: 'color' },
-    { name: '--border',     label: 'Border',     type: 'color' },
+    { name: '--bg-main',  label: 'Main',   type: 'color' },
+    { name: '--bg-alt',   label: 'Alt',    type: 'color' },
+    { name: '--bg-muted', label: 'Muted',  type: 'color' },
+    { name: '--border',   label: 'Border', type: 'color' },
   ]},
   { heading: 'Foregrounds', vars: [
     { name: '--fg-main',  label: 'Main',  type: 'color' },
@@ -88,15 +72,15 @@ const COMMON_UI_GROUPS = [
     { name: '--fg-muted', label: 'Muted', type: 'color' },
   ]},
   { heading: 'Interaction', vars: [
-    { name: '--bg-hover', label: 'Hover', type: 'text' },
-    { name: '--selection',  label: 'Selection',  type: 'text' },
-    { name: '--overlay',    label: 'Overlay',    type: 'text'  },
-    { name: '--shadow',    label: 'Shadow',    type: 'text'  },
+    { name: '--bg-hover',  label: 'Hover',     type: 'text' },
+    { name: '--selection', label: 'Selection', type: 'text' },
+    { name: '--overlay',   label: 'Overlay',   type: 'text' },
+    { name: '--shadow',    label: 'Shadow',    type: 'text' },
   ]},
   { heading: 'Chrome', vars: [
-    { name: '--primary',    label: 'Primary',    type: 'color' },
-    { name: '--danger',     label: 'Danger',     type: 'color' },
-    { name: '--success',     label: 'success',     type: 'color' },
+    { name: '--primary',        label: 'Primary', type: 'color' },
+    { name: '--danger',         label: 'Danger',  type: 'color' },
+    { name: '--success',        label: 'Success', type: 'color' },
     { name: '--tag-act-fg',     label: 'Act',     type: 'color' },
     { name: '--tag-chapter-fg', label: 'Chapter', type: 'color' },
     { name: '--tag-scene-fg',   label: 'Scene',   type: 'color' },
@@ -123,6 +107,8 @@ const GROUPS = {
   dark:  COMMON_UI_GROUPS,
 };
 
+// ── CSS helpers ───────────────────────────────────
+
 function alignedVarsBlock(map) {
   const entries = Object.entries(map);
   if (!entries.length) return '';
@@ -133,48 +119,29 @@ function alignedVarsBlock(map) {
 }
 
 function buildFullCss(saved) {
-  const rootVars  = { ...DEFAULTS.root,  ...(saved.root  ?? {}) };
   const lightVars = { ...DEFAULTS.light, ...(saved.light ?? {}) };
   const darkVars  = { ...DEFAULTS.dark,  ...(saved.dark  ?? {}) };
 
-  const tagBeat    = ['--tag-beat-bg','--tag-beat-fg','--tag-beat-bd'];
-  const tagScene   = ['--tag-scene-bg','--tag-scene-fg','--tag-scene-bd'];
-  const tagChapter = ['--tag-chapter-bg','--tag-chapter-fg','--tag-chapter-bd'];
-  const tagAct     = ['--tag-act-bg','--tag-act-fg','--tag-act-bd'];
-  const tagKeys    = [...tagBeat, ...tagScene, ...tagChapter, ...tagAct];
+  const header     = `/* Snara custom theme — generated ${new Date().toISOString()} */`;
+  const lightBlock = `body {\n\n${alignedVarsBlock(lightVars)}\n\n}`;
+  const darkBlock  = `html[data-theme="dark"] body {\n\n${alignedVarsBlock(darkVars)}\n\n}`;
 
-  function split(map) {
-    const base = {}, tags = {};
-    for (const [k, v] of Object.entries(map)) {
-      if (tagKeys.includes(k)) tags[k] = v; else base[k] = v;
-    }
-    return { base, tags };
-  }
-
-  const rootSpacing = Object.fromEntries(Object.entries(rootVars).filter(([k]) => k.startsWith('--s-')));
-  const rootFonts   = Object.fromEntries(Object.entries(rootVars).filter(([k]) => k.startsWith('--f-')));
-
-//  const rootBlock = `:root {\n${alignedVarsBlock(rootSpacing)}\n\n${alignedVarsBlock(rootFonts)}\n}`;
-
-  const rootBlock = `/* snara pref theme */`+ '\n\n';
-  const { base: lb, tags: lt } = split(lightVars);
-  const lightLines = alignedVarsBlock(lb) + '\n\n' + _tagGroupLines(lt, tagBeat, tagScene, tagChapter, tagAct);
-  const lightBlock = `:root {\n\n${lightLines}\n\n}`;
-  const { base: db, tags: dt } = split(darkVars);
-  const darkLines = alignedVarsBlock(db) + '\n\n' + _tagGroupLines(dt, tagBeat, tagScene, tagChapter, tagAct);
-  const darkBlock = `html[data-theme="dark"] {\n${darkLines}\n\n}`;
-  return [rootBlock, lightBlock, darkBlock, SCROLLBAR_CSS].join('\n\n');
+  return [header, lightBlock, darkBlock].join('\n\n');
 }
 
-function _tagGroupLines(tags, ...groups) {
-  return groups
-    .map(keys => {
-      const sub = {};
-      for (const k of keys) if (tags[k] !== undefined) sub[k] = tags[k];
-      return Object.keys(sub).length ? alignedVarsBlock(sub) : '';
-    })
-    .filter(Boolean)
-    .join('\n');
+function rebuildStyle(saved) {
+  let el = document.getElementById('snara-pref-style');
+  if (!el) {
+    el = document.createElement('style');
+    el.id = 'snara-pref-style';
+    document.head.appendChild(el);
+  }
+  const lv = saved.light ?? {};
+  const dv = saved.dark  ?? {};
+  const parts = [];
+  if (Object.keys(lv).length) parts.push(`body {\n${alignedVarsBlock(lv)}\n}`);
+  if (Object.keys(dv).length) parts.push(`html[data-theme="dark"] body {\n${alignedVarsBlock(dv)}\n}`);
+  el.textContent = parts.join('\n\n');
 }
 
 function toHex(value) {
@@ -194,33 +161,19 @@ function toHex(value) {
   return null;
 }
 
-function rebuildStyle(saved) {
-  let el = document.getElementById('snara-pref-style');
-  if (!el) {
-    el = document.createElement('style');
-    el.id = 'snara-pref-style';
-    document.head.appendChild(el);
-  }
-  const parts = [];
-  const rv = saved.root ?? {};
-  const lv = saved.light ?? {};
-  const dv = saved.dark ?? {};
-  if (Object.keys(rv).length) parts.push(`:root {\n${alignedVarsBlock(rv)}\n}`);
-  if (Object.keys(lv).length) parts.push(`:root,\nhtml[theme="light"] {\n${alignedVarsBlock(lv)}\n}`);
-  if (Object.keys(dv).length) parts.push(`html[theme="dark"] {\n${alignedVarsBlock(dv)}\n}`);
-  el.textContent = parts.join('\n\n');
-}
-
 function downloadFile(name, content) {
   const blob = new Blob([content], { type: 'text/css' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
   a.href = url; a.download = name; a.click();
   URL.revokeObjectURL(url);
 }
 
+// ── SnaraPref ─────────────────────────────────────
+
 export class SnaraPref {
   static instance = null;
+
   constructor() {
     SnaraPref.instance = this;
     this._saved     = { root: {}, light: {}, dark: {} };
@@ -241,30 +194,70 @@ export class SnaraPref {
     modal.setAttribute('hidden', '');
     modal.setAttribute('role', 'dialog');
     modal.setAttribute('aria-modal', 'true');
-
     this.modal = modal;
     document.getElementById('app-overlay').appendChild(modal);
-
     document.addEventListener('keydown', e => {
       if (e.key === 'Escape' && !modal.hasAttribute('hidden')) closeModal('pref-modal');
     });
   }
 
-  open()  { this._render(); openModal('pref-modal'); }
-  close() { closeModal('pref-modal'); console.log('closepref'); }
+  open() {
+    this._render();
+    openModal('pref-modal');
+  }
+
+  close() { closeModal('pref-modal'); }
 
   async _loadAndApply() {
     try {
       const res = await fetch(AppConfig.apiPath + '?action=pref.get');
       if (!res.ok) return;
-      const data = await res.json();
-      if (data.vars && !data.light && !data.dark) {
-        this._saved = { root: data.vars ?? {}, light: {}, dark: {} };
-      } else {
-        this._saved = { root: data.root ?? {}, light: data.light ?? {}, dark: data.dark ?? {} };
+      const css = await res.text();
+      if (!css.trim()) return;
+
+      // Inject into DOM for live preview
+      let el = document.getElementById('snara-pref-style');
+      if (!el) {
+        el = document.createElement('style');
+        el.id = 'snara-pref-style';
+        document.head.appendChild(el);
       }
-      rebuildStyle(this._saved);
+      el.textContent = css;
+
+      // Parse file → populate _saved, fill gaps with DEFAULTS
+      const parsed = this._parseCss(css);
+      this._saved = {
+        root:  { ...DEFAULTS.root  },
+        light: { ...DEFAULTS.light, ...parsed.light },
+        dark:  { ...DEFAULTS.dark,  ...parsed.dark  },
+      };
+
     } catch { }
+  }
+
+  _parseCss(css) {
+    const result  = { root: {}, light: {}, dark: {} };
+    const blockRe = /([^{]+)\{([^}]+)\}/gs;
+    let block;
+    while ((block = blockRe.exec(css)) !== null) {
+      const selector = block[1].trim();
+      const body     = block[2];
+
+      let scope = null;
+      if (/html\[.*?dark.*?\]\s*body/.test(selector)) scope = 'dark';
+      else if (selector === 'body')                   scope = 'light';
+
+      if (!scope) continue;
+
+      const declRe = /(--[\w-]+)\s*:\s*([^;]+);/g;
+      let decl;
+      while ((decl = declRe.exec(body)) !== null) {
+        const name = decl[1].trim();
+        const val  = decl[2].trim();
+        if (name && val) result[scope][name] = val;
+      }
+    }
+    return result;
   }
 
   _render() {
@@ -294,20 +287,20 @@ export class SnaraPref {
       });
     });
 
-    this.modal.querySelector('#pref-close').addEventListener('click', () => this.close());
+    this.modal.querySelector('#pref-close').addEventListener('click',  () => this.close());
     this.modal.querySelector('#modal-cancel').addEventListener('click', () => this.close());
-    this.modal.querySelector('#modal-save').addEventListener('click', () => this.save());
-    this.modal.querySelector('#pref-reset').addEventListener('click', () => this._resetCurrentTab());
-    this.modal.querySelector('#pref-export').addEventListener('click', () => this.exportCss());
+    this.modal.querySelector('#modal-save').addEventListener('click',   () => this.save());
+    this.modal.querySelector('#pref-reset').addEventListener('click',   () => this._resetCurrentTab());
+    this.modal.querySelector('#pref-export').addEventListener('click',  () => this.exportCss());
 
     this._bindInputs();
     icx.delayreplace('#pref-modal [data-icon]');
   }
 
   _renderTabBody(tab) {
-    const groups   = GROUPS[tab] ?? [];
-    const defaults = DEFAULTS[tab] ?? {};
+    const groups   = GROUPS[tab]      ?? [];
     const saved    = this._saved[tab] ?? {};
+    const defaults = DEFAULTS[tab]    ?? {};
     return groups.map(g => `
       <section class="cfg-section pref-section">
         <h3 class="cfg-heading">${esc(g.heading)}</h3>
@@ -339,6 +332,8 @@ export class SnaraPref {
   _bindInputs() {
     this.modal.querySelectorAll('.pref-input').forEach(input => {
       const varName = input.dataset.var;
+      const tab     = this._activeTab;
+
       if (input.type === 'color') {
         input.addEventListener('input', () => {
           const textId = input.dataset.peer;
@@ -346,40 +341,63 @@ export class SnaraPref {
             const text = document.getElementById(textId);
             if (text) text.value = input.value;
           }
+          this._saved[tab][varName] = input.value;
           document.documentElement.style.setProperty(varName, input.value);
+		  document.body.style.setProperty(varName, input.value);
+          if (varName === '--fg-link') this._syncInputValue(input.value, '--selection');
         });
       } else {
         input.addEventListener('input', () => {
           const val = input.value.trim();
           const h = toHex(val);
           if (h) {
-            const colorInput = this.modal.querySelector(`.pref-color[data-peer="${CSS.escape(input.id)}"]`);
+            const colorInput = this.modal.querySelector(
+              `.pref-color[data-peer="${CSS.escape(input.id)}"]`
+            );
             if (colorInput) colorInput.value = h;
           }
-          if (val) document.documentElement.style.setProperty(varName, val);
+          if (val) {
+            this._saved[tab][varName] = val;
+            document.documentElement.style.setProperty(varName, val);
+		  document.body.style.setProperty(varName, val);			
+            if (varName === '--fg-link') this._syncInputValue(val, '--selection');
+          }
         });
       }
     });
   }
 
-_snapshotTab() {
-  const tab = this._activeTab;
-  const out = {};
-  this.modal.querySelectorAll('.pref-input[data-canonical]').forEach(inp => {
-    const name = inp.dataset.var;
-    const val  = inp.value.trim();
-    if (name && val) out[name] = val;
-  });
-  // Merge with existing — preserves server-loaded values for unvisited tabs
-  this._saved[tab] = { ...(this._saved[tab] ?? {}), ...out };
-}
+  _syncInputValue(hex, targetVar, opacity = '0.3') {
+    const r = parseInt(hex.slice(1, 3), 16);
+    const g = parseInt(hex.slice(3, 5), 16);
+    const b = parseInt(hex.slice(5, 7), 16);
+    const rgba = `rgba(${r}, ${g}, ${b}, ${opacity})`;
+    this._saved[this._activeTab][targetVar] = rgba;
+    const input = this.modal.querySelector(`.pref-input[data-var="${targetVar}"]`);
+    if (input) input.value = rgba;
+    document.documentElement.style.setProperty(targetVar, rgba);
+	document.body.style.setProperty(targetVar, rgba);
+  }
+
+  _snapshotTab() {
+    const tab = this._activeTab;
+    const out = {};
+    this.modal.querySelectorAll('.pref-input[data-canonical]').forEach(inp => {
+      const name = inp.dataset.var;
+      const val  = inp.value.trim();
+      if (!name || !val) return;
+      out[name] = val;
+    });
+    this._saved[tab] = { ...(this._saved[tab] ?? {}), ...out };
+  }
 
   _resetCurrentTab() {
     const tab = this._activeTab;
     for (const name of Object.keys(DEFAULTS[tab] ?? {})) {
       document.documentElement.style.removeProperty(name);
+	  document.body.style.removeProperty(name);
     }
-    this._saved[tab] = {};
+    this._saved[tab] = { ...DEFAULTS[tab] };
     document.getElementById('pref-body').innerHTML = this._renderTabBody(tab);
     this._bindInputs();
     rebuildStyle(this._saved);
@@ -389,12 +407,13 @@ _snapshotTab() {
     this._snapshotTab();
     const btn = this.modal.querySelector('#modal-save');
     btn.disabled = true; btn.textContent = 'saving…';
+    const css = buildFullCss(this._saved);
     rebuildStyle(this._saved);
     try {
       await fetch(AppConfig.apiPath + '?action=pref.set', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(this._saved)
+        method:  'POST',
+        headers: { 'Content-Type': 'text/css' },
+        body:    css,
       });
       btn.textContent = 'saved ✓';
     } catch { btn.textContent = 'error'; }
@@ -403,26 +422,6 @@ _snapshotTab() {
 
   exportCss() {
     this._snapshotTab();
-    const header = `\n`;
-    const body = buildFullCss(this._saved);
-    downloadFile('vars.css', header + '\n' + body);
+    downloadFile('custom.css', buildFullCss(this._saved));
   }
 }
-
-function refreshDefaults() {
-  if (readingThemeValues) return;
-  DEFAULTS = getLiveDefaults();
-  // console.log('✅ pref.js defaults refreshed from color.css');
-}
-
-window.addEventListener('load', refreshDefaults);
-
-const observer = new MutationObserver(() => {
-  if (!readingThemeValues) refreshDefaults();
-});
-observer.observe(document.documentElement, {
-  attributes: true,
-  attributeFilter: ['data-theme', 'theme']
-});
-
-// console.log('✅ pref.js fully loaded – infinite loop fixed');

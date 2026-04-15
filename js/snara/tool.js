@@ -1,3 +1,4 @@
+import icx           from '../icons/ge-icon.js';
 
 export class SnaraTool {
   static htmlToMd(html) {
@@ -75,17 +76,29 @@ export class SnaraTool {
     sel.addRange(range);
   }
 
-  static applyTheme(theme) {
-    document.documentElement.setAttribute('theme', theme);
-    const btn = document.getElementById('theme-toggle');
-    if (btn) {
-      let i = btn.querySelector('i[data-icon]');
-      if (!i) { i = btn.querySelector('i') || btn; }
+static applyTheme(theme) {
+	
+      if (theme === 'system' || !theme) {
+        theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+      }
+	
+  document.documentElement.setAttribute('data-theme', theme);
+  const btn = document.getElementById('theme-toggle');
+  if (btn) {
+    let i = btn.querySelector('i[data-icon]');
+    if (i) {
       i.setAttribute('data-icon', theme === 'dark' ? 'moon' : 'sun');
+      icx.delayreplace('#theme-toggle [data-icon]');
+    } else {
+      // No <i> found — clear text and inject fresh element
+      btn.textContent = '';
+      const newI = document.createElement('i');
+      newI.setAttribute('data-icon', theme === 'dark' ? 'moon' : 'sun');
+      btn.appendChild(newI);
+      icx.delayreplace('#theme-toggle [data-icon]');
     }
-
   }
-
+}
   static savedTheme() {
     return localStorage.getItem('theme')
       || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');

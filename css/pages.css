@@ -222,7 +222,7 @@
   cursor: default;
   transition: box-shadow .15s;
 }
-.gallery-card:hover { box-shadow: 0 2px 12px var(--overlay); }
+.gallery-card:hover { box-shadow: 0 2px 12px var(--shadow); }
 
 .gallery-card img,
 .gallery-card video {
@@ -312,7 +312,7 @@
           in modal.css and are shared app-wide
    ═══════════════════════════════════════════════════ */
 
-.pref-body  { padding: 0; gap: 0; }
+.pref-body  {padding: 0;gap: 0;flex-direction: row;flex-wrap: wrap;display: flex;}
 .pref-tabs  { padding: 0 var(--s-sm); border-bottom: 1px solid var(--border); }
 
 .pref-section {
@@ -320,10 +320,10 @@
   flex-direction: column;
   gap: var(--s-xs);
   padding: var(--s-md) var(--s-lg);
-  border-bottom: 1px solid var(--border);
+  /* border-bottom: 1px solid var(--border); */
   width: 50%;
 }
-.pref-section:last-child    { border-bottom: none; }
+.pref-section:last-child    {border-bottom: none;margin-bottom: 4rem;}
 
 .pref-body.tab-root {
   display: flex;
@@ -447,5 +447,5 @@
   display: flex;margin-left: 10%;width: 80%;
   padding: var(--s-md);flex-direction: column;justify-content: space-between;}
 #about .page h1 { font-size: 5rem; font-weight: 100; }
-#about .page blockquote { text-align: center; font-style: italic; font-size: 1.1rem;}
+#about .page blockquote {text-align: center;font-style: italic;font-size: 1.1rem;color: var(--border);}
 #about .page footer { display: flex; justify-content: flex-end }

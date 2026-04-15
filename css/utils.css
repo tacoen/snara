@@ -66,7 +66,7 @@
   font-size: var(--f-xs);
   background: var(--bg-alt);
   border-top: 1px solid var(--border);
-  box-shadow: 0 -2px 12px var(--overlay);
+  box-shadow: 0 -2px 12px var(--shadow);
 }
 
 
@@ -149,7 +149,7 @@
 .notes__toggle-btn--active {
   background: var(--bg-main);
   color: var(--fg-main);
-  box-shadow: 0 1px 3px var(--overlay);
+  box-shadow: 0 1px 3px var(--shadow);
 }
  
 .notes__toggle-btn:hover:not(.notes__toggle-btn--active) {
@@ -207,7 +207,7 @@
  
 .notes__card:hover {
   border-color: var(--notes-accent);
-  box-shadow: 0 2px 8px var(--overlay);
+  box-shadow: 0 2px 8px var(--shadow);
 }
  
 /* ── Card header ── */

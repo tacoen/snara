@@ -394,7 +394,7 @@ export class SnaraFiles extends SnaraComponent {
       display:flex;align-items:center;gap:8px;
       padding:10px 16px;font-size:12px;
       background:var(--bg-alt);border-top:1px solid var(--border);
-      box-shadow:0 -2px 12px var(--overlay);
+      box-shadow:0 -2px 12px var(--shadow);
     `;
     confirm.innerHTML = `
       <span style="flex:1;color:var(--danger)">Delete "${esc(filename)}"?</span>

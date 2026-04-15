@@ -1,71 +1,32 @@
 <?php
 /* ─────────────────────────────────────────────────
    php/pref.php — CSS variable persistence
-   Stores { root:{}, light:{}, dark:{} } in json/cssvars.json.
+   Saves raw CSS to data/custom.css.
 
-   Actions (registered in router.php):
-     GET  ?action=pref.get   → { root:{}, light:{}, dark:{} }
-     POST ?action=pref.set   ← { root:{}, light:{}, dark:{} }
-                             → { ok: true }
+   Actions:
+     GET  ?action=pref.get   → raw CSS text
+     POST ?action=pref.set   ← raw CSS body → { ok: true }
 ─────────────────────────────────────────────────── */
 
 class Pref {
 
   private static function file(): string {
-    return Config::root() . '/json/cssvars.json';
+    return Config::root() . '/data/custom.css';
   }
 
-  /** Sanitize one scope map: only allow CSS custom properties, sane lengths */
-  private static function sanitizeScope(array $map): array {
-    $out = [];
-    foreach ($map as $name => $value) {
-      $name  = trim((string) $name);
-      $value = trim((string) $value);
-      if (strpos($name, '--') !== 0) continue;  // must start with --
-      if (strlen($name)  > 80)       continue;
-      if (strlen($value) > 120)      continue;
-      $out[$name] = $value;
-    }
-    return $out;
-  }
-
-  public static function get(): array {
+  public static function get(): string {
     $path = self::file();
-    if (!file_exists($path)) return ['root' => [], 'light' => [], 'dark' => []];
-    $data = json_decode(file_get_contents($path), true);
-    if (!is_array($data)) return ['root' => [], 'light' => [], 'dark' => []];
-    return [
-      'root'  => $data['root']  ?? [],
-      'light' => $data['light'] ?? [],
-      'dark'  => $data['dark']  ?? [],
-    ];
+    if (!file_exists($path)) return '';
+    return file_get_contents($path);
   }
 
-
-public static function set(): void {
-  $css = file_get_contents('php://input');
-  if (!$css) return;
-
-  $path = Config::root() . '/data/custom.css';
-  $dir  = dirname($path);
-  if (!is_dir($dir)) mkdir($dir, 0755, true);
-
-  file_put_contents($path, $css);
-}
-
-  public static function OLDset(array $data): void {
-    $clean = [
-      'root'  => self::sanitizeScope($data['root']  ?? []),
-      'light' => self::sanitizeScope($data['light'] ?? []),
-      'dark'  => self::sanitizeScope($data['dark']  ?? []),
-    ];
+  public static function set(): void {
+    $css = file_get_contents('php://input');
+    if (!$css) return;
 
     $dir = dirname(self::file());
     if (!is_dir($dir)) mkdir($dir, 0755, true);
 
-    file_put_contents(
-      self::file(),
-      json_encode($clean, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE)
-    );
+    file_put_contents(self::file(), $css);
   }
 }

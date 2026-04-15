@@ -276,18 +276,18 @@ case 'kanban.set':
                     break;
 
                 // ── Theme CSS variables ──────────────────────
-                case 'pref.get':
-                    self::requireMethod($method, 'GET');
-                    echo json_encode(['vars' => Pref::get()]);
-                    break;
+case 'pref.get':
+    self::requireMethod($method, 'GET');
+    header('Content-Type: text/css');
+    echo Pref::get();
+    exit;
 
-                case 'pref.set':
-                    self::requireMethod($method, 'POST');
-                    $body = self::body();
-                    Pref::set($body['vars'] ?? []);
-                    echo json_encode(['ok' => true]);
-                    break;
-
+case 'pref.set':
+    self::requireMethod($method, 'POST');
+    Pref::set();
+    echo json_encode(['ok' => true]);
+    break;
+	
                 // ── Editor preferences (per-book) ────────────
                 // Stored in data/$bookId/conf/editor.json.
                 // Returns defaults if the file does not exist yet —

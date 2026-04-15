@@ -1,4 +1,3 @@
-
 export class SnaraTools {
   static instance = null;
   constructor() {
@@ -25,7 +24,7 @@ export class SnaraTools {
       li.className = `toc-item toc-${level}`;
 
       const a = document.createElement('a');
-      a.href        = `#${anchor}`+ "_" + Date.now();
+      a.href        = `#${anchor}`;
       a.textContent = text;
       a.addEventListener('click', e => {
         e.preventDefault();
@@ -45,23 +44,19 @@ export class SnaraTools {
     const entries = this.entries.querySelectorAll('.entry');
     let   counter = {};
 
-    entries.forEach((div, idx) => {
-      const level = this._levelOf(div);
-      if (!level) return;
-      const hEl = div.querySelector('h1, h2, h3, h4');
-      const text = hEl
-        ? hEl.textContent.trim()
-        : div.textContent.trim().split('\n')[0].trim();
-      if (!text) return;
-      const slug   = this._slug(text);
-      const key    = slug || `entry`;
-      counter[key] = (counter[key] || 0) + 1;
-      const anchor = counter[key] === 1 ? key : `${key}-${counter[key]}`;
+entries.forEach((div, idx) => {
+  const level = this._levelOf(div);
+  if (!level) return;
+  const hEl  = div.querySelector('h1, h2, h3, h4');
+  const text = hEl
+    ? hEl.textContent.trim()
+    : div.textContent.trim().split('\n')[0].trim();
+  if (!text) return;
 
-      div.id = anchor;
-
-      items.push({ level, text, anchor });
-    });
+  const anchor = `entry-${idx}`;  // stable, always unique, index-based
+  div.id = anchor;
+  items.push({ level, text, anchor });
+});
 
     return items;
   }

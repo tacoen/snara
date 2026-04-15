@@ -32,7 +32,7 @@
   background:    var(--bg-main);
   border:        1px solid var(--border);
   border-radius: 6px;
-  box-shadow:    0 4px 24px var(--overlay);
+  box-shadow:    0 4px 24px var(--shadow);
   overflow:      hidden;
   font-family:   var(--font-sans);
   font-size:     var(--f-xs);

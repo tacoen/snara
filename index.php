@@ -21,7 +21,7 @@ $title  = 'Snara';
       }
 
       // Apply immediately (no flash)
-      document.documentElement.setAttribute('theme', theme);
+      document.documentElement.setAttribute('data-theme', theme);
     })();
   </script>
   <link rel="stylesheet" href="style.css">

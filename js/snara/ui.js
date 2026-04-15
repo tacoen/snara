@@ -299,16 +299,17 @@ removeField(btn) {
   btn.closest('.meta-field').remove();
 }  
 
-
   _initTheme() {
     SnaraTool.applyTheme(SnaraTool.savedTheme());
   }
 
   toggleTheme(theme) {
     const next = theme ?? (
-      document.documentElement.getAttribute('theme') === 'dark' ? 'light' : 'dark'
+      document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark'
     );
     localStorage.setItem('theme', next);
+		  		console.log(next);
+
     SnaraTool.applyTheme(next);
     icx.delayreplace('#theme-toggle [data-icon]');
   }

@@ -72,3 +72,6 @@ svg.icon {
   display: block;
   flex-shrink: 0;
 }
+
+a { color: var(--fg-link); }
+a:hover { color: var(--bg-hover); }

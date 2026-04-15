@@ -81,3 +81,7 @@ input[data-var="--tag-act-fg"] { background-color: var(--tag-act-bg); border: 1p
 input[data-var="--tag-chapter-fg"] { background-color: var(--tag-chapter-bg); border: 1px solid var(--tag-chapter-bd); }
 input[data-var="--tag-scene-fg"] { background-color: var(--tag-scene-bg); border: 1px solid var(--tag-scene-bd); }
 input[data-var="--tag-beat-fg"] { background-color: var(--tag-beat-bg); border: 1px solid var(--tag-beat--bd); }
+
+#about-btn.btn-icon { color: var(--danger); }
+[data-theme='dark'] #about-btn.btn-icon { color: var(--fg-link); }
+  
