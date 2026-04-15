@@ -12,13 +12,16 @@
      DELETE ?action=import.delete&bookId=$n&filename=$f  remove one
 ─────────────────────────────────────────────────── */
 
-class Import {
+class Import
+{
 
-  private static function dir(int $bookId): string {
+  private static function dir(int $bookId): string
+  {
     return Config::dataDir() . '/' . $bookId . '/import';
   }
 
-  private static function safeName(string $name): string {
+  private static function safeName(string $name): string
+  {
     $name = basename($name);
     // Allow letters, numbers, dash, underscore, dot — strip the rest
     $name = preg_replace('/[^a-zA-Z0-9\-_.]/', '-', $name);
@@ -27,14 +30,16 @@ class Import {
     return $name;
   }
 
-  private static function allowedExt(string $name): bool {
+  private static function allowedExt(string $name): bool
+  {
     $ext = strtolower(pathinfo($name, PATHINFO_EXTENSION));
     return in_array($ext, ['txt', 'md'], true);
   }
 
   // ── Upload ────────────────────────────────────
 
-  public static function upload(int $bookId): array {
+  public static function upload(int $bookId): array
+  {
     $dir = self::dir($bookId);
     if (!is_dir($dir)) mkdir($dir, 0755, true);
 
@@ -77,7 +82,8 @@ class Import {
 
   // ── List ──────────────────────────────────────
 
-  public static function list(int $bookId): array {
+  public static function list(int $bookId): array
+  {
     $dir = self::dir($bookId);
     if (!is_dir($dir)) return [];
 
@@ -102,7 +108,8 @@ class Import {
 
   // ── Delete ────────────────────────────────────
 
-  public static function delete(int $bookId, string $filename): void {
+  public static function delete(int $bookId, string $filename): void
+  {
     $dir  = self::dir($bookId);
     $safe = self::safeName($filename);
     $path = $dir . '/' . $safe;
@@ -121,7 +128,8 @@ class Import {
 
   // ── Read raw text (for preview) ───────────────
 
-  public static function read(int $bookId, string $filename): string {
+  public static function read(int $bookId, string $filename): string
+  {
     $dir  = self::dir($bookId);
     $safe = self::safeName($filename);
     $path = $dir . '/' . $safe;

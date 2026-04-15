@@ -13,21 +13,25 @@
      POST ?action=state.set                 ← { bookId, filename, state }
 ─────────────────────────────────────────────────── */
 
-class ChapterState {
+class ChapterState
+{
 
-  private static function path(int $bookId): string {
+  private static function path(int $bookId): string
+  {
     Config::ensureBookDirs($bookId);
     return Config::dataDir() . '/' . $bookId . '/cache/states.json';
   }
 
-  public static function get(int $bookId): array {
+  public static function get(int $bookId): array
+  {
     $path = self::path($bookId);
     if (!file_exists($path)) return [];
     $data = json_decode(file_get_contents($path), true);
     return is_array($data) ? $data : [];
   }
 
-  public static function set(int $bookId, string $filename, string $state): void {
+  public static function set(int $bookId, string $filename, string $state): void
+  {
     $allowed = ['unlock', 'lock', 'delete'];
     if (!in_array($state, $allowed, true)) {
       throw new InvalidArgumentException("Invalid state: $state");

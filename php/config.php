@@ -21,19 +21,23 @@
      Config::resolveDefaults(bookId) → global merged with book overrides
 ─────────────────────────────────────────────────── */
 
-class Config {
+class Config
+{
 
   // ── File paths ────────────────────────────────
 
-  private static function configFile(): string {
+  private static function configFile(): string
+  {
     return dirname(__DIR__) . '/json/config.json';
   }
 
-  private static function globalDefaultFile(): string {
+  private static function globalDefaultFile(): string
+  {
     return dirname(__DIR__) . '/json/default.json';
   }
 
-  private static function bookDefaultFile(int $bookId): string {
+  private static function bookDefaultFile(int $bookId): string
+  {
     return self::dataDir() . '/' . $bookId . '/conf/default.json';
   }
 
@@ -44,7 +48,8 @@ class Config {
 
   // ── config.json ───────────────────────────────
 
-  public static function get(): array {
+  public static function get(): array
+  {
     if (!empty(self::$cache)) return self::$cache;
 
     $path = self::configFile();
@@ -60,7 +65,8 @@ class Config {
     return self::$cache;
   }
 
-  public static function set(array $data): void {
+  public static function set(array $data): void
+  {
     $path = self::configFile();
     $dir  = dirname($path);
     if (!is_dir($dir)) mkdir($dir, 0755, true);
@@ -74,7 +80,8 @@ class Config {
 
   // ── json/default.json ─────────────────────────
 
-  public static function getGlobalDefaults(): array {
+  public static function getGlobalDefaults(): array
+  {
     if (!empty(self::$defaultCache)) return self::$defaultCache;
 
     $path = self::globalDefaultFile();
@@ -90,7 +97,8 @@ class Config {
     return self::$defaultCache;
   }
 
-  public static function setGlobalDefaults(array $defaults): void {
+  public static function setGlobalDefaults(array $defaults): void
+  {
     $path = self::globalDefaultFile();
     $dir  = dirname($path);
     if (!is_dir($dir)) mkdir($dir, 0755, true);
@@ -104,7 +112,8 @@ class Config {
 
   // ── data/$bookId/default.json ─────────────────
 
-  public static function getBookDefaults(int $bookId): array {
+  public static function getBookDefaults(int $bookId): array
+  {
     $path = self::bookDefaultFile($bookId);
 
     // If per-book file doesn't exist, copy from global default
@@ -120,7 +129,8 @@ class Config {
     return [];
   }
 
-  public static function setBookDefaults(int $bookId, array $defaults): void {
+  public static function setBookDefaults(int $bookId, array $defaults): void
+  {
     $path = self::bookDefaultFile($bookId);
     $dir  = dirname($path);
     if (!is_dir($dir)) mkdir($dir, 0755, true);
@@ -143,7 +153,8 @@ class Config {
 
   // ── Resolved defaults (global ← book override) ─
 
-  public static function resolveDefaults(?int $bookId = null): array {
+  public static function resolveDefaults(?int $bookId = null): array
+  {
     $global = self::getGlobalDefaults();
     if (!$bookId) return $global;
 
@@ -153,38 +164,43 @@ class Config {
 
   // ── Path resolvers ────────────────────────────
 
-  public static function root(): string {
+  public static function root(): string
+  {
     return dirname(__DIR__);
   }
 
-  public static function dataDir(): string {
+  public static function dataDir(): string
+  {
     $rel = self::get()['dataPath'] ?? '/data';
     return self::root() . '/' . ltrim($rel, '/');
   }
 
-  public static function jsonDir(): string {
+  public static function jsonDir(): string
+  {
     $rel = self::get()['jsonPath'] ?? '/json';
     return self::root() . '/' . ltrim($rel, '/');
   }
 
   // ── Private helpers ───────────────────────────
 
-private static function _initBookDefault(int $bookId): void {
-  $dst = self::bookDefaultFile($bookId);
-  $dir = dirname($dst);
+  private static function _initBookDefault(int $bookId): void
+  {
+    $dst = self::bookDefaultFile($bookId);
+    $dir = dirname($dst);
 
-  if (!is_dir($dir)) mkdir($dir, 0755, true);
+    if (!is_dir($dir)) mkdir($dir, 0755, true);
 
-  file_put_contents($dst, json_encode(
-    ['defaults' => self::defaultsDefaults()],
-    JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE
-  ));
-}
+    file_put_contents($dst, json_encode(
+      ['defaults' => self::defaultsDefaults()],
+      JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE
+    ));
+  }
   // ── Book directory scaffolding ───────────────────
   // Creates all required subdirs under data/$bookId/
   // Safe to call multiple times (is_dir checks prevent re-creation).
 
-  public static function ensureBookDirs(int $bookId): void {
+  public static function ensureBookDirs(int $bookId): void
+  {
     $base = Config::dataDir() . '/' . $bookId;
     $dirs = ['conf', 'image', 'cache', 'import', 'export'];
     foreach ($dirs as $sub) {
@@ -195,7 +211,8 @@ private static function _initBookDefault(int $bookId): void {
 
   // ── Fallback defaults ─────────────────────────
 
-  public static function configDefaults(): array {
+  public static function configDefaults(): array
+  {
     return [
       'apiPath'         => '/api.php',
       'dataPath'        => '/data',
@@ -213,7 +230,8 @@ private static function _initBookDefault(int $bookId): void {
     ];
   }
 
-  public static function defaultsDefaults(): array {
+  public static function defaultsDefaults(): array
+  {
     return [
       'act'              => 'None',
       'defaultTag'       => 'beat',

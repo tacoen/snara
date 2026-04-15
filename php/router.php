@@ -71,9 +71,11 @@ require_once __DIR__ . '/chatlog.php';
 require_once __DIR__ . '/notes.php';
 require_once __DIR__ . '/kanban.php';
 
-class Router {
+class Router
+{
 
-    public static function dispatch(): void {
+    public static function dispatch(): void
+    {
         header('Content-Type: application/json');
         header('Access-Control-Allow-Origin: *');
         header('Access-Control-Allow-Methods: GET, POST, DELETE, OPTIONS');
@@ -92,26 +94,26 @@ class Router {
             switch ($action) {
 
 
-case 'kanban.get':
-    self::requireMethod($method, 'GET');
-    $bookId = (int) self::requireParam('bookId');
-    echo json_encode(Kanban::get($bookId));
-    break;
+                case 'kanban.get':
+                    self::requireMethod($method, 'GET');
+                    $bookId = (int) self::requireParam('bookId');
+                    echo json_encode(Kanban::get($bookId));
+                    break;
 
-case 'kanban.set':
-    self::requireMethod($method, 'POST');
-    $bookId = (int) self::requireParam('bookId');
-    Kanban::set($bookId, self::body());
-    echo json_encode(['ok' => true]);
-    break;
-	
+                case 'kanban.set':
+                    self::requireMethod($method, 'POST');
+                    $bookId = (int) self::requireParam('bookId');
+                    Kanban::set($bookId, self::body());
+                    echo json_encode(['ok' => true]);
+                    break;
+
                 // ── Notes ────────────────────────────────────
                 case 'notes.list':
                     self::requireMethod($method, 'GET');
                     echo json_encode(Notes::list());
                     break;
- 
-					case 'notes.save':
+
+                case 'notes.save':
                     self::requireMethod($method, 'POST');
                     $body = self::body();
                     // body() returns [] on empty input — that would wipe all notes
@@ -122,7 +124,7 @@ case 'kanban.set':
                     echo json_encode(['ok' => true]);
                     break;
 
-// ── Chatlog ──────────────────────────────────
+                // ── Chatlog ──────────────────────────────────
                 case 'chatlog.get':
                     self::requireMethod($method, 'GET');
                     $bookId = (int) self::requireParam('bookId');
@@ -142,7 +144,7 @@ case 'kanban.set':
                     Chatlog::clear($bookId);
                     echo json_encode(['ok' => true]);
                     break;
-					
+
                 // ── Config ───────────────────────────────────
                 case 'config.get':
                     self::requireMethod($method, 'GET');
@@ -276,18 +278,18 @@ case 'kanban.set':
                     break;
 
                 // ── Theme CSS variables ──────────────────────
-case 'pref.get':
-    self::requireMethod($method, 'GET');
-    header('Content-Type: text/css');
-    echo Pref::get();
-    exit;
+                case 'pref.get':
+                    self::requireMethod($method, 'GET');
+                    header('Content-Type: text/css');
+                    echo Pref::get();
+                    exit;
 
-case 'pref.set':
-    self::requireMethod($method, 'POST');
-    Pref::set();
-    echo json_encode(['ok' => true]);
-    break;
-	
+                case 'pref.set':
+                    self::requireMethod($method, 'POST');
+                    Pref::set();
+                    echo json_encode(['ok' => true]);
+                    break;
+
                 // ── Editor preferences (per-book) ────────────
                 // Stored in data/$bookId/conf/editor.json.
                 // Returns defaults if the file does not exist yet —
@@ -341,7 +343,7 @@ case 'pref.set':
                     echo Import::read($bookId, $filename);
                     exit;
 
-                // ── Gallery ──────────────────────────────────
+                    // ── Gallery ──────────────────────────────────
                 case 'gallery.upload':
                     self::requireMethod($method, 'POST');
                     $bookId = (int)($_GET['bookId'] ?? $_POST['bookId'] ?? 0);
@@ -394,7 +396,7 @@ case 'pref.set':
                     echo json_encode(Cache::rebuild($bookId));
                     break;
 
-// ── AI Chat ──────────────────────────────────
+                // ── AI Chat ──────────────────────────────────
                 case 'ai.chat':
                     self::requireMethod($method, 'POST');
                     $body    = self::body();
@@ -404,16 +406,16 @@ case 'pref.set':
                     break;
                 // ── AI Chat config ───────────────────────────
 
-case 'ai.get':
-    self::requireMethod($method, 'GET');
-    echo json_encode(AiChat::get());
-    break;
+                case 'ai.get':
+                    self::requireMethod($method, 'GET');
+                    echo json_encode(AiChat::get());
+                    break;
 
-case 'ai.set':
-    self::requireMethod($method, 'POST');
-    AiChat::set(self::body());
-    echo json_encode(['ok' => true]);
-    break;
+                case 'ai.set':
+                    self::requireMethod($method, 'POST');
+                    AiChat::set(self::body());
+                    echo json_encode(['ok' => true]);
+                    break;
                 // ── Unknown ──────────────────────────────────
                 default:
                     self::error(404, 'Unknown action: ' . $action);
@@ -425,23 +427,27 @@ case 'ai.set':
 
     // ── Helpers ───────────────────────────────────
 
-    private static function requestMethod(): string {
+    private static function requestMethod(): string
+    {
         if (PHP_SAPI === 'cli') return 'GET';
         return $_SERVER['REQUEST_METHOD'] ?? 'GET';
     }
 
-    private static function requireMethod(string $actual, string $expected): void {
+    private static function requireMethod(string $actual, string $expected): void
+    {
         if ($actual !== $expected) {
             self::error(405, "Method $actual not allowed for this action");
         }
     }
 
-    private static function requireParam(string $key): string {
+    private static function requireParam(string $key): string
+    {
         if (empty($_GET[$key])) self::error(400, "Missing query param: $key");
         return $_GET[$key];
     }
 
-    private static function body(): array {
+    private static function body(): array
+    {
         $raw = file_get_contents('php://input');
         if ($raw === false || $raw === '') return [];
         $data = json_decode($raw, true);
@@ -449,7 +455,8 @@ case 'ai.set':
         return $data;
     }
 
-    private static function error(int $code, string $message): void {
+    private static function error(int $code, string $message): void
+    {
         http_response_code($code);
         echo json_encode(['error' => $message]);
         exit;

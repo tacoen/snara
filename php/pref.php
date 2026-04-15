@@ -8,19 +8,23 @@
      POST ?action=pref.set   ← raw CSS body → { ok: true }
 ─────────────────────────────────────────────────── */
 
-class Pref {
+class Pref
+{
 
-  private static function file(): string {
+  private static function file(): string
+  {
     return Config::root() . '/data/custom.css';
   }
 
-  public static function get(): string {
+  public static function get(): string
+  {
     $path = self::file();
     if (!file_exists($path)) return '';
     return file_get_contents($path);
   }
 
-  public static function set(): void {
+  public static function set(): void
+  {
     $css = file_get_contents('php://input');
     if (!$css) return;
 

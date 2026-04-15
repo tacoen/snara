@@ -78,13 +78,14 @@ class Chatlog
             'role'      => $raw['role'],
             'content'   => substr((string) $raw['content'], 0, 20_000),
             'label'     => substr(
-                               (string) ($raw['label'] ?? mb_substr($raw['content'], 0, 30)),
-                               0, 50
-                           ),
+                (string) ($raw['label'] ?? mb_substr($raw['content'], 0, 30)),
+                0,
+                50
+            ),
             'timestamp' => (
                 isset($raw['timestamp']) && is_string($raw['timestamp'])
-                    ? substr($raw['timestamp'], 0, 30)
-                    : date('c')
+                ? substr($raw['timestamp'], 0, 30)
+                : date('c')
             ),
         ];
 

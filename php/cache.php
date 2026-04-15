@@ -18,15 +18,18 @@
      Cache::rebuild($bookId)            → array of step results
 ─────────────────────────────────────────────────── */
 
-class Cache {
+class Cache
+{
 
   // ── Path helpers ──────────────────────────────────────────
 
-  private static function dir(int $bookId): string {
+  private static function dir(int $bookId): string
+  {
     return Config::dataDir() . '/' . $bookId . '/cache';
   }
 
-  private static function chaptersPath(int $bookId): string {
+  private static function chaptersPath(int $bookId): string
+  {
     return self::dir($bookId) . '/chapters.json';
   }
 
@@ -35,7 +38,8 @@ class Cache {
   /**
    * Return cached chapters array if valid, null if stale or missing.
    */
-  public static function getChapters(int $bookId): ?array {
+  public static function getChapters(int $bookId): ?array
+  {
     $path = self::chaptersPath($bookId);
     if (!file_exists($path)) return null;
 
@@ -60,7 +64,8 @@ class Cache {
   /**
    * Write chapters data to cache.
    */
-  public static function putChapters(int $bookId, array $chapters): void {
+  public static function putChapters(int $bookId, array $chapters): void
+  {
     $dir = self::dir($bookId);
     if (!is_dir($dir)) mkdir($dir, 0755, true);
 
@@ -76,7 +81,8 @@ class Cache {
   /**
    * Delete the chapters cache for a book.
    */
-  public static function clearChapters(int $bookId): void {
+  public static function clearChapters(int $bookId): void
+  {
     $path = self::chaptersPath($bookId);
     if (file_exists($path)) unlink($path);
   }
@@ -84,7 +90,8 @@ class Cache {
   /**
    * Clear all cache files for a book.
    */
-  public static function clear(int $bookId): void {
+  public static function clear(int $bookId): void
+  {
     $dir   = self::dir($bookId);
     $files = glob($dir . '/*.json') ?: [];
     foreach ($files as $f) unlink($f);
@@ -97,7 +104,8 @@ class Cache {
    * act.json now lives here too (moved from conf/).
    * chapters.json is checked for staleness.
    */
-  public static function list(int $bookId): array {
+  public static function list(int $bookId): array
+  {
     $results  = [];
     $cacheDir = self::dir($bookId);
 
@@ -115,7 +123,10 @@ class Cache {
         $builtAt = (int)($data['built'] ?? 0);
         $docDir  = Config::dataDir() . '/' . $bookId;
         foreach (glob($docDir . '/*.json') ?: [] as $doc) {
-          if (filemtime($doc) > $builtAt) { $stale = true; break; }
+          if (filemtime($doc) > $builtAt) {
+            $stale = true;
+            break;
+          }
         }
       }
 
@@ -138,66 +149,99 @@ class Cache {
    * Returns step-by-step results for the UI progress display.
    */
 
-public static function rebuild(int $bookId): array {
-  $steps = [];
+  public static function rebuild(int $bookId): array
+  {
+    $steps = [];
 
-  // ── Step 1: clear chapters.json ───────────────
-  $t = microtime(true);
-  self::clearChapters($bookId);
-  $steps[] = ['step' => 'Cleared chapters.json', 'status' => 'ok',
-    'ms' => (int)((microtime(true) - $t) * 1000)];
+    // ── Step 1: clear chapters.json ───────────────
+    $t = microtime(true);
+    self::clearChapters($bookId);
+    $steps[] = [
+      'step' => 'Cleared chapters.json',
+      'status' => 'ok',
+      'ms' => (int)((microtime(true) - $t) * 1000)
+    ];
 
-  // ── Step 2: rebuild chapters cache ────────────
-  $t = microtime(true);
-  try {
-    $chapters = Book::chapters($bookId);
-    $steps[] = ['step' => 'Rebuilt chapters index', 'status' => 'ok',
-      'ms' => (int)((microtime(true) - $t) * 1000), 'count' => count($chapters)];
-  } catch (Throwable $e) {
-    $steps[] = ['step' => 'Rebuilt chapters index', 'status' => 'error',
-      'ms' => (int)((microtime(true) - $t) * 1000), 'error' => $e->getMessage()];
+    // ── Step 2: rebuild chapters cache ────────────
+    $t = microtime(true);
+    try {
+      $chapters = Book::chapters($bookId);
+      $steps[] = [
+        'step' => 'Rebuilt chapters index',
+        'status' => 'ok',
+        'ms' => (int)((microtime(true) - $t) * 1000),
+        'count' => count($chapters)
+      ];
+    } catch (Throwable $e) {
+      $steps[] = [
+        'step' => 'Rebuilt chapters index',
+        'status' => 'error',
+        'ms' => (int)((microtime(true) - $t) * 1000),
+        'error' => $e->getMessage()
+      ];
+    }
+
+    // ── Step 3: rebuild act.json ───────────────────
+    $t = microtime(true);
+    try {
+      Document::rebuildActIndex($bookId);
+      $actPath = self::dir($bookId) . '/act.json';
+      $actData = json_decode(@file_get_contents($actPath) ?: '[]', true);
+      $steps[] = [
+        'step' => 'Rebuilt act.json',
+        'status' => 'ok',
+        'ms' => (int)((microtime(true) - $t) * 1000),
+        'count' => is_array($actData) ? count($actData) : 0
+      ];
+    } catch (Throwable $e) {
+      $steps[] = [
+        'step' => 'Rebuilt act.json',
+        'status' => 'error',
+        'ms' => (int)((microtime(true) - $t) * 1000),
+        'error' => $e->getMessage()
+      ];
+    }
+
+    // ── Step 4: rebuild story-characters.json ─────
+    $t = microtime(true);
+    try {
+      Document::rebuildStoryCache($bookId, 'characters');
+      $data = json_decode(@file_get_contents(self::dir($bookId) . '/story-characters.json') ?: '[]', true);
+      $steps[] = [
+        'step' => 'Rebuilt story-characters.json',
+        'status' => 'ok',
+        'ms' => (int)((microtime(true) - $t) * 1000),
+        'count' => is_array($data) ? count($data) : 0
+      ];
+    } catch (Throwable $e) {
+      $steps[] = [
+        'step' => 'Rebuilt story-characters.json',
+        'status' => 'error',
+        'ms' => (int)((microtime(true) - $t) * 1000),
+        'error' => $e->getMessage()
+      ];
+    }
+
+    // ── Step 5: rebuild story-settings.json ───────
+    $t = microtime(true);
+    try {
+      Document::rebuildStoryCache($bookId, 'settings');
+      $data = json_decode(@file_get_contents(self::dir($bookId) . '/story-settings.json') ?: '[]', true);
+      $steps[] = [
+        'step' => 'Rebuilt story-settings.json',
+        'status' => 'ok',
+        'ms' => (int)((microtime(true) - $t) * 1000),
+        'count' => is_array($data) ? count($data) : 0
+      ];
+    } catch (Throwable $e) {
+      $steps[] = [
+        'step' => 'Rebuilt story-settings.json',
+        'status' => 'error',
+        'ms' => (int)((microtime(true) - $t) * 1000),
+        'error' => $e->getMessage()
+      ];
+    }
+
+    return ['steps' => $steps];
   }
-
-  // ── Step 3: rebuild act.json ───────────────────
-  $t = microtime(true);
-  try {
-    Document::rebuildActIndex($bookId);
-    $actPath = self::dir($bookId) . '/act.json';
-    $actData = json_decode(@file_get_contents($actPath) ?: '[]', true);
-    $steps[] = ['step' => 'Rebuilt act.json', 'status' => 'ok',
-      'ms' => (int)((microtime(true) - $t) * 1000),
-      'count' => is_array($actData) ? count($actData) : 0];
-  } catch (Throwable $e) {
-    $steps[] = ['step' => 'Rebuilt act.json', 'status' => 'error',
-      'ms' => (int)((microtime(true) - $t) * 1000), 'error' => $e->getMessage()];
-  }
-
-  // ── Step 4: rebuild story-characters.json ─────
-  $t = microtime(true);
-  try {
-    Document::rebuildStoryCache($bookId, 'characters');
-    $data = json_decode(@file_get_contents(self::dir($bookId) . '/story-characters.json') ?: '[]', true);
-    $steps[] = ['step' => 'Rebuilt story-characters.json', 'status' => 'ok',
-      'ms' => (int)((microtime(true) - $t) * 1000),
-      'count' => is_array($data) ? count($data) : 0];
-  } catch (Throwable $e) {
-    $steps[] = ['step' => 'Rebuilt story-characters.json', 'status' => 'error',
-      'ms' => (int)((microtime(true) - $t) * 1000), 'error' => $e->getMessage()];
-  }
-
-  // ── Step 5: rebuild story-settings.json ───────
-  $t = microtime(true);
-  try {
-    Document::rebuildStoryCache($bookId, 'settings');
-    $data = json_decode(@file_get_contents(self::dir($bookId) . '/story-settings.json') ?: '[]', true);
-    $steps[] = ['step' => 'Rebuilt story-settings.json', 'status' => 'ok',
-      'ms' => (int)((microtime(true) - $t) * 1000),
-      'count' => is_array($data) ? count($data) : 0];
-  } catch (Throwable $e) {
-    $steps[] = ['step' => 'Rebuilt story-settings.json', 'status' => 'error',
-      'ms' => (int)((microtime(true) - $t) * 1000), 'error' => $e->getMessage()];
-  }
-
-  return ['steps' => $steps];
-}
 }

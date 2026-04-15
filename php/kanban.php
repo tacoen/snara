@@ -17,11 +17,13 @@
      ]
 ─────────────────────────────────────────────────── */
 
-class Kanban {
+class Kanban
+{
 
   // ── Default columns for a fresh book ──────────────
 
-  private static function defaults(): array {
+  private static function defaults(): array
+  {
     return [
       ['id' => 'backlog',   'title' => 'Backlog',          'cards' => []],
       ['id' => 'research',  'title' => 'Research/Outline',  'cards' => []],
@@ -33,14 +35,16 @@ class Kanban {
 
   // ── Path helper ────────────────────────────────────
 
-  private static function path(int $bookId): string {
+  private static function path(int $bookId): string
+  {
     Config::ensureBookDirs($bookId);
     return Config::dataDir() . '/' . $bookId . '/kanban.json';
   }
 
   // ── kanban.get ─────────────────────────────────────
 
-  public static function get(int $bookId): array {
+  public static function get(int $bookId): array
+  {
     $path = self::path($bookId);
     if (!file_exists($path)) return self::defaults();
 
@@ -50,7 +54,8 @@ class Kanban {
 
   // ── kanban.set ─────────────────────────────────────
 
-  public static function set(int $bookId, array $columns): void {
+  public static function set(int $bookId, array $columns): void
+  {
     // Sanitise: only keep expected keys, strip XSS surface
     $clean = [];
     foreach ($columns as $col) {

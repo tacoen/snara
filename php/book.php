@@ -24,28 +24,33 @@
          …
 ─────────────────────────────────────────────────── */
 
-class Book {
+class Book
+{
 
   // ── Path helpers ──────────────────────────────
 
-  private static function bookIndexPath(): string {
+  private static function bookIndexPath(): string
+  {
     return Config::dataDir() . '/bookindex.json';
   }
 
-  private static function bookDir(int $id): string {
+  private static function bookDir(int $id): string
+  {
     return Config::dataDir() . '/' . $id;
   }
 
   // ── bookindex.json read/write ──────────────────
 
-  public static function readIndex(): array {
+  public static function readIndex(): array
+  {
     $path = self::bookIndexPath();
     if (!file_exists($path)) return [];
     $data = json_decode(file_get_contents($path), true);
     return is_array($data) ? $data : [];
   }
 
-  private static function writeIndex(array $books): void {
+  private static function writeIndex(array $books): void
+  {
     $dir = Config::dataDir();
     if (!is_dir($dir)) mkdir($dir, 0755, true);
     file_put_contents(
@@ -56,9 +61,10 @@ class Book {
 
   // ── book.index ────────────────────────────────
 
-  public static function index(): array {
+  public static function index(): array
+  {
     $books = self::readIndex();
-    return array_map(function($book) {
+    return array_map(function ($book) {
       $dir      = self::bookDir((int)$book['id']);
       $mtime    = is_dir($dir) ? filemtime($dir) : null;
       $files    = glob($dir . '/*.json') ?: [];
@@ -79,38 +85,39 @@ class Book {
   //   - order: from meta.order (default 99)
   // Sorted by order ASC, then filename ASC.
 
-public static function chapters(int $id): array {
+  public static function chapters(int $id): array
+  {
     $dir = self::bookDir($id);
     if (!is_dir($dir)) return [];
     Config::ensureBookDirs($id);
- 
+
     // ── Serve from cache if fresh ─────────────────
     $cached = Cache::getChapters($id);
     if ($cached !== null) return $cached;
- 
+
     // ── Cache miss — build from disk ──────────────
     $resolved   = Config::resolveDefaults($id);
     $actDefault = $resolved['act'] ?? 'None';
- 
+
     $actMap = [];
     foreach (Document::readActIndex($id) as $entry) {
       $actMap[$entry['filename']] = $entry['act'] ?? $actDefault;
     }
- 
+
     $files    = glob($dir . '/*.json') ?: [];
     $chapters = [];
- 
+
     foreach ($files as $path) {
       // Skip anything in subdirectories (conf/, cache/, etc.)
       if (dirname($path) !== realpath($dir)) continue;
- 
+
       $filename = basename($path, '.json');
       $mtime    = filemtime($path);
       $title    = $filename;
       $entries  = 0;
       $order    = 99;
       $act      = $actMap[$filename] ?? $actDefault;
- 
+
       $raw = @file_get_contents($path);
       if ($raw) {
         $data = json_decode($raw, true);
@@ -124,7 +131,7 @@ public static function chapters(int $id): array {
           }
         }
       }
- 
+
       $chapters[] = [
         'filename' => $filename,
         'title'    => $title,
@@ -134,21 +141,22 @@ public static function chapters(int $id): array {
         'order'    => $order,
       ];
     }
- 
-    usort($chapters, function($a, $b) {
+
+    usort($chapters, function ($a, $b) {
       if ($a['order'] !== $b['order']) return $a['order'] <=> $b['order'];
       return strcmp($a['filename'], $b['filename']);
     });
- 
+
     // ── Write to cache ────────────────────────────
     Cache::putChapters($id, $chapters);
- 
+
     return $chapters;
   }
 
   // ── book.create ───────────────────────────────
 
-  public static function create(string $title): array {
+  public static function create(string $title): array
+  {
     $books  = self::readIndex();
 
     $maxId = 0;
@@ -169,11 +177,15 @@ public static function chapters(int $id): array {
 
   // ── book.setActive ─────────────────────────────
 
-  public static function setActive(int $bookId): void {
+  public static function setActive(int $bookId): void
+  {
     $books = self::readIndex();
     $title = '';
     foreach ($books as $b) {
-      if ((int)$b['id'] === $bookId) { $title = $b['title']; break; }
+      if ((int)$b['id'] === $bookId) {
+        $title = $b['title'];
+        break;
+      }
     }
     Config::set([
       'activeBookId'    => $bookId,

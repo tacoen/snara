@@ -13,44 +13,66 @@
      GET    ?action=gallery.autocomplete&bookId=$n  → {terms:[]}
 ─────────────────────────────────────────────────── */
 
-class Gallery {
+class Gallery
+{
 
-  private static function dir(int $bookId): string {
+  private static function dir(int $bookId): string
+  {
     return Config::dataDir() . '/' . $bookId . '/image';
   }
 
-  private static function cacheDir(int $bookId): string {
+  private static function cacheDir(int $bookId): string
+  {
     return Config::dataDir() . '/' . $bookId . '/cache';
   }
 
-  private static function cacheFile(int $bookId): string {
+  private static function cacheFile(int $bookId): string
+  {
     return self::cacheDir($bookId) . '/gallery-names.json';
   }
 
-  private static function safeName(string $name): string {
+  private static function safeName(string $name): string
+  {
     $name = basename($name);
     $name = preg_replace('/[^a-zA-Z0-9\-_.]/', '-', $name);
     $name = preg_replace('/-+/', '-', $name);
     return $name;
   }
 
-  private static function allowedExt(string $name): bool {
+  private static function allowedExt(string $name): bool
+  {
     $ext = strtolower(pathinfo($name, PATHINFO_EXTENSION));
     return in_array($ext, [
-      'jpg','jpeg','png','gif','webp','svg','bmp',   // images
-      'mp4','webm','mov','ogg','m4v',                // videos
+      'jpg',
+      'jpeg',
+      'png',
+      'gif',
+      'webp',
+      'svg',
+      'bmp',   // images
+      'mp4',
+      'webm',
+      'mov',
+      'ogg',
+      'm4v',                // videos
     ], true);
   }
 
-  private static function mimeFor(string $name): string {
+  private static function mimeFor(string $name): string
+  {
     $ext = strtolower(pathinfo($name, PATHINFO_EXTENSION));
     $map = [
-      'jpg'  => 'image/jpeg',  'jpeg' => 'image/jpeg',
-      'png'  => 'image/png',   'gif'  => 'image/gif',
-      'webp' => 'image/webp',  'svg'  => 'image/svg+xml',
+      'jpg'  => 'image/jpeg',
+      'jpeg' => 'image/jpeg',
+      'png'  => 'image/png',
+      'gif'  => 'image/gif',
+      'webp' => 'image/webp',
+      'svg'  => 'image/svg+xml',
       'bmp'  => 'image/bmp',
-      'mp4'  => 'video/mp4',   'webm' => 'video/webm',
-      'mov'  => 'video/quicktime', 'ogg' => 'video/ogg',
+      'mp4'  => 'video/mp4',
+      'webm' => 'video/webm',
+      'mov'  => 'video/quicktime',
+      'ogg' => 'video/ogg',
       'm4v'  => 'video/x-m4v',
     ];
     return $map[$ext] ?? 'application/octet-stream';
@@ -58,7 +80,8 @@ class Gallery {
 
   // ── Upload ────────────────────────────────────
 
-  public static function upload(int $bookId): array {
+  public static function upload(int $bookId): array
+  {
     $dir = self::dir($bookId);
     if (!is_dir($dir)) mkdir($dir, 0755, true);
 
@@ -99,7 +122,8 @@ class Gallery {
 
   // ── List ──────────────────────────────────────
 
-  public static function list(int $bookId): array {
+  public static function list(int $bookId): array
+  {
     $dir = self::dir($bookId);
     if (!is_dir($dir)) return [];
 
@@ -123,7 +147,8 @@ class Gallery {
 
   // ── Delete ────────────────────────────────────
 
-  public static function delete(int $bookId, string $filename): void {
+  public static function delete(int $bookId, string $filename): void
+  {
     $dir  = self::dir($bookId);
     $safe = self::safeName($filename);
     $path = $dir . '/' . $safe;
@@ -140,7 +165,8 @@ class Gallery {
 
   // ── Rename ────────────────────────────────────
 
-  public static function rename(int $bookId, string $from, string $to): array {
+  public static function rename(int $bookId, string $from, string $to): array
+  {
     $dir     = self::dir($bookId);
     $safeFrom = self::safeName($from);
     $srcPath  = $dir . '/' . $safeFrom;
@@ -174,7 +200,8 @@ class Gallery {
   // chapter titles (first h2/h3), and filenames.
   // Cached in data/$bookId/cache/gallery-names.json
 
-  public static function autocomplete(int $bookId): array {
+  public static function autocomplete(int $bookId): array
+  {
     $cacheFile = self::cacheFile($bookId);
 
     // Serve from cache if fresh (< 60s old)
@@ -186,7 +213,8 @@ class Gallery {
     return self::_buildCache($bookId);
   }
 
-  private static function _buildCache(int $bookId): array {
+  private static function _buildCache(int $bookId): array
+  {
     $docDir = Config::dataDir() . '/' . $bookId;
     $files  = glob($docDir . '/*.json') ?: [];
 
@@ -228,7 +256,10 @@ class Gallery {
         if (!$content) continue;
         if (preg_match('/<h[23][^>]*>(.*?)<\/h[23]>/i', $content, $m)) {
           $text = trim(strip_tags($m[1]));
-          if ($text) { $terms[] = $text; break; }
+          if ($text) {
+            $terms[] = $text;
+            break;
+          }
         }
       }
     }
@@ -247,7 +278,8 @@ class Gallery {
     return $result;
   }
 
-  private static function _bustCache(int $bookId): void {
+  private static function _bustCache(int $bookId): void
+  {
     $f = self::cacheFile($bookId);
     if (file_exists($f)) unlink($f);
   }
