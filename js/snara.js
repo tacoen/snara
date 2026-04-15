@@ -2,7 +2,7 @@
    snara.js — ES module entry point
 ─────────────────────────────────────────────────── */
 import { SnaraStruct }   from './snara/struct.js';
-import { SnaraTool }     from './snara/tool.js';
+import { SnaraTool }     from './snara/tools.js';
 import { SnaraEditor }   from './snara/core.js';
 import { SnaraUI }       from './snara/ui.js';
 import { SnaraSettings } from './snara/settings.js';
@@ -10,7 +10,6 @@ import { SnaraIndex }    from './snara/index.js';
 import { SnaraPref }     from './snara/pref.js';
 import { SnaraFiles }    from './snara/files.js';
 import icx               from './icons/ge-icon.js';
-import { SnaraTools }    from './tools.js';
 import { SnaraExport }   from './export.js';
 import { SnaraGallery }  from './snara/gallery.js';
 import { SnaraRouter }   from './snara/router.js';
@@ -78,7 +77,7 @@ async function boot() {
   const ui          = new SnaraUI();
   const settings    = new SnaraSettings();
   const idx         = new SnaraIndex();
-  const tools       = new SnaraTools();
+  const tools       = new SnaraTool();
   const pref        = new SnaraPref();
   const files       = new SnaraFiles();
   const gallery     = new SnaraGallery();

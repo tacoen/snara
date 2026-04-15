@@ -1,6 +1,6 @@
 
 import { AppConfig } from './snara.js';
-import { SnaraTool } from './snara/tool.js';
+import { SnaraTool } from './snara/tools.js';
 import icx           from './icons/ge-icon.js';
 import { esc, slug, download } from './helpers.js';
 import { _modalFooter } from './snara/modal.js';

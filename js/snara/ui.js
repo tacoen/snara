@@ -1,5 +1,5 @@
 
-import { SnaraTool }   from './tool.js';
+import { SnaraTool }   from './tools.js';
 import { AppConfig }   from '../snara.js';
 import { SnaraEditor } from './core.js';
 import icx             from '../icons/ge-icon.js';

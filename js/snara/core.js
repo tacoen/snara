@@ -1,5 +1,5 @@
 
-import { SnaraTool }   from './tool.js';
+import { SnaraTool }   from './tools.js';
 import { SnaraUI }     from './ui.js';
 import { SnaraStruct } from './struct.js';
 export class SnaraEditor {
