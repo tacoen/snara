@@ -5,13 +5,16 @@
    file to set your key, URL, and model.
 ─────────────────────────────────────────────────── */
 
-class AiChat {
+class AiChat
+{
 
-    private static function confPath(): string {
+    private static function confPath(): string
+    {
         return __DIR__ . '/../json/ai.json';
     }
 
-    private static function conf(): array {
+    private static function conf(): array
+    {
         $path = self::confPath();
         if (!file_exists($path)) {
             throw new RuntimeException('AI not configured — create json/ai.json');
@@ -23,7 +26,8 @@ class AiChat {
         return $data;
     }
 
-    public static function chat(string $message): array {
+    public static function chat(string $message): array
+    {
         if ($message === '') return ['error' => 'Message cannot be empty'];
 
         $conf  = self::conf();
@@ -64,7 +68,8 @@ class AiChat {
     }
 
     // Safe payload for the frontend — key is never included
-    public static function get(): array {
+    public static function get(): array
+    {
         try {
             $conf = self::conf();
         } catch (RuntimeException $e) {
@@ -78,7 +83,8 @@ class AiChat {
     }
 
     // Saves url + model only — key is intentionally never overwritten from the UI
-    public static function set(array $body): void {
+    public static function set(array $body): void
+    {
         try {
             $conf = self::conf();
         } catch (RuntimeException $e) {
