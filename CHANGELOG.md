@@ -9,44 +9,47 @@ This project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html) 
 ## [Unreleased]
 
 ### Added
-- **AI Toolbar** (`SnaraAIToolbar`) — contextual quick-action toolbar directly in the editor. Powered by `json/preprompts.json` with presets (3-Act Structure, Summarize, Characters, Professional, Unfiltered Dialog). Inserts AI responses as new editable beats.
-- Full **AI Chatbot** integration with dedicated panel (`chatbot.html`, `js/snara/chatbot.js`) and Groq support (fast LLM with generous free tier).
-- `json/preprompts.json` and `json/ai.example.json` for easy AI configuration.
-- **CSS 2.0** redesign — modular CSS (`base.css`, `components.css`, `layout.css`, `pages.css`, `utils.css`, `mycss.css`) with improved theming, toolbars, modals, gallery, and chatbot UI.
-- Files Workspace (Import/Export/Gallery/Cache sections) with drag-and-drop, media management, and export tools.
-- `SnaraExport` and `SnaraGallery` modules.
-- Multi-area navigation (`switchArea()`) — Editor, Meta, Files, Kanban.
-- Kanban area scaffold.
-- `SnaraPref` live CSS variable editor in Preferences panel.
-- Import preview modal with structure parsing.
-- `bookchange` event for automatic panel refresh on book switch.
-- Gallery and import API endpoints (`gallery.list`, `import.read`, `import.delete`).
+- AI Toolbar (`SnaraAIToolbar`) with contextual quick actions powered by `json/preprompts.json` (presets: 3-Act Structure, Summarize, Characters, Professional, Unfiltered Dialog, etc.)
+- Full AI Chatbot panel with dedicated UI and backend integration
+- `json/preprompts.json` and `json/ai.example.json` for easy AI configuration
+- **CSS 2.0** modular redesign (`base.css`, `components.css`, `layout.css`, `pages.css`, `utils.css`, `mycss.css`) with improved theming and consistency
+- Full **Files Workspace** with Import, Export, Media Gallery, and Cache management
+- `SnaraExport` and `SnaraGallery` modules
+- Multi-area navigation system (`switchArea()`) — Editor, Meta, Files, Kanban
+- Kanban board area (scaffolded)
+- Live CSS variable editor in Preferences (`SnaraPref`)
+- Import preview modal with structure parsing
+- `bookchange` event for automatic panel refresh on book switch
+- Gallery and import API endpoints
 
 ### Changed
-- Navigation restructured with `data-area` attributes and `switchArea()`.
-- Major CSS modernization and component consistency.
-- `SnaraFiles` expanded into full tabbed workspace.
-- AI backend (`php/ai.php`) updated for Groq + easy provider switching.
-- Icon system (`icx.replace`) applied consistently across dynamic UI.
+- Major navigation refactor using `data-area` attributes
+- Significant CSS modernization and component consistency improvements
+- Expanded `SnaraFiles` into a full tabbed workspace
+- Updated AI backend (`php/ai.php`) for better Groq support and provider switching
+- Consistent icon system (`icx.replace`) across dynamic UI elements
 
 ### Fixed
-- Gallery/Import panels now reload correctly on book change.
-- Export footer icons and file upload clearing.
-- Various stability improvements in modals and dynamic panels.
+- Gallery and Import panels now reload correctly on book change
+- Export footer icons and file upload handling
+- Various stability improvements in modals and dynamic panels
+
+### Other
+- Minor meta adjustments and helper improvements (April 2026)
 
 ---
 
 ## [0.2.0] - 2026-04-05
 
 ### Added
-- Automatic Table of Contents feature
+- Automatic Table of Contents
 - Core Preferences / Settings panel
-- Experimental SPA mode entry point (`spa.html`)
+- Experimental SPA mode (`spa.html`)
 - `.htaccess` for cleaner URLs
 
 ### Changed
-- Backend files reorganized into dedicated `/php/` folder
-- Frontend JavaScript improved for better modularity
+- Backend files reorganized into `/php/` folder
+- Improved frontend JavaScript modularity
 
 ---
 
@@ -54,27 +57,24 @@ This project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html) 
 
 ### Added
 - Initial public release
-- Structured Markdown editor with hierarchical structure: **Acts → Chapters → Scenes → Beats**
-- Full Document & Book management (CRUD operations, indexing, active book switching)
-- Live Markdown preview and formatting tools (powered by marked.js)
-- Autosave functionality
-- Light / Dark theme support
-- Keyboard shortcuts (`Ctrl/Cmd + S`, editor shortcuts)
-- Complete REST API backend (`api.php`)
-- Flat-file storage system (`/data/` for documents, `/json/` for config & indexes)
-- Basic configuration system via `json/config.json`
+- Structured Markdown editor with Acts → Chapters → Scenes → Beats hierarchy
+- Document & Book management
+- Live Markdown preview (marked.js)
+- Autosave, themes, keyboard shortcuts
+- REST API backend + flat-file storage
 
 ---
 
 ## [0.0.1] - 2026-04-03
 
 ### Added
-- Project foundation (PHP 7.4+ + Vanilla JavaScript)
+- Project foundation (PHP 7.4+ + Vanilla JS)
 - Basic file-based data layer
-- Early UI scaffolding and editor prototype
+- Early UI and editor prototype
 
 ---
 
 **Snara is in active early development.**  
-New features and improvements are being added frequently.  
-Check back often or watch the repository for updates!
+New features and improvements are being added frequently.
+
+Watch the repository for updates!
