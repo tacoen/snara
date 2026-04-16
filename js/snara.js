@@ -105,10 +105,9 @@ const aiToolbar = new SnaraAIToolbar('#popup', {
 
   let _activeArea = 'editor';
 
-  // ── 3. Define window.switchArea ───────────────
-  window.switchArea = (area) => {
+// ── 3. Define window.switchArea (base) ────────
+  const _baseSwitchArea = (area) => {
     _activeArea = area;
-
     const areas = {
       editor:  document.getElementById('editor-area'),
       meta:    document.getElementById('meta-area'),
@@ -122,24 +121,41 @@ const aiToolbar = new SnaraAIToolbar('#popup', {
       if (!el) return;
       el.hidden = key !== area;
     });
-
     const aside = document.querySelector('aside.side-panel');
     if (aside) aside.hidden = area !== 'editor';
-
     document.querySelectorAll('.nav-tab-btn').forEach(btn => {
       btn.classList.toggle('active-tab', btn.dataset.area === area);
     });
-
-    // ── Save button — label + fn + visibility ──
     const saveBtn   = document.getElementById('save-btn');
     const saveLabel = saveBtn?.querySelector('.save-label');
     const action    = _saveMap[area];
     if (saveBtn) {
-      saveBtn.hidden  = !action;
+      saveBtn.hidden = !action;
       if (action) {
         if (saveLabel) saveLabel.textContent = action.label;
         saveBtn.onclick = action.fn;
       }
+    }
+  };
+
+  // ── 4. Init router ─────────────────────────────
+  const router = new SnaraRouter();
+
+  router.registerRawSwitch(_baseSwitchArea);
+  router.registerRawLoad((bookId, file, tab) => {
+    ui.loadDocument(bookId, file, tab).then?.(() => tools.refresh());
+    setTimeout(() => tools.refresh(), 400);
+  });
+
+  // ── 5. Final window.switchArea (with router sync)
+  window.switchArea = (area) => {
+    _baseSwitchArea(area);
+    const bookId = AppConfig.activeBookId;
+    if (bookId && !router._busy) {
+      const cur = router._read();
+      const newPage = SnaraRouter.pageFor(area);
+      if (cur.p === newPage && cur.file) return;
+      router.go(newPage, bookId);
     }
   };
 
@@ -151,39 +167,10 @@ const aiToolbar = new SnaraAIToolbar('#popup', {
     if (map[tab]) window.switchArea(map[tab]);
   };
 
-  // ── 4. Define window.loadDocument ─────────────
   window.loadDocument = (bookId, filename) => {
-    ui.loadDocument(bookId, filename).then?.(() => tools.refresh());
-    setTimeout(() => tools.refresh(), 400);
+    router.go('editor', bookId, filename);
   };
-
-  // ── 5. Init router ────────────────────────────
-  const router = new SnaraRouter();
-
-  router.registerRawSwitch(window.switchArea);
-  router.registerRawLoad(window.loadDocument);
-
-  const _origSwitchArea = window.switchArea;
-  window.switchArea = (area) => {
-    _origSwitchArea(area);
-    const bookId = AppConfig.activeBookId;
-    if (bookId && !router._busy) {
-      const cur = router._read();
-      const newPage = SnaraRouter.pageFor(area);
-      if (cur.p === newPage && cur.file) return;
-      router.go(newPage, bookId);
-    }
-  };
-
-  const _origLoad = window.loadDocument;
-  window.loadDocument = (bookId, filename) => {
-    _origLoad(bookId, filename);
-    if (bookId && filename) {
-      router._push('editor', bookId, filename);
-      router._persist('editor', bookId, filename);
-      router._titleFile(filename);
-    }
-  };
+  
 
   // ── 6. All other window globals ───────────────
   window.submitEntry   = ()      => editor.submit();
@@ -212,7 +199,9 @@ const aiToolbar = new SnaraAIToolbar('#popup', {
   window.SnaraIndex  = SnaraIndex;
   window.SnaraFiles  = SnaraFiles;
   window.SnaraExport = SnaraExport;
-  window.aiToolbar   = aiToolbar;    
+  window.aiToolbar   = aiToolbar;
+  
+  window.SnaraAIToolbar = SnaraAIToolbar;  
 
   // ── 7. Keyboard shortcuts ─────────────────────
   document.addEventListener('keydown', e => {
@@ -245,7 +234,7 @@ const aiToolbar = new SnaraAIToolbar('#popup', {
     } catch {}
   }
 
-  kanban.load(AppConfig.activeBookId);
+  //kanban.load(AppConfig.activeBookId);
 
 
 if (AppConfig.activeBookId) {

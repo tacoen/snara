@@ -137,7 +137,7 @@ document.querySelectorAll('.meta-field').forEach(row => {
     }
   }
 
-  async loadDocument(bookId, filename) {
+  async loadDocument(bookId, filename, tab = 'editor') {
     const url = AppConfig.apiPath
       + `?action=doc.get&filename=${encodeURIComponent(filename)}&bookId=${encodeURIComponent(bookId)}`;
 
@@ -145,13 +145,13 @@ document.querySelectorAll('.meta-field').forEach(row => {
       const res  = await fetch(url);
       const data = await res.json();
       if (!res.ok || data.error) throw new Error(data.error || `HTTP ${res.status}`);
-      this._renderDocument(data);
+      this._renderDocument(data,tab);
     } catch (err) {
       console.error('[snara] load failed:', err);
     }
   }
 
-_renderDocument(data) {
+_renderDocument(data, tab = 'editor') {
   const fnEl = document.getElementById('filename');
   if (fnEl) fnEl.innerText = data.filename ?? '';
   if (this.article) {
@@ -160,7 +160,7 @@ _renderDocument(data) {
   }
 
   try {
-    localStorage.setItem('page', 'editor');
+    localStorage.setItem('page', tab);
     localStorage.setItem('editor-filename', data.filename ?? '');
     localStorage.setItem('bookid',   String(AppConfig.activeBookId ?? ''));
   } catch {  }
@@ -184,36 +184,28 @@ _renderDocument(data) {
     });
 
 const metaFields = this.metaEl.querySelector('.meta-fields');
-if (metaFields && data.meta && typeof data.meta === 'object') {
+
+if (metaFields) {
   metaFields.innerHTML = '';
-  Object.entries(data.meta).forEach(([key, val]) => {
-    metaFields.appendChild(this._buildMetaRow(key, val));
+  const savedMeta     = (data.meta && typeof data.meta === 'object') ? data.meta : {};
+  const defaultFields = AppConfig.metaFields ?? ['characters', 'settings', 'prompts'];
+  const keys = [
+    ...Object.keys(savedMeta),
+    ...defaultFields.filter(k => !Object.keys(savedMeta).includes(k)),
+  ];
+  keys.forEach(key => {
+    metaFields.appendChild(this._buildMetaRow(key, savedMeta[key] ?? ''));
   });
 }
 
 document.getElementById('add-field-btn').onclick = () => this.addField();
 
 
-    this.switchTab('editor');
-    this.entriesEl.scrollTop = 0;
+this.switchTab(tab);
+this.entriesEl.scrollTop = 0;
+
   }
 
-/*
-  addField() {
-    const list = document.querySelector('.meta-fields');
-    const row  = document.createElement('div');
-    row.className = 'meta-field';
-    row.innerHTML = `
-      <span class="field-key" contenteditable spellcheck="false">field</span>
-      <span class="field-sep">:</span>
-      <span class="field-val" contenteditable spellcheck="false"></span>
-      <button class="field-remove" onclick="removeField(this)" title="Remove"><i data-icon="x"></i></button>
-    `;
-    list.appendChild(row);
-    icx.delayreplace('.meta-field:last-child [data-icon]');
-    row.querySelector('.field-key').focus();
-  }
-*/
   
 // New method — builds one meta row based on field type
 _buildMetaRow(key, val) {
@@ -227,7 +219,7 @@ _buildMetaRow(key, val) {
   if (isOrder) {
     row.dataset.key = key;          // readonly — key never changes
     row.innerHTML = `
-      <span class="field-key">${esc(key)}</span>
+	  <span class="field-key">${esc(key)}</span>
       <span class="field-sep">:</span>
       <span class="field-val field-val--readonly">${esc(val)}</span>
     `;
@@ -238,7 +230,7 @@ _buildMetaRow(key, val) {
     row.dataset.key = key;          // pill key is fixed (characters/settings)
     const pills = String(val || '').split(',').map(s => s.trim()).filter(Boolean);
     row.innerHTML = `
-      <span class="field-key">${esc(key)}</span>
+      <span class="field-key" style="cursor:pointer" onclick="SnaraAIToolbar.helper('${esc(key)}')" title="Auto-populate from article">${esc(key)}</span>
       <span class="field-sep">:</span>
       <div class="field-pills">
         ${pills.map(p => `

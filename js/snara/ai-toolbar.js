@@ -1,16 +1,23 @@
-
 export class SnaraAIToolbar {
-   #root;
-   #activeEntry = null;
-   #getEntry;
-   #bindEntry;
-   #prompts = [];
-   #busy = false;
-   #abort = null;
-   #endpoint;
-   #promptsUrl;
-   #boundClick;
+  // ── Private instance fields ───────────────────
+  #root;
+  #activeEntry = null;
+  #getEntry;
+  #bindEntry;
+  #prompts = [];
+  #busy = false;
+  #abort = null;
+  #endpoint;
+  #promptsUrl;
+  #boundClick;
+
+  // ── Static fields ─────────────────────────────
+  static instance = null;
+  static #builderPrompts = null;
+
   constructor(root, opts = {}) {
+    SnaraAIToolbar.instance = this;
+
     this.#root       = typeof root === 'string'
       ? document.querySelector(root)
       : root instanceof HTMLElement ? root : null;
@@ -19,6 +26,7 @@ export class SnaraAIToolbar {
     this.#bindEntry  = typeof opts.bindEntry === 'function' ? opts.bindEntry : null;
     this.#promptsUrl = opts.preprompts ?? 'json/preprompts.json';
     this.#endpoint   = opts.endpoint   ?? 'api.php?action=ai.chat';
+    this._endpoint   = this.#endpoint;
 
     if (!this.#root) {
       console.warn('[SnaraAIToolbar] root element not found:', root);
@@ -32,6 +40,83 @@ export class SnaraAIToolbar {
 
   setActiveEntry(el) {
     this.#activeEntry = el instanceof HTMLElement ? el : null;
+  }
+
+  static async helper(fieldKey) {
+    // 1. Load builder-prompts (cached)
+    if (!SnaraAIToolbar.#builderPrompts) {
+      try {
+        const res = await fetch('json/builder-prompts.json');
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        SnaraAIToolbar.#builderPrompts = await res.json();
+      } catch (err) {
+        console.error('[SnaraAIToolbar] builder-prompts load failed:', err);
+        return;
+      }
+    }
+
+    // 2. Find matching prompt
+    const prompt = SnaraAIToolbar.#builderPrompts.find(p => p.label === fieldKey);
+    if (!prompt) {
+      console.warn('[SnaraAIToolbar] No builder prompt for field:', fieldKey);
+      return;
+    }
+
+    // 3. Get article context
+    const context = [...document.querySelectorAll('.entries .entry')]
+      .map(el => el.innerText.trim())
+      .filter(Boolean)
+      .join('\n\n');
+
+    if (!context) {
+      console.warn('[SnaraAIToolbar] No article content found.');
+      return;
+    }
+
+    // 4. POST to ai.chat
+    const endpoint = SnaraAIToolbar.instance?._endpoint ?? 'api.php?action=ai.chat';
+    let text = '';
+    try {
+      const res = await fetch(endpoint, {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify({ message: prompt.value + context }),
+      });
+      if (!res.ok) throw new Error(`Server error ${res.status}`);
+      const data = await res.json();
+      text = (
+        data?.choices?.[0]?.message?.content ??
+        data?.reply   ??
+        data?.content ??
+        data?.message ??
+        ''
+      ).trim();
+    } catch (err) {
+      console.error('[SnaraAIToolbar] helper fetch failed:', err);
+      return;
+    }
+
+    if (!text) return;
+
+    // 5. Populate the meta field
+    if (fieldKey === 'characters') {
+      const row = [...document.querySelectorAll('.meta-field')]
+        .find(r => r.dataset.key === 'characters');
+      if (!row) return;
+      const input = row.querySelector('.pill-input');
+      if (!input) return;
+      const ui = (await import('./ui.js')).SnaraUI.instance;
+      text.split(',').map(s => s.trim()).filter(Boolean).forEach(name => {
+        ui?._addPill(input, name);
+      });
+    } else {
+      const row = [...document.querySelectorAll('.meta-field')]
+        .find(r => (r.dataset.key === fieldKey) ||
+                   (r.querySelector('.field-key')?.innerText.trim() === fieldKey));
+      if (!row) return;
+      const valEl = row.querySelector('.field-val');
+      if (valEl) valEl.innerText = text;
+    }
   }
 
   destroy() {
@@ -86,7 +171,6 @@ export class SnaraAIToolbar {
     responsediv.textContent     = '…';
 
     entry.insertAdjacentElement('afterend', responsediv);
-
     this.#bindEntry?.(responsediv);
 
     this.#abort?.abort();

@@ -36,14 +36,20 @@ export class SnaraRouter {
     this._dispatch(params);
   }
 
-  go(page, bookId = null, file = null) {
-    if (this._busy) return;
-    this._busy = true;
-    this._push(page, bookId, file);
-    this._persist(page, bookId, file);
-    this._dispatch({ p: page, bid: bookId, file });
-    this._busy = false;
+go(page, bookId = null, file = null) {
+  if (this._busy) return;
+  this._busy = true;
+
+  // Carry the current file forward when switching between editor/meta
+  if (!file && (page === 'editor' || page === 'meta')) {
+    file = this._ls('editor-filename') || null;
   }
+
+  this._push(page, bookId, file);
+  this._persist(page, bookId, file);
+  this._dispatch({ p: page, bid: bookId, file });
+  this._busy = false;
+}
 
   _dispatch({ p, bid, file }) {
     if (!p) return;
@@ -68,21 +74,25 @@ export class SnaraRouter {
     }
 
     if (p === 'editor') {
-      this._rawSwitch?.('editor');
-      if (file) {
-        setTimeout(() => this._rawLoad?.(bookId, file), 0);
-        this._titleFile(file);
-      } else {
-        this._title();
-      }
-      return;
+  this._rawSwitch?.('editor');
+  if (file) {
+    setTimeout(() => this._rawLoad?.(bookId, file, 'editor'), 0)
+    this._titleFile(file);
+  } else {
+    this._title();
+  }
+  return;
     }
 
-    if (BOOK_AREAS.includes(p)) {
-      this._rawSwitch?.(p);
-      this._title();
-      return;
-    }
+
+if (BOOK_AREAS.includes(p)) {
+  if (file && p === 'meta') {
+    setTimeout(() => this._rawLoad?.(bookId, file, 'meta'), 0);
+  } 
+  this._rawSwitch?.(p);
+  this._title();
+  return;
+}
 
     this._title();
   }
@@ -91,7 +101,7 @@ export class SnaraRouter {
     try {
       if (page)   localStorage.setItem('page',   page);
       if (bookId) localStorage.setItem('bookid', String(bookId));
-      if (page === 'editor') localStorage.setItem('editor-filename', file ?? '');
+	if (page === 'editor' || page === 'meta') localStorage.setItem('editor-filename', file ?? '');	  
     } catch {  }
   }
 

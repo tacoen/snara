@@ -1,0 +1,10 @@
+[
+    {
+        "label": "characters",
+        "value": "Based on the text below, provide a comma-separated list of individual character names. Strictly exclude any plural groups or collective characters. Provide only the requested content without headers, introductions, or closing remarks."
+    },
+    {
+        "label": "settings",
+        "value": "Based on the text below, provide a comma-separated list events,places,years for the settings."
+    }	
+]
