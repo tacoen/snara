@@ -13,11 +13,9 @@ import icx               from './icons/ge-icon.js';
 import { SnaraExport }   from './export.js';
 import { SnaraGallery }  from './snara/gallery.js';
 import { SnaraRouter }   from './snara/router.js';
-
 import { SnaraChat }      from './snara/chatbot.js';
 import { SnaraAIToolbar } from './snara/ai-toolbar.js';
 import { SnaraKanban } from './kanban.js';
-
 import { SnaraNotes } from './notes.js';
 
 // ── Central config store ──────────────────────────
