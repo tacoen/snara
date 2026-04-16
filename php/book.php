@@ -178,18 +178,16 @@ class Book
   // ── book.setActive ─────────────────────────────
 
   public static function setActive(int $bookId): void
-  {
+{
     $books = self::readIndex();
     $title = '';
     foreach ($books as $b) {
-      if ((int)$b['id'] === $bookId) {
-        $title = $b['title'];
-        break;
-      }
+        if ((int)$b['id'] === $bookId) {
+            $title = $b['title'];
+            break;
+        }
     }
-    Config::set([
-      'activeBookId'    => $bookId,
-      'activeBookTitle' => $title,
-    ]);
-  }
+    Config::setActive($bookId, $title);
+}
+
 }

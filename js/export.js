@@ -36,7 +36,7 @@ export class SnaraExport {
 
       let actMap = {};
       try {
-        const actRes  = await fetch(`${AppConfig.dataPath}/${bookId}/conf/act.json`);
+        const actRes  = await fetch(`${AppConfig.dataPath}/${bookId}/cache/act.json`);
         const actData = await actRes.json();
         actData.forEach(row => { actMap[row.filename] = row.act || 'Uncategorized'; });
       } catch {

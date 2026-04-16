@@ -5,7 +5,7 @@
      bookId given  → data/$bookId/$filename.json
      bookId null   → data/$filename.json  (legacy)
 
-   After each save, rebuilds data/$bookId/act.json:
+   After each save, rebuilds data/$bookId/cache/act.json:
      [ { "filename": "...", "act": "..." }, … ]
    act = stripped text of first class:"act" entry content.
 ─────────────────────────────────────────────────── */
@@ -43,7 +43,7 @@ class Document
     if (!is_dir($dir)) return [];
     $files = glob($dir . '/*.json') ?: [];
     // Exclude act.json from document list
-    $files = array_filter($files, fn($f) => strpos($f, '/conf/') === false);
+    $files = array_filter($files, fn($f) => strpos($f, '/cache/') === false && strpos($f, '/conf/') === false);
     return array_map(fn($f) => basename($f, '.json'), array_values($files));
   }
 
@@ -111,7 +111,8 @@ class Document
     $index = [];
 
     foreach ($files as $file) {
-      if (strpos($file, '/conf/') !== false) continue;
+
+		if (strpos($file, '/cache/') !== false || strpos($file, '/conf/') !== false) continue;
 
       $raw = @file_get_contents($file);
       if (!$raw) continue;
@@ -154,7 +155,7 @@ class Document
 
   // ── Act index ─────────────────────────────────
   // Scans all docs in the book dir, finds first class:"act" entry,
-  // strips HTML, writes data/$bookId/act.json.
+  // strips HTML, writes data/$bookId/cache/act.json.
   //
   // act.json shape:
   //   [ { "filename": "chapter-one", "act": "Act One Title" }, … ]
@@ -173,7 +174,7 @@ class Document
 
     foreach ($files as $file) {
       // Skip conf/ directory files
-      if (strpos($file, '/conf/') !== false) continue;
+		if (strpos($file, '/cache/') !== false || strpos($file, '/conf/') !== false) continue;
 
       $raw = @file_get_contents($file);
       if (!$raw) continue;

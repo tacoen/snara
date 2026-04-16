@@ -2,7 +2,7 @@
 /* ─────────────────────────────────────────────────
    php/kanban.php — Kanban board persistence
 
-   Stores columns + cards in data/$bookId/kanban.json
+   Stores columns + cards in data/$bookId/conf/kanban.json
 
    Actions (routed by Router::dispatch via router.php):
      GET  ?action=kanban.get&bookId=$n   → [column, …]
@@ -38,7 +38,7 @@ class Kanban
   private static function path(int $bookId): string
   {
     Config::ensureBookDirs($bookId);
-    return Config::dataDir() . '/' . $bookId . '/kanban.json';
+    return Config::dataDir() . '/' . $bookId . '/conf/kanban.json';
   }
 
   // ── kanban.get ─────────────────────────────────────

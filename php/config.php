@@ -225,8 +225,6 @@ class Config
         ['prefix' => '## ',   'cls' => 'chapter'],
         ['prefix' => '# ',    'cls' => 'act'],
       ],
-      'activeBookId'    => null,
-      'activeBookTitle' => '',
     ];
   }
 
@@ -240,4 +238,33 @@ class Config
       'metaFields'       => ['characters', 'settings', 'prompts'],
     ];
   }
+  
+  // ── Active book (data/active.json) ───────────────
+
+private static function activePath(): string
+{
+    return self::dataDir() . '/active.json';
+}
+
+public static function getActive(): array
+{
+    $path = self::activePath();
+    if (!file_exists($path)) return ['activeBookId' => null, 'activeBookTitle' => ''];
+    $data = json_decode(file_get_contents($path), true);
+    return is_array($data) ? $data : ['activeBookId' => null, 'activeBookTitle' => ''];
+}
+
+public static function setActive(int $bookId, string $title): void
+{
+    $dir  = self::dataDir();
+    if (!is_dir($dir)) mkdir($dir, 0755, true);
+    file_put_contents(
+        self::activePath(),
+        json_encode(
+            ['activeBookId' => $bookId, 'activeBookTitle' => $title],
+            JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE
+        )
+    );
+}
+
 }

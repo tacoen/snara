@@ -146,10 +146,10 @@ class Router
                     break;
 
                 // ── Config ───────────────────────────────────
-                case 'config.get':
-                    self::requireMethod($method, 'GET');
-                    echo json_encode(Config::get());
-                    break;
+case 'config.get':
+    self::requireMethod($method, 'GET');
+    echo json_encode(array_merge(Config::get(), Config::getActive()));
+    break;
 
                 case 'config.set':
                     self::requireMethod($method, 'POST');
