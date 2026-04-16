@@ -35,12 +35,38 @@ class Document
     return self::dir($bookId) . '/' . self::safeName($filename) . '.json';
   }
 
+
+// ── Purge stale cache files (>1 day old) ──────
+
+private static function purgeStaleCacheFiles(int $bookId): void
+{
+  $cacheDir = Config::dataDir() . '/' . $bookId . '/cache';
+  if (!is_dir($cacheDir)) return;
+
+  $files     = glob($cacheDir . '/*.json') ?: [];
+  $threshold = time() - 86400; // 1 day in seconds
+
+file_put_contents('/var/www/snara/snara-purge.log', 
+  "file: $file | mtime: " . filemtime($file) . " | threshold: $threshold\n", 
+  FILE_APPEND
+);
+
+  foreach ($files as $file) {
+    if (filemtime($file) < $threshold) {
+      @unlink($file);
+    }
+  }
+}
+
   // ── CRUD ──────────────────────────────────────
 
   public static function list(?int $bookId = null): array
   {
     $dir   = self::dir($bookId);
     if (!is_dir($dir)) return [];
+	
+	  if ($bookId) self::purgeStaleCacheFiles($bookId); 
+	  
     $files = glob($dir . '/*.json') ?: [];
     // Exclude act.json from document list
     $files = array_filter($files, fn($f) => strpos($f, '/cache/') === false && strpos($f, '/conf/') === false);

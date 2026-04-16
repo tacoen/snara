@@ -23,10 +23,15 @@ export class IconManager {
       this.icons[iconId] = '<svg xmlns="http://www.w3.org/2000/svg"></svg>';
       classes = 'nan ' + classes;
     }
+	
+	let iconnameClass = 'icx-'+iconId;
 
     const tempDiv = document.createElement('div');
     tempDiv.innerHTML = this.icons[iconId];
     const svgElement = tempDiv.firstChild;
+	
+	classes = classes +" "+ iconnameClass;
+	classes = classes.trim().replace(/\s+/g, ' ');
 
     // FIX: explicit null guard — return safe fallback instead of crashing
     if (!svgElement) return '<svg xmlns="http://www.w3.org/2000/svg"></svg>';
