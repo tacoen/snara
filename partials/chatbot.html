@@ -4,12 +4,11 @@
      data-api-base="api.php"
      data-max-label="30">
 
-  <header class="chatbot__header">
-    <div class="chatbot__brand">
-      <i data-icon="ai-agents" aria-hidden="true"></i>
-      <span class="chatbot__title">AI Assistant</span>
+  <header class="toolbar">
+    <div>
+      <span class="title">AI Assistant</span>
     </div>
-    <button class="btn-icon cfg-btn chatbot__clear"
+    <button class="btn-icon btn-mini chatbot__clear"
             id="chatbot-clear"
             type="button"
             title="Clear conversation"
@@ -27,11 +26,21 @@
   </div>
 
   <div class="chatbot__composer">
+	<div>
     <select class="chatbot__select"
             id="chatbot-preprompt"
             aria-label="Prompt preset">
       <option value="">Default</option>
     </select>
+
+    <button class="btn-mini primary"
+            id="chatbot-send"
+            type="button"
+            aria-label="Send message">
+      <span class="chatbot__send-label">Send</span>
+      <span class="chatbot__send-spinner" aria-hidden="true"></span>
+    </button>
+	</div>
 	<div class='chatbot__entries'>
     <textarea class="chatbot__input"
               id="chatbot-input"
@@ -41,20 +50,14 @@
               maxlength="2000"
               rows="1"></textarea>
 
-    <button class="chatbot__send"
-            id="chatbot-send"
-            type="button"
-            aria-label="Send message">
-      <span class="chatbot__send-label">Send</span>
-      <span class="chatbot__send-spinner" aria-hidden="true"></span>
-    </button>
+
 	</div>
   </div>
 
   <aside class="chat-side"
          aria-label="AI response index"
          id="chatbot-toc">
-    <p class="chat-side__heading">Responses</p>
+    <header>Responses</header>
   </aside>
 
 </div>

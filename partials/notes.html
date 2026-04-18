@@ -1,15 +1,8 @@
-<!-- partials/notes.html -->
-<!-- ═══════════════════════════════════════════════
-     notes area — drop into index.php beside the
-     other <main id="*-area"> blocks
-     ═══════════════════════════════════════════════ -->
-
-
 <div class="notes" id="notes-root" data-cols="5" data-api="/api.php">
 
   <!-- Toolbar -->
-  <header class="notes__toolbar">
-    <span class="notes__title">Notes</span>
+  <header class="toolbar">
+    <span class="title">Notes</span>
 
     <div class="notes__toggle" role="group" aria-label="View mode">
       <button
@@ -28,7 +21,7 @@
       </button>
     </div>
 
-    <button class="notes__add-btn" id="notes-add-btn" title="New note (Alt+N)" aria-label="Add note">
+    <button class="btn-mini primary notes__add-btn" id="notes-add-btn" title="New note (Alt+N)" aria-label="Add note">
       + Note
     </button>
   </header>

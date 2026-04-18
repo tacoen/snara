@@ -1,0 +1,83 @@
+/* ═══════════════════════════════════════════════════
+   ui.css — shared chrome: header, tab, footer,
+            animations & effects
+   Layer:   layout  (sits after base, before old/new)
+
+   Source:  scanned from [old] components.css, chat.css,
+            kanban.css  and  [new] 2-buttons.css,
+            2-modal.css, 2-utils.css
+   Rule:    originals are NOT removed — this file
+            declares the canonical forward versions.
+            Tab aliases (.tabmenu-btn / .tabmenu-cfg)
+            replace .btn-tab / .cfg-tab over time.
+   ═══════════════════════════════════════════════════ */
+
+
+
+
+
+
+
+/* ══════════════════════════════════════════════════
+   2. TABS
+   ══════════════════════════════════════════════════ */
+
+/* ── .tabmenu-btn  (canonical alias for .btn-tab)
+      source: 2-buttons.css .btn-tab ── */
+
+.tabmenu-btn {
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  padding: var(--s-sm) var(--s-md);
+  font-family: var(--font-mono);
+  font-size: var(--f-xs);
+  text-transform: uppercase;
+  letter-spacing: .07em;
+  color: var(--fg-muted);
+  cursor: pointer;
+  margin-bottom: -1px;
+  transition: color .15s, border-color .15s;
+}
+.tabmenu-btn:is(:hover, :focus) { color: var(--fg-main); }
+.tabmenu-btn.active             { color: var(--fg-main); border-bottom-color: var(--primary); }
+
+/* ── .tabmenu-cfg  (canonical alias for .cfg-tab)
+      source: components.css .cfg-tabs / .cfg-tab / .cfg-tab-content ── */
+
+.tabmenu-cfg-strip {
+  display: flex;
+  flex-direction: row-reverse;
+  flex-wrap: nowrap;
+  justify-content: flex-end;
+  gap: 0;
+  padding: 0 var(--s-lg);
+  border-bottom: 1px solid var(--border);
+}
+#settings-body .tabmenu-cfg-strip { flex-direction: row; justify-content: flex-start; }
+
+.tabmenu-cfg {
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  padding: var(--s-sm) var(--s-md);
+  font-family: var(--font-mono);
+  font-size: var(--f-xs);
+  text-transform: uppercase;
+  letter-spacing: .07em;
+  color: var(--fg-muted);
+  cursor: pointer;
+  margin-bottom: -1px;
+  transition: color .15s, border-color .15s;
+}
+.tabmenu-cfg:hover  { color: var(--fg-main); }
+.tabmenu-cfg.active { color: var(--fg-main); border-bottom-color: var(--primary); }
+
+.tabmenu-cfg-content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-xl);
+  padding: var(--s-lg);
+  overflow-y: auto;
+  flex: 1;
+}

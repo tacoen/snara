@@ -64,7 +64,7 @@ export class SnaraSettings extends SnaraComponent {
     const body = document.getElementById('settings-body');
     if (!body) return;
     body.innerHTML = `
-      <div class="cfg-tabs">
+      <div class="tabs">
         <button class="cfg-tab${this._activeTab === 'defaults' ? ' active' : ''}" data-tab="defaults">Defaults</button>
         <button class="cfg-tab${this._activeTab === 'editor'   ? ' active' : ''}" data-tab="editor">Editor</button>
         <button class="cfg-tab${this._activeTab === 'ai' ? ' active' : ''}" data-tab="ai">AI Chat</button>

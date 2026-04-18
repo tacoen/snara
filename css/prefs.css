@@ -1,0 +1,41 @@
+.previewBox {
+	display: grid;
+	grid-template-columns: 40% 60%;
+	align-items: flex-start;
+	gap: var(--s-xs);
+	padding: var(--s-sm);
+	border: 1px solid var(--border);
+	border-radius: var(--s-xs);
+	margin-right: var(--s-md);
+	background: var(--bg-main);
+	grid-template-rows: min-content;
+}
+
+.previewBox > div.pad {
+	gap: var(--s-xs);
+	display: flex;
+	flex-direction: column;
+}
+.previewBox > div.theme {
+	columns: 2;
+	gap: var(--s-md);
+	padding: var(--s-md);
+	grid-column: span 2;
+}
+.previewBox > div.theme  div {
+	margin-bottom: var(--s-md);
+	padding: var(--s-sm);
+}
+.previewBox > div.flex {
+	padding: var(--s-md);
+	gap: var(--s-md);
+}
+
+.previewBox .entry {
+	border: none;
+}
+
+.previewBox > div > div {
+	border: 1px solid var(--border);
+	border-radius: 6px;
+}

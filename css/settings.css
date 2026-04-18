@@ -1,0 +1,214 @@
+/* ═══════════════════════════════════════════════════
+   components › cfg form system
+   Pattern: .cfg-section > .cfg-row > .cfg-label + .cfg-input
+   ═══════════════════════════════════════════════════ */
+
+/* ── Delete confirmation toast → moved to 2-utils.css ── */
+
+.cfg-loading {
+  font-family: var(--font-mono);
+  font-size: var(--f-xs);
+  color: var(--fg-muted);
+  opacity: .5;
+  padding: var(--s-md) 0;
+}
+
+.cfg-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-sm);
+}
+
+.cfg-heading {
+  display: flex;
+  align-items: center;
+  gap: var(--s-sm);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .1em;
+  color: var(--fg-main);
+  padding-bottom: var(--s-xs);
+  margin-bottom: var(--s-xs);
+  border-bottom: 1px solid var(--border);
+}
+.cfg-hint { font-weight: 400; text-transform: none; letter-spacing: 0; opacity: .6; }
+
+.cfg-row {
+  display: flex;
+  align-items: center;
+  gap: var(--s-md);
+  min-height: 32px;
+}
+
+.cfg-label {
+  font-family: var(--font-mono);
+  font-size: var(--f-xs);
+  color: var(--fg-link);
+  flex-shrink: 0;
+  width: 110px;
+}
+
+.cfg-input {
+  flex: 1;
+  background: var(--bg-alt);
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  padding: 4px var(--s-sm);
+  font-family: var(--font-mono);
+  font-size: var(--f-xs);
+  color: var(--fg-main);
+  outline: none;
+  caret-color: var(--primary);
+  transition: border-color .15s;
+}
+.cfg-input:focus    { border-color: var(--selection); background: var(--bg-main); }
+.cfg-input-sm       { max-width: 80px; flex: none; }
+.cfg-input-full     { width: 100%; }
+
+.cfg-input--readonly {
+  display: inline-flex;
+  align-items: center;
+  min-width: 9rem;
+  padding: var(--s-xs) var(--s-sm);
+  background: var(--bg-alt);
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  font-family: var(--font-mono);
+  font-size: var(--f-xs);
+  color: var(--fg-muted);
+  cursor: default;
+  user-select: none;
+}
+
+.cfg-ai-key-ok      { color: #4ade80; }
+.cfg-ai-key-missing { color: #fb923c; }
+
+.cfg-ai-snippet {
+  margin: var(--s-sm) 0 0;
+  padding: var(--s-md);
+  background: var(--bg-alt);
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  font-family: var(--font-mono);
+  font-size: var(--f-xs);
+  line-height: 1.7;
+  color: var(--fg-muted);
+  white-space: pre;
+  overflow-x: auto;
+  tab-size: 2;
+}
+
+/* ── Segmented control ── */
+.cfg-segmented {
+  display: flex;
+  gap: 2px;
+  background: var(--bg-alt);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 2px;
+}
+.cfg-seg {
+  background: none;
+  border: none;
+  border-radius: 4px;
+  padding: 2px var(--s-sm);
+  font-family: var(--font-mono);
+  font-size: var(--f-xs);
+  text-transform: uppercase;
+  letter-spacing: .05em;
+  color: var(--fg-muted);
+  cursor: pointer;
+  transition: background .12s, color .12s;
+}
+.cfg-seg:hover  { color: var(--fg-main); }
+.cfg-seg.active { background: var(--bg-main); color: var(--fg-main); box-shadow: 0 1px 3px var(--overlay); }
+
+/* ── Toggle switch ── */
+.cfg-toggle {
+  position: relative;
+  width: 36px;
+  height: 20px;
+  background: var(--border);
+  border: none;
+  border-radius: 20px;
+  cursor: pointer;
+  padding: 0;
+  flex-shrink: 0;
+  transition: background .2s;
+}
+.cfg-toggle.on { background: var(--primary); }
+.cfg-toggle-thumb {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 16px;
+  height: 16px;
+  background: var(--bg-main);
+  border-radius: 50%;
+  pointer-events: none;
+  transition: transform .2s;
+}
+.cfg-toggle.on .cfg-toggle-thumb { transform: translateX(16px); }
+
+/* ── Hotkey map ── */
+.cfg-hmap     { display: flex; flex-direction: column; gap: var(--s-xs); }
+.cfg-hmap-row { display: flex; align-items: center; gap: var(--s-xs); }
+.cfg-hmap-prefix { flex: 0 0 120px; font-family: var(--font-mono); }
+.cfg-hmap-cls    { flex: 1; }
+.cfg-arrow {
+  font-family: var(--font-mono);
+  font-size: var(--f-xs);
+  color: var(--fg-muted);
+  opacity: .5;
+  flex-shrink: 0;
+}
+.cfg-hmap-remove {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  border-radius: 4px;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  cursor: pointer;
+  color: var(--fg-muted);
+  flex-shrink: 0;
+  opacity: 0;
+  transition: opacity .12s, color .12s;
+}
+.cfg-hmap-row:hover .cfg-hmap-remove { opacity: 1; }
+.cfg-hmap-remove:hover               { color: var(--danger); }
+
+.cfg-add-row {
+  align-self: flex-start;
+  background: none;
+  border: 1px dashed var(--border);
+  border-radius: 5px;
+  padding: 4px var(--s-sm);
+  margin-top: var(--s-xs);
+  font-family: var(--font-mono);
+  font-size: var(--f-xs);
+  color: var(--fg-muted);
+  cursor: pointer;
+  transition: all .15s;
+}
+.cfg-add-row:hover { color: var(--fg-main); border-color: var(--fg-muted); background: var(--bg-hover); }
+
+/* ── Settings panel tabs ── */
+/* ── Color swatch rows ── */
+.cfg-color-preview {
+  display: inline-flex;
+  align-items: center;
+  width: 36px;
+  height: 14px;
+  padding: var(--s-xs) var(--s-md);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  background: transparent;
+  transition: background .1s, border-color .1s;
+}
+.cfg-color-row { padding: var(--s-sm) 0; border-bottom: 1px solid var(--border); }

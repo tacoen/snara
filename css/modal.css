@@ -1,0 +1,245 @@
+/* ═══════════════════════════════════════════════════
+   modal — overlay, shell, header, footer, body
+   DO:  use .app-modal for all modal dialogs
+   DON'T: override --overlay outside vars.css
+   ═══════════════════════════════════════════════════ */
+
+/* ── Modal shell ── */
+.app-modal {
+  width: min(520px, calc(100vw - 32px));
+  max-height: 90dvh;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-alt);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  box-shadow: 0 8px 32px var(--shadow);
+  z-index: 1001;
+}
+.app-modal.open {
+  opacity: 1;
+  pointer-events: all;
+  transform: translate(-50%, -50%);
+}
+
+/* source: 2-modal.css AND 2-ui.css */
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--s-md) var(--s-lg);
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.modal-title {
+  display: flex;
+  align-items: center;
+  gap: var(--s-sm);
+  font-family: var(--font-mono);
+  font-size: var(--f-xs);
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  color: var(--fg-main);
+}
+.modal-title svg { opacity: .7; }
+
+.modal-close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  border-radius: 4px;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  cursor: pointer;
+  color: var(--fg-muted);
+  transition: color .12s, background .12s;
+}
+.modal-close:hover { color: var(--danger); background: var(--bg-hover); }
+
+
+/* ──────────────────────────────────────────────────
+   2. .modal-footer / .pref-footer
+   DUPLICATED: 2-modal.css  ↔  2-ui.css
+   Identical block declared in both files.
+   Keep: 2-ui.css
+   Delete from: 2-modal.css
+   ────────────────────────────────────────────────── */
+
+/* source: 2-modal.css AND 2-ui.css */
+.modal-footer,
+.pref-footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--s-sm);
+  padding: var(--s-sm) var(--s-lg);
+}
+
+.modal-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--s-sm);
+  display: flex;
+  flex-direction: column;
+}
+.modal-body::-webkit-scrollbar       { width: 4px; }
+.modal-body::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+/* ── Modal layout grids ── */
+.mgrid {
+  display: grid;
+  grid-template-columns: 75% 25%;
+}
+.mgrid .coverimg { height: 80vw; }
+
+/* ── Options menu ── */
+.opt-menu {
+  display: flex;
+  columns: 3;
+  gap: var(--s-sm);
+  margin-left: var(--s-lg);
+}
+.opt-menu li {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: .5;
+}
+.opt-menu li.enable { opacity: 1; }
+.opt-menu li span   { font-size: .7rem; }
+.opt-menu li svg    { width: 20px; height: 20px; stroke-width: 1px !important; }
+
+
+/* ═══════════════════════════════════════════════════
+   pages › preferences
+   Extends: .app-modal, .cfg-* (from modal.css)
+   DO:  use .pref-section for each settings group
+   DON'T: add cfg-form primitives here — they live
+          in modal.css and are shared app-wide
+   ═══════════════════════════════════════════════════ */
+
+.pref-body  {
+  padding: 0;gap: 0;display: grid;
+  grid-template-columns: 40% auto;
+  flex-direction: row;/* flex-wrap: wrap; *//* display: flex; */
+}
+
+.app-modal .tabs,
+.pref-tabs,
+.cfg-tabs {
+padding: 0 var(--s-sm); border-bottom: 1px solid var(--border);
+  display: flex;
+  flex-direction: row-reverse;
+  flex-wrap: nowrap;
+  justify-content: flex-end;
+  gap: 0;
+  padding: 0 var(--s-lg);
+  border-bottom: 1px solid var(--border);
+}
+
+#settings-body .cfg-tabs { flex-direction: row; justify-content: flex-start; }
+
+.pref-section {
+  grid-area: pref;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  padding: 0 var(--s-md);
+  margin-bottom: var(--s-xl);
+  /* border-bottom: 1px solid var(--border); */
+}
+.pref-section:last-child    {border-bottom: none;margin-bottom: 4rem;}
+
+.pref-body.tab-root {
+  /* display: flex; */
+  /* flex-wrap: wrap; */
+  flex-direction: row;
+  padding-top: var(--s-md);
+}
+
+.preview {
+  background: var(--bg-main);
+  border: 1px solid var(--border);
+}
+
+.pref-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: nowrap;
+  gap: var(--s-sm);
+  min-height: 34px;
+}
+
+.pref-var-label {
+  max-width: 60px;
+  flex-shrink: 1;
+  font-size: var(--f-xs);
+  /* color: var(--fg-muted); */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pref-var-name {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--fg-muted);
+  background: var(--bg-alt);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 1px 6px;
+  flex-shrink: 1;
+  white-space: nowrap;
+  /* opacity: .75; */
+  width: 88px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.pref-color {
+  width: 28px;
+  height: 28px;
+  padding: 2px;
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  background: none;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.pref-color::-webkit-color-swatch-wrapper { padding: 0; }
+.pref-color::-webkit-color-swatch         { border: none; border-radius: 3px; }
+
+.pref-text {
+  flex: 1;
+  font-family: var(--font-mono);
+  font-size: var(--f-xs);
+  min-width: 0;
+  flex-grow: 1;
+  width: 100%;
+}
+
+/* ── Footer ── */
+.pref-reset-btn {
+  margin-right: auto;
+  background: none;
+  border: 1px solid var(--danger);
+  border-radius: 6px;
+  padding: var(--s-xs) var(--s-md);
+  font-family: var(--font-mono);
+  font-size: var(--f-xs);
+  letter-spacing: .04em;
+  color: var(--danger);
+  opacity: .7;
+  cursor: pointer;
+  transition: all .15s;
+}
+.pref-reset-btn:hover { opacity: 1; background: rgba(207,34,46,.07); }
+
+.pref-export-btn { display: flex; align-items: center; gap: var(--s-xs); }
+
+#pref-modal { width: 80%; max-height: 95dvh; margin-left:10%; }

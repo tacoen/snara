@@ -1,102 +1,69 @@
 /* ═══════════════════════════════════════════════════
-   layout › skeleton — grids, nav, header, article
+   layout — grids, nav, header, app shells
    DO:  structural shells, sticky containers, grids
    DON'T: style content inside a shell here
    ═══════════════════════════════════════════════════ */
-
-#app {/* background: var(--bg-muted); */}
-
-/* ── App grids ──
-   .grid-v — 40px icon strip | content
-   .grid-h — header row | content | sidebar */
-.grid-v {
+/* ── App root ── */
+#app {
   display: grid;
   grid-template-columns: 40px auto;
-  grid-gap: 0;
+  grid-template-areas: 
+    "nav header"
+    "nav content"
 }
-.grid-h {
+
+#app > nav {
+  grid-area: nav;
+  grid-row: span 2;
+}
+
+/* ── App grids ── */
+
+#app main {
   display: grid;
   grid-template-rows: 40px auto;
   grid-template-columns: auto 15rem;
   grid-gap: 0;
 }
+
 .dashboard {
   display: grid;
   grid-template-columns: auto 15rem;
-  height: calc(100dvh - 43px);
+  height: calc(100vh - 43px);
 }
 
-
-
-/* ── Icon nav (left strip) ──
-   FIX: duplicate nav rule (baru + layout) merged here. */
-nav {
-  display: flex;
-  flex-direction: column;
-  flex-wrap: nowrap;
-  align-items: center;
-  justify-content: space-between;
-  padding: var(--s-xs) 0;
-  border-right: 1px solid var(--border);
-  grid-row: span 2;
-  position: sticky;
-  top: 0;
-  z-index: 200;
-  height: calc(100dvh - 8px);
-  background-color: var(--bg-alt);
-}
-
-nav > div {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--s-xs);
-  padding: var(--s-xs) 0;
-}
-
-nav div.embed {
-  margin-right: -11px;
-  padding: var(--s-md) 0;
-  gap: var(--s-sm);
-  background: var(--border);
-  border-top-left-radius: 6px;
-  border-bottom-left-radius: 6px;
-}
-nav div.embed svg { width: 24px; margin-left: 3px; }
-
-/* Secondary embedded nav panel */
-nav.embed {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  justify-content: flex-start;
-  padding: var(--s-xs) 0;
-  width: auto;
-  border-left: 1px solid var(--bg-muted);
-  background: var(--bg-alt);
-  box-shadow: inset 2px 0 4px var(--overlay);
-}
-
-/* ── Sticky header bar ──
-   FIX: removed duplicate `justify-content: space-between`. */
-header {
-  display: flex;
-  align-items: center;
+/* ── Sticky header bar ── */
+#app header.top {
   justify-content: space-between;
   gap: var(--s-md);
-  padding: 0 var(--s-sm);
-  height: 40px;
   border-bottom: 1px solid var(--border);
-  background: var(--bg-alt);
-  flex-shrink: 0;
-  position: sticky;
-  top: 0;
-  z-index: 100;
   grid-column: span 2;
 }
 
-/* ── Main content regions ──
-   FIX: #article was split across baru.css and editor.css — merged. */
+
+/* ── Icon nav (left strip) ── */
+
+/* ── Full-width page areas ── */
+#kanban-area,
+#files-area,
+#about-area,
+#notes-area,
+#meta-area,
+#chatbot-area {
+  grid-column: span 2;
+}
+
+#meta-area {
+  display: grid;
+  grid-template-columns: 60% 40%;
+}
+
+/* ── Article & entry font ── */
+
+#article .entries { font-family: var(--entry-font); }
+
+/* ── Article container ── */
+
 #article {
   flex: 1;
   display: flex;
@@ -107,23 +74,67 @@ header {
   transition: background .25s ease, border-color .25s ease;
 }
 
-aside,
-.content-area { height: calc(100dvh - 43px); }
+/* ── Inline contenteditable editor ── */
 
-/* ── Full-width page areas ── */
-#kanban-area,
-#meta-area,
-#files-area,
-#about-area,
-#notes-area,
-#chatbot-area {
-	grid-column: span 2;
+#editor {
+  height: 96px;
+  overflow-y: auto;
+  outline: none;
+  padding: var(--s-sm) var(--s-lg);
+  font-size: var(--f-sm);
+  line-height: 1.8;
+  color: var(--fg-main);
+  caret-color: var(--primary);
+  white-space: pre-wrap;
+  word-break: break-word;
 }
 
+#editor:empty::before {
+  content: attr(data-placeholder);
+  color: var(--fg-muted);
+  opacity: .5;
+  font-style: italic;
+  pointer-events: none;
+}
+
+.entry-edit #editor { height: 72px; }
+
+/* ── Editor area (sticky bottom bar) ── */
+
+.editor-area {
+  border-top: 1px solid var(--border);
+  background: var(--bg-input);
+  margin: var(--s-md) var(--s-md) 0 var(--s-md);
+  position: sticky;
+  bottom: 0;
+  box-shadow: inset 0px 0 3px 0 var(--shadow);
+}
+
+[data-theme='dark'] .editor-area {
+  box-shadow: inset 0 1px 4px 0 var(--shadow);
+}
+
+
+/* ── Aside ── */
 aside {
   grid-row: span 2;
   border-left: 1px solid var(--border);
 }
+
+aside,
+.content-area {
+  height: calc(100dvh - 43px);
+}
+aside div.content {
+padding: var(--s-sm);
+}
+
+.content-area {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+aside.meta-side,
 aside.chat-side {
   position: fixed;
   top: 44px;
@@ -133,104 +144,14 @@ aside.chat-side {
   font-size: var(--f-xs);
 }
 
-.content-area {
-  display: flex;
-  flex-direction: column;
-  width: 100%;
-}
 
-/* ── Header chrome ── */
-.header-left {
-  display: flex;
-  align-items: center;
-  gap: var(--s-sm);
-  flex: 1;
-  min-width: 0;
-}
-
-.filename {
-  display: flex;
-  align-items: center;
-  gap: 1px;
-  font-family: var(--font-mono);
-  font-size: var(--f-xs);
-  color: var(--fg-muted);
-  flex-shrink: 0;
-}
-
-#filename {
-  outline: none;
-  min-width: 60px;
-  color: var(--fg-main);
-  caret-color: var(--primary);
-  border-bottom: 1px solid transparent;
-  transition: border-color .15s;
-}
-#filename:empty::before {
-  content: attr(data-placeholder);
-  color: var(--fg-muted);
-  opacity: .5;
-  pointer-events: none;
-}
-#filename:focus { border-bottom-color: var(--border); }
-
-/* Header icon buttons (theme toggle, nav settings) */
-#theme-toggle,
-#settings-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: none;
-  border: none;
-  border-radius: 6px;
-  width: 28px;
-  height: 28px;
-  padding: 0;
-  font-size: var(--f-sm);
-  line-height: 1;
-  cursor: pointer;
-  color: var(--fg-muted);
-  flex-shrink: 0;
-  transition: background .15s, color .15s;
-}
-#theme-toggle:hover,
-#settings-btn:hover { background: var(--bg-hover); color: var(--fg-main); }
-#settings-btn       { margin-top: auto; margin-bottom: var(--s-xs); }
-
-/* Save button — header-specific, stateful */
-#save-btn {
-  display: flex;
-  align-items: center;
-  gap: var(--s-xs);
-  padding: 3px var(--s-sm);
-  margin-right: var(--s-sm);
-  font-family: var(--font-mono);
-  font-size: var(--f-xs);
-  background: none;
-  border: none;
-  cursor: pointer;
-  color: var(--fg-muted);
-  flex-shrink: 0;
-  white-space: nowrap;
-  transition: background .15s, color .15s, border-color .15s;
-}
-#save-btn:hover              { background: var(--bg-hover); color: var(--fg-main); }
-#save-btn:disabled           { opacity: .5; cursor: default; }
-#save-btn.saving             { color: var(--primary); animation: save-pulse .8s ease-in-out infinite alternate; }
-#save-btn.saved              { color: var(--success-fg); background: var(--success-bg); }
-html[data-theme="dark"] #save-btn.saved,
-html[theme="dark"]      #save-btn.saved { background: rgba(45,164,78,.12); }
-#save-btn.save-error         { color: var(--danger); background: rgba(207,34,46,.08); }
-
-/* FIX: @keyframes defined twice (buttons + snara) — single source of truth. */
-@keyframes save-pulse { from { opacity: .6; } to { opacity: 1; } }
-
-/* Tab navigation (header right) */
+/* ── Tab navigation (header right) ── */
 .tabmenu {
   display: flex;
   list-style: none;
   margin-left: auto;
 }
+
 .tabmenu li {
   display: flex;
   align-items: center;
@@ -246,7 +167,12 @@ html[theme="dark"]      #save-btn.saved { background: rgba(45,164,78,.12); }
   user-select: none;
   transition: color .15s, border-color .15s;
 }
-.tabmenu li:hover  { color: var(--fg-main); }
-.tabmenu li.active { color: var(--fg-main); border-bottom-color: var(--primary); }
 
+.tabmenu li:hover {
+  color: var(--fg-main);
+}
 
+.tabmenu li.active {
+  color: var(--fg-main);
+  border-bottom-color: var(--primary);
+}

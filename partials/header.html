@@ -1,5 +1,5 @@
-<header>
-  <div class="header-left">
+<header class="sticky top">
+  <div class="left">
     <button id="chapterIndex-btn" onclick="chapterIndex()" title="Chapter index" aria-label="Chapter index">
       <i data-icon="book"></i>
     </button>
@@ -9,10 +9,11 @@
       <span id="filename" contenteditable spellcheck="false" data-placeholder="untitled"></span>
     </div>
   </div>
-
+  <div class="right">
   <button id="save-btn" onclick="saveDocument()" title="Save (Ctrl+S)" aria-label="Save document">
     <i data-icon="t-save"></i>
     <span class="save-label">save</span>
   </button>
+  </div>
 
 </header>

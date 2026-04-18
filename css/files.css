@@ -1,0 +1,187 @@
+/* ═══════════════════════════════════════════════════
+   pages › file manager
+   DO:  scope all rules to #files or .f* prefix
+   DON'T: put reusable patterns here — if a widget
+          appears elsewhere it belongs in components
+   ═══════════════════════════════════════════════════ */
+
+#files {
+  display: grid;
+  grid-template-columns: 160px 1fr;
+  height: 100%;
+  overflow: hidden;
+}
+
+/* ── Left navigation panel ── */
+#files-nav {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-start;
+  padding: var(--s-xs) 0 var(--s-xs) var(--s-md);
+  width: auto;
+  /* border-left: 1px solid var(--bg-muted); */
+}
+
+.fnav-group-label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  color: var(--fg-muted);
+  padding: var(--s-sm) var(--s-md) var(--s-xs);
+}
+
+.fnav-item {
+  display: flex;
+  /* align-items: center; */
+  gap: var(--s-sm);
+  /* padding: 7px var(--s-md); */
+  width: 100%;
+  background: none;
+  border: none;
+  /* border-left: 2px solid transparent; */
+  font-family: inherit;
+  font-size: var(--f-xs);
+  color: var(--fg-muted);
+  /* text-align: left; */
+  cursor: pointer;
+  transition: all .12s;
+  justify-content: flex-start;
+}
+
+#files > div { display: flex; padding: var(--s-md); }
+
+.fnav-item svg       { width: 20px; height: 20px; flex-shrink: 0; opacity: .7; }
+.fnav-item:hover     { color: var(--fg-main); background: var(--bg-main); }
+.fnav-item.active    {color: var(--primary);background: var(--bg-muted);font-weight: 500;font-weight: 600;}
+.fnav-item.active svg { color: var(--primary); stroke: var(--primary) }
+
+/* ── Main panel ── */
+#files-main {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: var(--bg-main);
+  height: calc(100dvh - 90px);
+}
+
+#files-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+  gap: var(--s-sm);
+  padding: 0 var(--s-md) 8px;
+  border-bottom: 1px solid var(--border);
+}
+
+.files-title {
+  font-family: var(--font-mono);
+  font-size: var(--f-xs);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: .07em;
+}
+
+/* ── Sub-panel ── */
+.fpanel              { display: flex; flex-direction: column; flex: 1; overflow: hidden; }
+.fpanel[hidden]      { display: none; }
+.fpanel-hint         { padding: 8px var(--s-md) 4px; font-size: var(--f-xs); color: var(--fg-muted); }
+
+/* ── Drop zones ── */
+#files-dropzone,
+#files-gallery-dz {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  gap: var(--s-xs);
+  margin: var(--s-sm) var(--s-md);
+  padding: var(--s-lg);
+  border: 1.5px dashed var(--border);
+  border-radius: 6px;
+  color: var(--fg-muted);
+  text-align: center;
+  cursor: pointer;
+  transition: all .15s;
+}
+#files-dropzone svg, #files-gallery-dz svg { width: 20px; height: 20px; opacity: .5; }
+#files-dropzone p,   #files-gallery-dz p   { font-size: var(--f-xs); line-height: 1.5; }
+#files-dropzone span                        { font-size: var(--f-xs); opacity: .6; }
+#files-dropzone.drag,
+#files-gallery-dz.drag { border-color: var(--primary); background: var(--selection); color: var(--primary); }
+#files-gallery-dz      { padding: var(--s-md); }
+
+/* ── File list ── */
+.flist {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  overflow-y: auto;
+  list-style: none;
+  padding: 4px var(--s-md);
+  gap: 4px;
+}
+.flist-empty { padding: var(--s-lg); font-size: var(--f-xs); color: var(--fg-muted); opacity: .6; text-align: center; line-height: 1.6; }
+
+.flist-item {
+  display: flex;
+  align-items: center;
+  gap: var(--s-sm);
+  padding: 6px var(--s-sm);
+  border-radius: 5px;
+  border: 1px solid transparent;
+  cursor: default;
+  transition: all .12s;
+}
+.flist-item:hover             { background: var(--bg-alt); }
+.flist-item.delete            { background: color-mix(in srgb, var(--danger) 6%, transparent); border-color: var(--border); }
+.flist-item.delete .fname     { text-decoration: line-through; opacity: .5; }
+.flist-item.drag-over         { border-color: var(--primary); }
+
+.flist-act-hdr {
+  padding: var(--s-xs) var(--s-sm);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .07em;
+  color: var(--fg-muted);
+  opacity: .7;
+  margin-top: var(--s-xs);
+}
+
+/* ── File item sub-elements ── */
+.fhandle          { cursor: grab; opacity: .3; flex-shrink: 0; display: flex; align-items: center; }
+.fhandle svg      { width: 12px; height: 12px; }
+.fname            { flex: 1; font-size: var(--f-xs); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--fg-main); }
+.fbadge           { font-family: var(--font-mono); font-size: 10px; padding: 1px 6px; border-radius: 20px; background: var(--bg-alt); border: 1px solid var(--border); color: var(--fg-muted); flex-shrink: 0; white-space: nowrap; }
+.fstatus          { font-family: var(--font-mono); font-size: 10px; padding: 1px 7px; border-radius: 20px; font-weight: 500; flex-shrink: 0; }
+.fs-ready         { background: var(--selection); color: var(--primary); }
+.fs-ok            { background: var(--success-bg); color: var(--success-fg); }
+
+/* ── File tools ── */
+.ftools { display: flex; gap: 2px; flex-shrink: 0; }
+.ftool {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  background: none;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  cursor: pointer;
+  color: var(--fg-muted);
+  transition: all .12s;
+}
+.ftool svg                 { width: 20px; pointer-events: none; }
+.ftool:hover               { background: var(--bg-alt); border-color: var(--border); color: var(--fg-main); }
+.ftool.erase-btn:hover     { color: var(--danger); }
+
+/* ── Checkbox row ── */
+.fcheck-row { display: flex; align-items: center; gap: var(--s-sm); cursor: pointer; font-size: var(--f-xs); padding: 4px var(--s-sm); }
+.fcheck-row input { accent-color: var(--primary); width: 13px; height: 13px; cursor: pointer; }

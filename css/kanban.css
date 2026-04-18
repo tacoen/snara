@@ -33,54 +33,18 @@
   flex-direction: column;
   gap: var(--s-md);
   height: 100%;
-  /* padding: 0; */
   font-family: var(--font-sans);
   overflow: hidden;
-  /* grid-template-rows: 48px auto; */
-}
-
-/* ── Header ──────────────────────────────────────── */
-.kanban__header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  height: var(--kb-header-height);
-  flex-shrink: 0;
-  /* border-bottom: 1px solid var(--border); */
-  background: var(--bg-muted);
-  padding: 0 var(--s-md);
-}
-
-.kanban__header-left {
-  display: flex;
-  align-items: center;
-  gap: var(--s-sm);
-}
-
-.kanban__title {
-  font-family: var(--font-mono);
-  font-size: var(--f-sm);
-  font-weight: 600;
-  color: var(--fg-main);
-  letter-spacing: -.01em;
-}
-
-.kanban__count {
-  font-family: var(--font-mono);
-  font-size: var(--f-xs);
-  color: var(--fg-muted);
 }
 
 /* ── Board (scrollable column strip) ─────────────── */
 .kanban__board {
   display: flex;
-  /* gap: var(--kb-col-gap); */
   align-items: flex-start;
   overflow-x: auto;
   overflow-y: hidden;
   min-height: calc(100dvh - 115px);
   padding-bottom: var(--s-md);
-  /* Smooth scrollbar */
   scrollbar-width: thin;
   scrollbar-color: var(--border) transparent;
   padding: 0 var(--s-md) 0 var(--s-md);
@@ -92,8 +56,6 @@
 /* ── Column ──────────────────────────────────────── */
 .kanban__column {
   background: var(--kb-col-bg);
-  /* min-width: var(--kb-col-width); */
-  /* border-radius: var(--kb-col-radius); */
   border: 1px solid var(--kb-col-border);
   display: flex;
   flex-direction: column;
@@ -106,6 +68,10 @@
   width: 20%;
   height: 100%;
 }
+
+.kanban .count { font-size: .6rem; color: var(--fg-muted) }
+.kanban .count:after { content: " )";var(--fg-muted)  }
+.kanban .count:before { content: "( "; var(--fg-muted) }
 
 .kanban__column--drag-over {
   border-color: var(--primary);
@@ -179,17 +145,17 @@
 }
 
 .kanban__card header {
-    cursor: grab;
-	display: flex;
-	align-items: center;
-	column-gap: var(--s-xs);
-	height: 24px;
-	justify-content: flex-start;
-	padding: 0;
-	border: none;
-	background: none;
+  cursor: grab;
+  display: flex;
+  align-items: center;
+  column-gap: var(--s-xs);
+  height: 24px;
+  justify-content: flex-start;
+  padding: 0;
+  border: none;
+  background: none;
 }
-	
+
 .kanban__card:hover {
   box-shadow: 0 3px 8px rgba(0,0,0,.12), 0 0 0 1px var(--border);
 }
@@ -244,14 +210,12 @@
 .kanban__card-rev,
 .kanban__card-desc {
   font-size: var(--f-xs);
-  /* color: var(--fg-muted); */
   line-height: 1.5;
   margin-top: var(--s-xs);
   border-top: 1px solid var(--border);
   padding-top: var(--s-xs);
 }
 
-}
 .kanban__card-ref:focus,
 .kanban__card-rev:focus,
 .kanban__card-title:focus,
@@ -267,8 +231,6 @@
   font-weight: 500;
   width: 100%;
 }
-
-/* ── Desc (Research/Outline+) ───────────────────── */
 
 /* Placeholder via data attribute */
 .kanban__card-ref:empty::before,
@@ -430,65 +392,30 @@
   animation: kanban-spin .7s linear infinite;
 }
 
-@keyframes kanban-spin {
-  to { transform: rotate(360deg); }
-}
 
-[data-col-id='backlog'].kanban__column { background-color: transparent; }
+[data-col-id='backlog'].kanban__column  { background-color: transparent; }
 [data-col-id='research'].kanban__column { background-color: color-mix(in srgb, var(--fg-muted), transparent 97%); }
 [data-col-id='drafting'].kanban__column { background-color: color-mix(in srgb, var(--primary), transparent 95%); }
-[data-col-id='review'].kanban__column { background-color: color-mix(in srgb, var(--danger), transparent 95%); }
-[data-col-id='done'].kanban__column { background-color: color-mix(in srgb, var(--success), transparent 95%); }
+[data-col-id='review'].kanban__column   { background-color: color-mix(in srgb, var(--danger), transparent 95%); }
+[data-col-id='done'].kanban__column     { background-color: color-mix(in srgb, var(--success), transparent 95%); }
 
-
-	
 /* ─────────────────────────────────────────────────
-   kanban-additions.css
-   Patch for: tacoen/snara — main branch (post-0.2.0)
-
-   Append to (or @import after) your existing kanban stylesheet.
-   All values are driven by CSS Custom Properties so per-instance
-   overrides remain possible via inline style on .kanban root.
-
-   New blocks:
-     .kanban__ref-panel   — "Add Reference" (Drafting column)
-     .kanban__rev-panel   — "Add Revision"  (Review column)
-     .kanban__done-btn    — "DONE" button    (Polished column)
-     .kanban__card[data-tag] — tag badge on card header
-─────────────────────────────────────────────────── */
-/* ─────────────────────────────────────────────────
-   kanban-additions.css
-   Patch for: tacoen/snara — main branch (post-0.2.0)
-
-   Append to (or @import after) your existing kanban stylesheet.
-   All values are driven by CSS Custom Properties so per-instance
-   overrides remain possible via inline style on .kanban root.
-
-   New blocks:
-     .kanban__card-ref    — Reference field     (Drafting column)
-     .kanban__card-rev    — Revision field  (Review column)
-     .kanban__done-btn    — "DONE" button    (Polished column)
-     .kanban__card[data-tag] — tag badge on card header
+   kanban-additions — tag borders + DONE button
 ─────────────────────────────────────────────────── */
 
-/* ── Shared custom properties (declared at block level) ─────── */
 .kagakanban {
-
-
-  /* DONE button */
-  --kanban-done-bg:            #28a745;
-  --kanban-done-bg-hover:      #1e7e34;
-  --kanban-done-color:         #ffffff;
-  --kanban-done-radius:        4px;
+  --kanban-done-bg:       #28a745;
+  --kanban-done-bg-hover: #1e7e34;
+  --kanban-done-color:    #ffffff;
+  --kanban-done-radius:   4px;
 }
 
-.kanban__card[data-tag="act"] { border-left: 3px solid var(--entry-act-fg); }
+.kanban__card[data-tag="act"]     { border-left: 3px solid var(--entry-act-fg); }
 .kanban__card[data-tag="chapter"] { border-left: 3px solid var(--entry-chapter-fg); }
-.kanban__card[data-tag="scene"] { border-left: 3px solid var(--entry-scene-fg); }
-.kanban__card[data-tag="beat"] { border-left: 3px solid var(--entry-beat-fg); }
+.kanban__card[data-tag="scene"]   { border-left: 3px solid var(--entry-scene-fg); }
+.kanban__card[data-tag="beat"]    { border-left: 3px solid var(--entry-beat-fg); }
 
-/* ── DONE button (.kanban__done-btn) ────────────────────────── */
-
+/* ── DONE button (.kanban__done-btn) ── */
 .kanban__done-btn {
   display: block;
   width: 100%;
@@ -507,10 +434,5 @@
   user-select: none;
 }
 
-.kanban__done-btn:hover {
-  background: var(--kanban-done-bg-hover);
-}
-
-.kanban__done-btn:active {
-  transform: scale(0.97);
-}
+.kanban__done-btn:hover  { background: var(--kanban-done-bg-hover); }
+.kanban__done-btn:active { transform: scale(0.97); }

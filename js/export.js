@@ -156,16 +156,16 @@ export class SnaraExport {
   _renderFooter(footer) {
     if (!footer) return;
     footer.innerHTML = `
-      <button class="cfg-btn mute" onclick="SnaraExport.instance.exportAs('md')">
+      <button class="btn-mini mute" onclick="SnaraExport.instance.exportAs('md')">
         <i data-icon="download"></i> Markdown
       </button>
-      <button class="cfg-btn mute" onclick="SnaraExport.instance.exportAs('html')">
+      <button class="btn-mini mute" onclick="SnaraExport.instance.exportAs('html')">
         <i data-icon="download"></i> HTML
       </button>
-      <button class="cfg-btn mute" style="opacity:.45;cursor:not-allowed" title="Coming soon" disabled>
+      <button class="btn-mini mute" style="opacity:.45;cursor:not-allowed" title="Coming soon" disabled>
         <i data-icon="download"></i> PDF
       </button>
-      <button class="cfg-btn mute" style="opacity:.45;cursor:not-allowed" title="Coming soon" disabled>
+      <button class="btn-mini mute" style="opacity:.45;cursor:not-allowed" title="Coming soon" disabled>
         <i data-icon="download"></i> EPUB
       </button>
     `;

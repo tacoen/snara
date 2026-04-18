@@ -29,45 +29,45 @@ $title  = 'Snara';
 </head>
 <body>
 
-<div id="app" class='grid-v'>
+<div id="app">
   <?php include __DIR__ . '/partials/nav.html'; ?>
-  <div class="grid-h">
+  <main>
 	<?php include __DIR__ . '/partials/header.html'; ?>
 
-	<main id='editor-area' class="content-area" >
+	<section id='editor-area' class="content-area" >
 		<article id="article">
 			<div class="entries"></div>
 		</article>
 		<?php include __DIR__ . '/partials/editor.html'; ?>
 		<?php include __DIR__ . '/partials/popup.html'; ?>
-	</main>
+	</section>
 
 	<?php include __DIR__ . '/partials/editor-side.html'; ?>
 
-	<main id='about-area' class="content-area" hidden>
+	<section id='about-area' class="content-area" hidden>
 		<?php include __DIR__ . '/partials/about.html'; ?>
-	</main>
+	</section>
 	
-	<main id='kanban-area' class="content-area" hidden>
+	<section id='kanban-area' class="content-area" hidden>
 		<?php include __DIR__ . '/partials/kanban.html'; ?>
-	</main>
+	</section>
 	
-	<main id='meta-area' class="content-area" hidden>
+	<section id='meta-area' class="content-area" hidden>
 		<?php include __DIR__ . '/partials/meta.html'; ?>
-	</main>
-	<main id='files-area' class="content-area" hidden>
+	</section>
+	<section id='files-area' class="content-area" hidden>
 		<?php include __DIR__ . '/partials/files.html'; ?>
-	</main>
+	</section>
 
-	<main id='chatbot-area' class="content-area" hidden>
+	<section id='chatbot-area' class="content-area" hidden>
 		<?php include __DIR__ . '/partials/chatbot.html'; ?>
-	</main>
+	</section>
 	
-	<main id='notes-area' class="content-area" hidden>
+	<section id='notes-area' class="content-area" hidden>
 		<?php include __DIR__ . '/partials/notes.html'; ?>
-	</main>	
+	</section>	
 	
-  </div>
+</main>
 </div>
 
 <!-- onclick="closeModal()" -->

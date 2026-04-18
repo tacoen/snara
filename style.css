@@ -1,17 +1,42 @@
 /* ═══════════════════════════════════════════════════
-   Snara — css2/ entry point
+   Temporary Snara — css2/ entry point
    Layer order declared FIRST; never re-order this.
    Rule: one @import per file, one file per concern.
    ═══════════════════════════════════════════════════ */
-@layer base, layout, components, pages, utilities;
 
-@import './css/custome/snara-color.css'    layer(base);
-@import './css/base.css'    layer(base);
+@layer base,layout,dupe,ui,theme,pages,components, old, utilities, identy;
 
+@import './css/base.css' layer(base);
 @import './css/layout.css'  layer(layout);
-@import './css/components.css' layer(components);
-@import './css/pages.css'   layer(pages);
-@import './css/chat.css'   layer(pages);
+@import './css/header.css' layer(ui);
+@import './css/nav.css' layer(ui);
+@import './css/buttons.css' layer(ui);
+@import './css/tab.css' layer(ui);
+
+@import './css/custome/snara-color.css' layer(theme);
+@import './css/dynamic.css' layer(theme);
+
+@import './css/duplicate.css' layer(dupe);
+
+@import './css/about.css'   layer(pages);
 @import './css/kanban.css'   layer(pages);
-@import './css/dynamic.css'   layer(utilities);
+@import './css/notes.css'   layer(pages);
+@import './css/files.css'   layer(pages);
+@import './css/gallery.css'   layer(pages);
+@import './css/editor.css'   layer(pages);
+@import './css/meta.css'   layer(pages);
+@import './css/chat.css'   layer(pages);
+@import './css/prefs.css'   layer(pages);
+@import './css/settings.css'   layer(pages);
+@import './css/index.css'   layer(pages);
+
+@import './css/popup.css' layer(components);
+@import './css/modal.css'   layer(components);
+@import './css/components.css' layer(components);
+
 @import './css/utils.css'   layer(utilities);
+
+@import './css/color-binding.css'layer(identy);
+@import './css/animation.css' layer(identy);
+
+

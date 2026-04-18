@@ -1,0 +1,57 @@
+
+header.sticky {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+header > div {
+  display: flex;
+  align-items: center;
+  gap: var(--s-sm);
+}
+
+header >.left {
+  justify-content: flex-start;
+  min-width: 0;
+}
+
+header >.right {
+  justify-content: flex-end;
+  min-width: 0;
+}
+
+aside header,
+header.toolbar,
+section header {
+  display: flex;
+  align-items: center;
+  gap: var(--s-sm);
+  flex-shrink: 0;
+  height: 38px;
+  padding: 0 var(--s-md);
+  background: var(--bg-alt);
+  box-shadow: 0 2px 4px var(--shadow);
+  justify-content: space-between;
+}
+
+aside header {
+  background: var(--bg-muted);
+  /* margin: calc(-1 * var(--s-sm)); */
+  margin-bottom: var(--s-md);
+  color: var(--fg-link);
+  font-size: .6rem;
+  display: flex;
+  align-items: center;
+}
+
+.previewBox .title,
+section header .title {
+  font-family: var(--font-mono);
+  font-size: var(--f-xs);
+  text-transform: uppercase;
+  letter-spacing: .1em;
+  color: var(--fg-muted);
+  flex: 1;
+  margin-left: var(--s-xs);
+}

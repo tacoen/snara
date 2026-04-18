@@ -1,8 +1,7 @@
-
 /* ── Light theme (default) ── */
 :root,
-html[data-theme="light"],
-html[theme="light"] {
+html[data-theme="light"] 
+{
   --bg-main:    #ededed;
   --bg-muted:    #e0e0e0;
   --bg-alt:     #f6f8fa;
@@ -24,12 +23,11 @@ html[theme="light"] {
 }
 
 /* ── Dark theme ── */
-html[data-theme="dark"],
-html[theme="dark"] {
+html[data-theme="dark"] 
+{
   --bg-main:    #0d0911;
   --bg-muted:   #1a1a1c;
   --bg-alt:     #131421;
-  --bg-hover:   #21262d;
   --fg-main:    #c9d1d9;
   --fg-muted:   #8b949e;
   --fg-link:    #58a6ff;
@@ -44,5 +42,7 @@ html[theme="dark"] {
   --tag-chapter-fg: #ff9933; 
   --tag-scene-fg:   #ff6b6b;
   --tag-beat-fg:    #cc5522;
-
 }
+
+
+

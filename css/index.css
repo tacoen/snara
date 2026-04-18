@@ -1,0 +1,152 @@
+/* ═══════════════════════════════════════════════════
+   index — book & chapter index modals + row system
+   Variants: idx-modal | idx-toolbar | idx-body |
+             idx-act-header | idx-row | idx-row-tool
+   DO:  use .idx-row for every navigable list row
+   DON'T: add new icon states outside [data-state]
+   ═══════════════════════════════════════════════════ */
+
+/* ── Modal shell sizing ── */
+.idx-modal           { width: min(480px, calc(100vw - 32px)); max-height: 75dvh; }
+#chapter-index-modal { width: 90dvw; }
+
+/* ── Index toolbar ── */
+.idx-toolbar {
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  gap: var(--s-xs);
+  padding: var(--s-sm) var(--s-lg);
+  border-bottom: 1px solid var(--border);
+}
+.idx-search     { width: 100%; box-sizing: border-box; }
+.idx-create-row { display: flex; gap: var(--s-xs); }
+
+/* ── Body ── */
+.idx-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--s-sm) 0;
+  gap: 0;
+}
+
+.idx-empty {
+  font-family: var(--font-mono);
+  font-size: var(--f-xs);
+  color: var(--fg-muted);
+  opacity: .55;
+  padding: var(--s-lg);
+  text-align: center;
+}
+.idx-loading::before { content: '⟳ '; }
+
+/* ── Act group header ── */
+.idx-act-header {
+  display: flex;
+  align-items: center;
+  gap: var(--s-sm);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .1em;
+  color: var(--fg-muted);
+  padding: var(--s-sm) var(--s-lg) var(--s-xs);
+  border-bottom: 1px solid var(--border);
+  background: var(--bg-alt);
+  margin-top: var(--s-xs);
+  opacity: .8;
+  cursor: pointer;
+  position: relative;
+  outline: none;
+  transition: background .1s;
+}
+.idx-act-header:first-child { margin-top: 0; }
+
+/* ── Index rows ── */
+.idx-row {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--s-sm);
+  padding: var(--s-sm);
+  cursor: pointer;
+  border-bottom: 1px solid var(--border);
+  outline: none;
+  transition: background .1s;
+}
+.idx-row:last-child         { border-bottom: none; }
+.idx-row:is(:hover, :focus) { background: var(--bg-hover); }
+.idx-row-active             { background: var(--selection); }
+
+/* ── Drag & drop states ── */
+.idx-drag-handle {
+  font-size: 13px;
+  color: var(--fg-muted);
+  opacity: .3;
+  cursor: grab;
+  flex-shrink: 0;
+  padding: 0 2px;
+  user-select: none;
+  line-height: 1;
+}
+.idx-drag-handle:active         { cursor: grabbing; }
+.idx-row:hover .idx-drag-handle { opacity: .6; }
+.idx-row-dragging               { opacity: .4; }
+.idx-row-drag-over              { background: var(--selection) !important; border-top: 2px solid var(--primary); }
+
+/* ── Row sub-elements ── */
+.idx-row-active-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--primary);
+  flex-shrink: 0;
+}
+.idx-row-icon  { font-size: 16px; color: var(--fg-muted); flex-shrink: 0; display: flex; align-items: center; }
+.idx-row-num   { font-family: var(--font-mono); font-size: 10px; color: var(--fg-link); opacity: .8; width: 20px; text-align: right; flex-shrink: 0; }
+.idx-row-main  { flex: 1; display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+.idx-row-title { font-size: .875rem; color: var(--fg-main); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-family: var(--entry-font); }
+.idx-row-sub   { font-family: var(--font-mono); font-size: 10px; color: var(--fg-muted); opacity: .65; }
+.idx-row-badge {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--fg-muted);
+  background: var(--bg-alt);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 1px 6px;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+/* ── Row lock/delete tool ── */
+.idx-row-tool {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding: 1px 0 1px 6px;
+  border-radius: 4px;
+  flex-shrink: 0;
+  cursor: pointer;
+  user-select: none;
+  transition: background .12s;
+}
+.idx-row-tool:hover             { background: var(--bg-hover); }
+.idx-row-tool i,
+.idx-row-tool svg               { display: none; stroke-width: 1.5px !important; }
+
+/* Icon visibility by state */
+span.idx-row-tool[data-state='unlock'] i.unlock { display: inline-flex; color: var(--fg-muted); opacity: .3; }
+span.idx-row-tool[data-state='lock']   i.lock   { display: inline-flex; color: var(--primary); }
+span.idx-row-tool[data-state='delete'] i.delete { display: inline-flex; color: var(--danger); }
+.idx-row-tool[data-state='unlock']:hover i.unlock { opacity: .7; }
+
+/* Row-level state effects via :has() */
+.idx-row:has(.idx-row-tool[data-state='lock'])                { opacity: .55; }
+.idx-row:has(.idx-row-tool[data-state='lock']) .idx-row-main,
+.idx-row:has(.idx-row-tool[data-state='lock']) .idx-row-num,
+.idx-row:has(.idx-row-tool[data-state='lock']) .idx-row-badge { cursor: not-allowed; }
+.idx-row:has(.idx-row-tool[data-state='delete']) .idx-row-title { text-decoration: line-through; opacity: .5; }

@@ -443,11 +443,11 @@ _renumberAndSave(modal, bookId) {
         ${id === 'book-index-modal' ? `
         <div class="idx-create-row">
           <input class="cfg-input" id="idx-new-book-title" placeholder="New book title…">
-          <button class="cfg-btn primary" id="idx-new-book">Create</button>
+          <button class="btn-mini primary" id="idx-new-book">Create</button>
         </div>` : `
         <div class="idx-create-row">
           <input class="cfg-input" id="idx-new-chapter-file" placeholder="New file…">
-		  <button class="cfg-btn primary" id="idx-new-chapter">Create</button>
+		  <button class="btn-mini primary" id="idx-new-chapter">Create</button>
         </div>`}
       </div>
         <div class="idx-body modal-body">

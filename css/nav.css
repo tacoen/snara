@@ -1,0 +1,31 @@
+
+nav>div {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--s-xs);
+  padding: var(--s-xs) 0;
+  width: 40px;
+}
+
+nav div.embed svg {
+  width: 24px;
+  margin-left: 3px;
+}
+
+nav div.embed {
+  margin-right: -11px;
+  padding: var(--s-md) 0;
+  gap: var(--s-sm);
+  background: var(--border);
+  border-top-left-radius: 6px;
+  border-bottom-left-radius: 6px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-start;
+  padding: var(--s-xs) 0;
+  width: auto;
+  border-left: 1px solid var(--bg-muted);
+  box-shadow: inset 2px 0 4px var(--overlay);
+}

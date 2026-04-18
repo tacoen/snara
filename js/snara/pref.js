@@ -264,15 +264,17 @@ export class SnaraPref {
     const t = this._activeTab;
     this.modal.innerHTML = `
       ${_modalHeader('<i data-icon="adjustments-horizontal"></i> Theme Variables', 'pref-close')}
-      <div class="cfg-tabs pref-tabs">
+      <div class="tabs">
         <button class="cfg-tab${t==='light'?' active':''}" data-tab="light">☀ Light</button>
         <button class="cfg-tab${t==='dark'?' active':''}" data-tab="dark">☾ Dark</button>
         <button class="cfg-tab${t==='root'?' active':''}" data-tab="root">Spacing &amp; Type</button>
       </div>
-      <div class="pref-body modal-body tab-${t}" id="pref-body">${this._renderTabBody(t)}</div>
+      <div class="pref-body modal-body tab-${t}" id="pref-body">
+	  ${this._renderTabBody(t)}
+	  </div>
       ${_modalFooter(`
-        <button class="cfg-btn pref-reset-btn" id="pref-reset">Reset</button>
-        <button class="cfg-btn mute pref-export-btn" id="pref-export"><i data-icon="download"></i> Export vars.css</button>
+        <button class="btn-mini pref-reset-btn" id="pref-reset">Reset</button>
+        <button class="btn-mini mute pref-export-btn" id="pref-export"><i data-icon="download"></i> Export vars.css</button>
       `)}
     `;
 
@@ -296,17 +298,65 @@ export class SnaraPref {
     this._bindInputs();
     icx.delayreplace('#pref-modal [data-icon]');
   }
+  
+  _preview(tab) {
+		switch(tab) {
+			case "root":
+				return `
+				<div class='pad'>
+				<p><span class='title'>Header title</span></p>
+				<button class='btn-mini'>Button</button>
+				<div style='padding: var(--s-xs)'>xs we call it extra small</div>
+				<div style='padding: var(--s-sm)'>sm stand for small</div>
+				<div style='padding: var(--s-md)'>md</div>
+				<div style='padding: var(--s-lg)'>lg</div>
+				<div style='padding: var(--s-xl)'>xl</div>
+				</div>
+				<div class='entry'>
+				<h1>Heading1 - Act</h1>
+				<h2>Chapter</h2>
+				<h3>Scene</h3>
+				<h4>Beat</h4>
+				<p>Quisque in sem hendrerit, sodales massa eget, dignissim arcu.</p>
+				<p style='font-size: var(--f-xs)'>--f-xs Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
+				<p style='font-size: var(--f-md)'>--f-md Vestibulum luctus nunc at eros auctor, eget pellentesque augue pellentesque.</p>
+				<p style='font-size: var(--f-sm)'>--f-sm Suspendisse dignissim elit sagittis egestas vestibulum</p>
+				</div>
+				</div>`;
+				break;
+			default:
+				return `<div class='theme'>
+				<div style='color:var(--fg-main); background: var(--border)'>In ${tab} theme, you see <span style='color:var(--fg-muted)'>a muted color</span> and <a href='#'>a links</a> together.</div>
+				<div style='color:var(--fg-main); background: var(--bg-muted)'>In ${tab} theme, you see <span style='color:var(--fg-muted)'>a muted color</span> and <a href='#'>a links</a> together.</div>
+				<div style='color:var(--fg-main); background: var(--bg-alt)'>In ${tab} theme, you see <span style='color:var(--fg-muted)'>a muted color</span> and <a href='#'>a links</a> together.</div>
+				<div style='color:var(--fg-main); background: var(--bg-main)'>In ${tab} theme, you see <span style='color:var(--fg-muted)'>a muted color</span> and <a href='#'>a links</a> together.</div>
+				</div><div class='flex'>
+				
+				<button class='primary'>primary</button>
+				<button class='warn'>Warn</button>
+				<button class='success'>success</button>
+				<button class='danger'>Danger</button>
+				
+				</div>`;
+				break;
+		}
+  }
 
   _renderTabBody(tab) {
     const groups   = GROUPS[tab]      ?? [];
     const saved    = this._saved[tab] ?? {};
     const defaults = DEFAULTS[tab]    ?? {};
-    return groups.map(g => `
+    const formGroup = groups.map(g => `
       <section class="cfg-section pref-section">
         <h3 class="cfg-heading">${esc(g.heading)}</h3>
         ${g.vars.map(v => this._renderRow(v, saved[v.name] ?? defaults[v.name] ?? '')).join('')}
       </section>`
     ).join('');
+
+	return `<div class='form'>${formGroup}</div>
+	<div class='previewBox'>${this._preview(tab)}</div>`
+
+	
   }
 
   _renderRow({ name, label, type }, current) {

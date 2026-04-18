@@ -100,8 +100,8 @@ export class SnaraGallery {
         placeholder="new name…" autocomplete="off" spellcheck="false" list="gallery-ac-list">
       <datalist id="gallery-ac-list"></datalist>
       <div class="gallery-rename-actions">
-        <button class="cfg-btn mute gallery-rename-cancel" style="font-size:11px;padding:2px 8px">Cancel</button>
-        <button class="cfg-btn primary gallery-rename-ok"  style="font-size:11px;padding:2px 8px">Rename</button>
+        <button class="btn-mini mute gallery-rename-cancel" style="font-size:11px;padding:2px 8px">Cancel</button>
+        <button class="btn-mini primary gallery-rename-ok"  style="font-size:11px;padding:2px 8px">Rename</button>
       </div>`;
     card.appendChild(box);
 
@@ -186,8 +186,8 @@ export class SnaraGallery {
       bar.className = 'del-confirm';
       bar.innerHTML = `
         <span style="flex:1;color:var(--danger)">Delete "${esc(filename)}"?</span>
-        <button class="cfg-btn mute" style="padding:2px 8px;font-size:11px" data-action="del-no">No</button>
-        <button class="cfg-btn" style="padding:2px 8px;font-size:11px;border-color:var(--danger);color:var(--danger)" data-action="del-yes">Yes, delete</button>
+        <button class="btn-mini mute" style="padding:2px 8px;font-size:11px" data-action="del-no">No</button>
+        <button class="btn-mini" style="padding:2px 8px;font-size:11px;border-color:var(--danger);color:var(--danger)" data-action="del-yes">Yes, delete</button>
       `;
       document.body.appendChild(bar);
 

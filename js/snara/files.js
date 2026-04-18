@@ -84,9 +84,9 @@ export class SnaraFiles extends SnaraComponent {
     const el = document.getElementById('files-topbar-actions');
     if (!el) return;
     if (sec === 'import') {
-      el.innerHTML = `<button class="cfg-btn mute" onclick="SnaraFiles.instance._triggerInput('files-input')"><i data-icon="upload"></i> Upload</button>`;
+      el.innerHTML = `<button class="btn-mini mute" onclick="SnaraFiles.instance._triggerInput('files-input')"><i data-icon="upload"></i> Upload</button>`;
     } else if (sec === 'gallery') {
-      el.innerHTML = `<button class="cfg-btn mute" onclick="SnaraFiles.instance._triggerInput('files-img-input')"><i data-icon="upload"></i> Upload</button>`;
+      el.innerHTML = `<button class="btn-mini mute" onclick="SnaraFiles.instance._triggerInput('files-img-input')"><i data-icon="upload"></i> Upload</button>`;
     } else {
       el.innerHTML = '';
     }
@@ -285,7 +285,7 @@ export class SnaraFiles extends SnaraComponent {
         </div>
       </div>
       ${_modalFooter(`
-        <button class="cfg-btn primary" id="imp-confirm-btn">
+        <button class="btn-mini primary" id="imp-confirm-btn">
           <i data-icon="download"></i> Import
         </button>
       `)}`;
@@ -317,7 +317,7 @@ export class SnaraFiles extends SnaraComponent {
       ${_modalHeader('Import error')}
       <div class="modal-body" style="padding:var(--s-lg);color:var(--danger);font-size:var(--f-xs)">${esc(msg)}</div>
       <div class="modal-footer">
-        <button class="cfg-btn mute" data-action="close">Close</button>
+        <button class="btn-mini mute" data-action="close">Close</button>
       </div>`;
     modal.querySelector('#modal-close').dataset.action = 'close';
     icx.delayreplace('#files-import-modal [data-icon]');
@@ -398,8 +398,8 @@ export class SnaraFiles extends SnaraComponent {
     `;
     confirm.innerHTML = `
       <span style="flex:1;color:var(--danger)">Delete "${esc(filename)}"?</span>
-      <button class="cfg-btn mute" style="padding:2px 8px;font-size:11px" data-action="del-no">No</button>
-      <button class="cfg-btn" style="padding:2px 8px;font-size:11px;border-color:var(--danger);color:var(--danger)" data-action="del-yes">Yes, delete</button>
+      <button class="btn-mini mute" style="padding:2px 8px;font-size:11px" data-action="del-no">No</button>
+      <button class="btn-mini" style="padding:2px 8px;font-size:11px;border-color:var(--danger);color:var(--danger)" data-action="del-yes">Yes, delete</button>
     `;
     document.body.appendChild(confirm);
     confirm.querySelector('[data-action="del-no"]').addEventListener('click', () => {
@@ -491,7 +491,7 @@ export class SnaraFiles extends SnaraComponent {
     const bookId = AppConfig.activeBookId;
     if (!bookId) { alert('No active book.'); return; }
 
-    const btn    = document.querySelector('#fpanel-cache .fpanel-footer .cfg-btn');
+    const btn    = document.querySelector('#fpanel-cache .fpanel-footer .btn-mini');
     const footer = document.querySelector('#fpanel-cache .fpanel-footer');
     if (!footer) return;
 
