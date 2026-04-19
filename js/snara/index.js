@@ -359,6 +359,7 @@ export class SnaraIndex {
         if (e.target.closest('.idx-row-tool')) return;
         if (tool?.dataset.state === 'lock') return;
         closeModal('chapter-index-modal');
+		closeModal('book-index-modal');
         window.loadDocument?.(row.dataset.bookId, filename);
       };
 

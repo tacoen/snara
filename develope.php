@@ -80,14 +80,18 @@ $title  = 'Snara';
 $html = ob_get_clean();
 
 // 3. Simple Compression (Logic to remove line breaks and extra spaces)
+// 3. Aggressive Compression
 $search = [
-    '/\>[^\S ]+/s',     // Strip whitespaces after tags, except space
-    '/[^\S ]+\</s',     // Strip whitespaces before tags, except space
-    '/(\s)+/s',         // Shorten multiple whitespace sequences
-    '//' // Remove HTML comments
+    '/(\s)+/s',         // 1. Replace multiple spaces/newlines with a single space
+    '/\s+(?=<)/',       // 2. Remove all spaces leading up to a starting tag
+    '/(?<=>)\s+/',      // 3. Remove all spaces following an ending tag
+    '//' // 4. Remove HTML comments
 ];
-$replace = ['>', '<', '\\1', ''];
+$replace = [' ', '', '', ''];
 $compressedHtml = preg_replace($search, $replace, $html);
+
+// Final trim to catch any strays at the start/end
+$compressedHtml = trim($compressedHtml);$replace, $html);
 
 // 4. Save to index.html
 if (file_put_contents(__DIR__ . '/index.html', $compressedHtml)) {
