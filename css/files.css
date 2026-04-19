@@ -55,13 +55,7 @@
  padding: 0 var(--s-md) 8px;
  border-bottom: 1px solid var(--border);
 }
-.files-title {
- font-family: var(--font-mono);
- font-size: var(--f-xs);
- font-weight: 500;
- text-transform: uppercase;
- letter-spacing: .07em;
-}
+
 .fpanel { display: flex;flex-direction: column;flex: 1;overflow: hidden;}
 .fpanel[hidden] { display: none;}
 .fpanel-hint { padding: 8px var(--s-md) 4px;font-size: var(--f-xs);color: var(--fg-muted);}
@@ -149,3 +143,7 @@
 .ftool.erase-btn:hover { color: var(--danger);}
 .fcheck-row { display: flex;align-items: center;gap: var(--s-sm);cursor: pointer;font-size: var(--f-xs);padding: 4px var(--s-sm);}
 .fcheck-row input { accent-color: var(--primary);width: 13px;height: 13px;cursor: pointer;}
+
+#files-topbar-actions {
+	height: 22px;
+}

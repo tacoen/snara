@@ -1,6 +1,8 @@
 RewriteEngine On
 RewriteRule ^favicon\.ico$ - [R=204,L]
 
+DirectoryIndex index.html develope.php
+
 <FilesMatch "\.(htm|html|css|js|txt)$">
     AddDefaultCharset UTF-8
 </FilesMatch>

@@ -1,11 +1,10 @@
-
 import { SnaraComponent }                 from './component.js';
 import { AppConfig }                      from '../snara.js';
 import { SnaraStruct }                    from './struct.js';
 import { SnaraGallery }                   from './gallery.js';
 import icx                                from '../icons/ge-icon.js';
-import { openModal,_modalHeader, _modalFooter } from './modal.js';
-import { esc, fmtDate, fmtSize, iconFor } from '../helpers.js';
+import { openModal, _modalHeader, _modalFooter } from './modal.js';
+import { esc, fmtDate, fmtSize, iconFor, listSetState, confirmDeleteBar, apiFetch, postJson } from '../helpers.js';
 
 export class SnaraFiles extends SnaraComponent {
   constructor() {
@@ -93,6 +92,7 @@ export class SnaraFiles extends SnaraComponent {
   }
 
   _triggerInput(id) { document.getElementById(id)?.click(); }
+
   _bindDropzones() {
     const wire = (id, type) => {
       const el = document.getElementById(id);
@@ -146,12 +146,10 @@ export class SnaraFiles extends SnaraComponent {
       fd.append('file', file);
 
       try {
-        const res  = await fetch(
+        await apiFetch(
           `${AppConfig.apiPath}?action=import.upload&bookId=${bookId}`,
           { method: 'POST', body: fd }
         );
-        const json = await res.json();
-        if (!res.ok || json.error) throw new Error(json.error || `HTTP ${res.status}`);
       } catch (e) {
         alert(`Upload failed for "${file.name}": ${e.message}`);
       }
@@ -165,18 +163,17 @@ export class SnaraFiles extends SnaraComponent {
     const ul     = document.getElementById('files-imp-list');
     if (!ul) return;
     if (!bookId) {
-      ul.innerHTML = '<li class="flist-empty">No active book.</li>';
+      listSetState(ul, 'empty', 'No active book.');
       return;
     }
 
-    ul.innerHTML = '<li class="flist-empty" style="opacity:.5">Loading…</li>';
+    listSetState(ul, 'loading', 'Loading…');
 
     try {
-      const res   = await fetch(`${AppConfig.apiPath}?action=import.list&bookId=${bookId}`);
-      const files = await res.json();
+      const files = await apiFetch(`${AppConfig.apiPath}?action=import.list&bookId=${bookId}`);
 
       if (!files.length) {
-        ul.innerHTML = '<li class="flist-empty">No files yet — drop some above</li>';
+        listSetState(ul, 'empty', 'No files yet — drop some above');
         this._updateDeleteBar('import');
         return;
       }
@@ -201,7 +198,7 @@ export class SnaraFiles extends SnaraComponent {
       ul.addEventListener('click', this._impListClick.bind(this), { once: true });
       icx.delayreplace('#files-imp-list [data-icon]');
     } catch (e) {
-      ul.innerHTML = `<li class="flist-empty" style="color:var(--danger)">Error: ${esc(e.message)}</li>`;
+      listSetState(ul, 'error', `Error: ${e.message}`);
     }
   }
 
@@ -233,11 +230,13 @@ export class SnaraFiles extends SnaraComponent {
     modal.querySelector('#modal-close').dataset.action = 'close';
     openModal('files-import-modal');
     icx.delayreplace('#files-import-modal [data-icon]');
+
     let text;
     try {
       const res = await fetch(
         `${AppConfig.apiPath}?action=import.read&bookId=${bookId}&filename=${encodeURIComponent(filename)}`
       );
+      // Raw text response — cannot use apiFetch (which expects JSON)
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       text = await res.text();
     } catch (e) {
@@ -335,6 +334,7 @@ export class SnaraFiles extends SnaraComponent {
       .filter(Boolean);
 
     if (!checked.length) { alert('No blocks selected.'); return; }
+
     const btn = modal.querySelector('#imp-confirm-btn');
     btn.disabled    = true;
     btn.textContent = 'Importing…';
@@ -344,20 +344,14 @@ export class SnaraFiles extends SnaraComponent {
     }));
 
     try {
-      const res  = await fetch(AppConfig.apiPath + '?action=doc.save', {
-        method:  'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body:    JSON.stringify({ filename, bookId, meta: {}, article }),
-      });
-      const json = await res.json();
-      if (!res.ok || json.error) throw new Error(json.error || `HTTP ${res.status}`);
+      await postJson(AppConfig.apiPath + '?action=doc.save', { filename, bookId, meta: {}, article });
       this.close();
       try {
         await fetch(
           `${AppConfig.apiPath}?action=import.delete&bookId=${bookId}&filename=${encodeURIComponent(srcFilename)}`,
           { method: 'DELETE' }
         );
-      } catch {  }
+      } catch { }
 
       this._loadImpList();
       window.dispatchEvent(new CustomEvent('chapteradded', { detail: { bookId, filename } }));
@@ -376,6 +370,7 @@ export class SnaraFiles extends SnaraComponent {
     const bookId = AppConfig.activeBookId;
     if (!bookId) return;
     const btn = li.querySelector('[data-action="delete-import"]');
+
     if (!li.classList.contains('delete')) {
       li.classList.add('delete');
       if (btn) {
@@ -387,51 +382,25 @@ export class SnaraFiles extends SnaraComponent {
 
     if (li.querySelector('.del-confirm')) return;
 
-    const confirm = document.createElement('div');
-    confirm.className = 'del-confirm';
-    confirm.style.cssText = `
-      position:fixed;bottom:0;left:0;width:100%;z-index:999;
-      display:flex;align-items:center;gap:8px;
-      padding:10px 16px;font-size:12px;
-      background:var(--bg-alt);border-top:1px solid var(--border);
-      box-shadow:0 -2px 12px var(--shadow);
-    `;
-    confirm.innerHTML = `
-      <span style="flex:1;color:var(--danger)">Delete "${esc(filename)}"?</span>
-      <button class="btn-mini mute" style="padding:2px 8px;font-size:11px" data-action="del-no">No</button>
-      <button class="btn-mini" style="padding:2px 8px;font-size:11px;border-color:var(--danger);color:var(--danger)" data-action="del-yes">Yes, delete</button>
-    `;
-    document.body.appendChild(confirm);
-    confirm.querySelector('[data-action="del-no"]').addEventListener('click', () => {
+    const restoreBtn = () => {
       li.classList.remove('delete');
-      confirm.remove();
       if (btn) {
         btn.innerHTML = '<i data-icon="trash"></i>';
         icx.delayreplace(`#${li.id} [data-action="delete-import"] [data-icon]`);
       }
-    });
+    };
 
-    confirm.querySelector('[data-action="del-yes"]').addEventListener('click', async () => {
-      confirm.innerHTML = `<span style="color:var(--fg-muted);font-size:11px;padding:2px 4px">Deleting…</span>`;
-      try {
-        const res  = await fetch(
+    confirmDeleteBar(
+      `Delete "${filename}"?`,
+      async () => {
+        await apiFetch(
           `${AppConfig.apiPath}?action=import.delete&bookId=${bookId}&filename=${encodeURIComponent(filename)}`,
           { method: 'DELETE' }
         );
-        const json = await res.json();
-        if (!res.ok || json.error) throw new Error(json.error || `HTTP ${res.status}`);
-        confirm.remove();
         li.remove();
-      } catch (e) {
-        alert(`Delete failed: ${e.message}`);
-        li.classList.remove('delete');
-        confirm.remove();
-        if (btn) {
-          btn.innerHTML = '<i data-icon="trash"></i>';
-          icx.delayreplace(`#${li.id} [data-action="delete-import"] [data-icon]`);
-        }
-      }
-    });
+      },
+      restoreBtn
+    );
   }
 
   async _loadCacheList() {
@@ -439,23 +408,22 @@ export class SnaraFiles extends SnaraComponent {
     const ul     = document.getElementById('files-cache-list');
     if (!ul) return;
     if (!bookId) {
-      ul.innerHTML = '<li class="flist-empty">No active book.</li>';
+      listSetState(ul, 'empty', 'No active book.');
       return;
     }
 
-    ul.innerHTML = '<li class="flist-empty" style="opacity:.5">Loading cache files…</li>';
+    listSetState(ul, 'loading', 'Loading cache files…');
 
     try {
-      const res  = await fetch(`${AppConfig.apiPath}?action=cache.list&bookId=${bookId}`);
-      const data = await res.json();
+      const data = await apiFetch(`${AppConfig.apiPath}?action=cache.list&bookId=${bookId}`);
 
       if (!Array.isArray(data)) {
-        ul.innerHTML = `<li class="flist-empty" style="color:var(--danger)">API error: ${esc(data?.error ?? 'unexpected response')}</li>`;
+        listSetState(ul, 'error', `API error: ${data?.error ?? 'unexpected response'}`);
         return;
       }
 
       if (!data.length) {
-        ul.innerHTML = '<li class="flist-empty">No cache files yet — try rebuilding.</li>';
+        listSetState(ul, 'empty', 'No cache files yet — try rebuilding.');
         return;
       }
 
@@ -483,7 +451,7 @@ export class SnaraFiles extends SnaraComponent {
       icx.delayreplace('#files-cache-list [data-icon]');
 
     } catch (e) {
-      ul.innerHTML = `<li class="flist-empty" style="color:var(--danger)">Error: ${esc(e.message)}</li>`;
+      listSetState(ul, 'error', `Error: ${e.message}`);
     }
   }
 
@@ -516,18 +484,15 @@ export class SnaraFiles extends SnaraComponent {
 
     if (btn) { btn.disabled = true; btn.textContent = 'Rebuilding…'; }
     try {
-      const res   = await fetch(`${AppConfig.apiPath}?action=cache.rebuild&bookId=${bookId}`, {
-        method: 'POST',
-      });
-      const json  = await res.json();
+      const json  = await postJson(`${AppConfig.apiPath}?action=cache.rebuild&bookId=${bookId}`, {});
       const steps = json.steps || [];
 
       prog.innerHTML = steps.map(s => {
-        const icon   = s.status === 'ok' ? '✓' : '✗';
+        const icon   = s.status === 'ok' ? 'v' : 'x';
         const color  = s.status === 'ok' ? 'var(--fg-main)' : 'var(--danger)';
         const detail = s.count !== undefined
-          ? ` · ${s.count} items`
-          : s.error ? ` · ${s.error}` : '';
+          ? ` - ${s.count} items`
+          : s.error ? ` - ${s.error}` : '';
         return `
           <div style="display:flex;gap:8px;color:${color}">
             <span>${icon}</span>
@@ -554,5 +519,4 @@ export class SnaraFiles extends SnaraComponent {
     const bar   = document.getElementById(barId);
     if (bar) bar.hidden = true;
   }
-
 }

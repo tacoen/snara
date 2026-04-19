@@ -37,6 +37,8 @@ aside header {
  display: flex;
  align-items: center;
 }
+
+#files-section-title,
 .previewBox .title,
 section header .title {
  font-family: var(--font-mono);

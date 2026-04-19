@@ -1,3 +1,4 @@
+import { esc, uid, debugLog } from './helpers.js';
 
 export class SnaraNotes {
   static instance = null;
@@ -166,7 +167,7 @@ export class SnaraNotes {
 
   _addNote() {
     const note = {
-      id:        this._uid(),
+      id:        uid(),
       title:     'New note',
       body:      '',
       updatedAt: new Date().toISOString(),
@@ -238,7 +239,7 @@ export class SnaraNotes {
     const titleInput = document.createElement('input');
     titleInput.type      = 'text';
     titleInput.className = 'notes__card-title';
-    titleInput.value     = this._esc(note.title || 'Untitled');
+    titleInput.value     = esc(note.title || 'Untitled');
     titleInput.setAttribute('aria-label', 'Note title');
     const actions = document.createElement('div');
     actions.className = 'notes__card-actions';
@@ -287,17 +288,11 @@ export class SnaraNotes {
       return window.marked.parse(md, { breaks: true, gfm: true });
     }
 
-    return `<p>${this._esc(md).replace(/\n/g, '<br>')}</p>`;
+    return `<p>${esc(md).replace(/\n/g, '<br>')}</p>`;
   }
 
-  _esc(str) {
-    return String(str)
-      .replace(/&/g,  '&amp;')
-      .replace(/</g,  '&lt;')
-      .replace(/>/g,  '&gt;')
-      .replace(/"/g,  '&quot;');
-  }
-
+  // ISO date string formatter — intentionally distinct from helpers.fmtDate
+  // which takes a Unix timestamp. This takes an ISO string from note.updatedAt.
   _fmtDate(iso) {
     if (!iso) return '';
     try {
@@ -308,10 +303,6 @@ export class SnaraNotes {
     } catch {
       return '';
     }
-  }
-
-  _uid() {
-    return Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
   }
 
   _setStatus(msg, type) {

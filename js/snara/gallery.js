@@ -1,7 +1,6 @@
-
-import { AppConfig } from '../snara.js';
-import icx           from '../icons/ge-icon.js';
-import { esc } from '../helpers.js';
+import { AppConfig }                        from '../snara.js';
+import icx                                  from '../icons/ge-icon.js';
+import { esc, apiFetch, postJson, confirmDeleteBar } from '../helpers.js';
 
 export class SnaraGallery {
   static instance = null;
@@ -24,8 +23,7 @@ export class SnaraGallery {
     this._fetchTerms(bookId);
 
     try {
-      const res   = await fetch(`${AppConfig.apiPath}?action=gallery.list&bookId=${bookId}`);
-      const files = await res.json();
+      const files = await apiFetch(`${AppConfig.apiPath}?action=gallery.list&bookId=${bookId}`);
 
       if (!files.length) {
         grid.innerHTML = '<p class="flist-empty">No media yet — drop files above.</p>';
@@ -127,13 +125,10 @@ export class SnaraGallery {
       btn.textContent = '…';
 
       try {
-        const res  = await fetch(`${AppConfig.apiPath}?action=gallery.rename&bookId=${bookId}`, {
-          method:  'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body:    JSON.stringify({ from: filename, to: newBase }),
-        });
-        const json = await res.json();
-        if (!res.ok || json.error) throw new Error(json.error || `HTTP ${res.status}`);
+        const json = await postJson(
+          `${AppConfig.apiPath}?action=gallery.rename&bookId=${bookId}`,
+          { from: filename, to: newBase }
+        );
         const newFilename = json.filename;
         card.dataset.filename = newFilename;
         card.querySelector('.gallery-name').textContent = newFilename;
@@ -171,8 +166,7 @@ export class SnaraGallery {
 
   async _fetchTerms(bookId) {
     try {
-      const res  = await fetch(`${AppConfig.apiPath}?action=gallery.autocomplete&bookId=${bookId}`);
-      const data = await res.json();
+      const data  = await apiFetch(`${AppConfig.apiPath}?action=gallery.autocomplete&bookId=${bookId}`);
       this._terms = data.terms || [];
     } catch {
       this._terms = [];
@@ -180,40 +174,24 @@ export class SnaraGallery {
   }
 
   _confirmDelete(card, filename, bookId) {
-    if (!card.classList.contains('gallery-deleting')) {
-      card.classList.add('gallery-deleting');
-      const bar = document.createElement('div');
-      bar.className = 'del-confirm';
-      bar.innerHTML = `
-        <span style="flex:1;color:var(--danger)">Delete "${esc(filename)}"?</span>
-        <button class="btn-mini mute" style="padding:2px 8px;font-size:11px" data-action="del-no">No</button>
-        <button class="btn-mini" style="padding:2px 8px;font-size:11px;border-color:var(--danger);color:var(--danger)" data-action="del-yes">Yes, delete</button>
-      `;
-      document.body.appendChild(bar);
+    if (card.classList.contains('gallery-deleting')) return;
+    card.classList.add('gallery-deleting');
 
-      bar.querySelector('[data-action="del-no"]').addEventListener('click', () => {
+    confirmDeleteBar(
+      `Delete "${filename}"?`,
+      async () => {
+        const res  = await fetch(
+          `${AppConfig.apiPath}?action=gallery.delete&bookId=${bookId}&filename=${encodeURIComponent(filename)}`,
+          { method: 'DELETE' }
+        );
+        const json = await res.json();
+        if (!res.ok || json.error) throw new Error(json.error || `HTTP ${res.status}`);
+        card.remove();
+      },
+      () => {
         card.classList.remove('gallery-deleting');
-        bar.remove();
-      });
-
-      bar.querySelector('[data-action="del-yes"]').addEventListener('click', async () => {
-        bar.innerHTML = `<span style="color:var(--fg-muted);font-size:11px;padding:2px 4px">Deleting…</span>`;
-        try {
-          const res  = await fetch(
-            `${AppConfig.apiPath}?action=gallery.delete&bookId=${bookId}&filename=${encodeURIComponent(filename)}`,
-            { method: 'DELETE' }
-          );
-          const json = await res.json();
-          if (!res.ok || json.error) throw new Error(json.error || `HTTP ${res.status}`);
-          bar.remove();
-          card.remove();
-        } catch (e) {
-          alert(`Delete failed: ${e.message}`);
-          card.classList.remove('gallery-deleting');
-          bar.remove();
-        }
-      });
-    }
+      }
+    );
   }
 
   async uploadFiles(files) {
@@ -233,12 +211,10 @@ export class SnaraGallery {
       fd.append('file', file);
 
       try {
-        const res  = await fetch(
+        const json = await apiFetch(
           `${AppConfig.apiPath}?action=gallery.upload&bookId=${bookId}`,
           { method: 'POST', body: fd }
         );
-        const json = await res.json();
-        if (!res.ok || json.error) throw new Error(json.error || `HTTP ${res.status}`);
 
         const grid = document.getElementById('gallery-grid');
         if (grid) {
@@ -257,4 +233,3 @@ export class SnaraGallery {
     this._fetchTerms(bookId);
   }
 }
-

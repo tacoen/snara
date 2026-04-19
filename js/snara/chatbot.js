@@ -1,6 +1,8 @@
+import { AppConfig }              from '../snara.js';
+import { truncate, debugLog, apiFetch, postJson } from '../helpers.js';
 
-import { AppConfig } from '../snara.js';
 const TAG = '[chatbot]';
+
 export class SnaraChat {
   static instance = null;
   constructor(selector) {
@@ -10,7 +12,7 @@ export class SnaraChat {
     }
     SnaraChat.instance = this;
 
-    this._debugEnabled = (localStorage.getItem('debug') ?? '').includes('chatbot');
+    this._log = debugLog(TAG, 'chatbot');
     this._log('constructor called with selector:', selector);
 
     this._root = typeof selector === 'string'
@@ -45,7 +47,7 @@ export class SnaraChat {
     this._log('endpoint:', this._endpoint);
     this._log('prepromptUrl:', this._prepromptUrl);
 
-    this._busy    = false;
+    this._busy     = false;
     this._maxLabel = parseInt(this._root.dataset.maxLabel || '30', 10);
 
     this._tocMap = new Map();
@@ -125,20 +127,13 @@ export class SnaraChat {
     this._input.value = '';
     this._setLoading(true);
     this._persistEntry('user', userText);
-    const aiId      = this._randomId();
+    const aiId        = this._randomId();
     const pendingSpan = this._createPendingBubble(aiId);
     try {
-      this._log('fetch →', this._endpoint);
-      const res = await fetch(this._endpoint, {
-        method:  'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body:    JSON.stringify({ message: fullPrompt }),
-      });
-
-      this._log('fetch ← status:', res.status);
-      if (!res.ok) throw new Error(`HTTP ${res.status} ${res.statusText}`);
-      const data = await res.json();
+      this._log('fetch ->', this._endpoint);
+      const data = await postJson(this._endpoint, { message: fullPrompt });
       this._log('response data:', data);
+
       let aiText;
       if (data.error) {
         console.warn(`${TAG} API returned error:`, data.error);
@@ -287,7 +282,7 @@ export class SnaraChat {
 
   _addTocEntry(id, content) {
     if (!this._aside || !id) return;
-    const label = this._truncate(content, this._maxLabel);
+    const label = truncate(content, this._maxLabel);
     const time  = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
     const anchor       = document.createElement('a');
@@ -314,9 +309,9 @@ export class SnaraChat {
         if (!entry.id || !entry.content) return;
         if (!['user', 'ai'].includes(entry.role)) return;
         this._appendMessage(entry.role, entry.content, {
-          id:      entry.id,
+          id:        entry.id,
           timestamp: entry.timestamp,
-          addToc:  entry.role === 'ai',
+          addToc:    entry.role === 'ai',
         });
       });
 
@@ -330,16 +325,18 @@ export class SnaraChat {
     if (!AppConfig.activeBookId) return;
     const entryId   = id ?? this._randomId();
     const timestamp = new Date().toISOString();
-    const label     = this._truncate(content, this._maxLabel);
+    const label     = truncate(content, this._maxLabel);
     this._apiRequest('POST', { id: entryId, role, content, label, timestamp })
       .catch(err => console.warn(`${TAG} persist failed:`, err.message));
   }
 
   async _apiRequest(method, body = null) {
     const ACTION_MAP = { GET: 'chatlog.get', POST: 'chatlog.save', DELETE: 'chatlog.clear' };
-    const url = `${AppConfig.apiPath}?action=${ACTION_MAP[method]}&bookId=${encodeURIComponent(AppConfig.activeBookId)}`;
+    const url  = `${AppConfig.apiPath}?action=${ACTION_MAP[method]}&bookId=${encodeURIComponent(AppConfig.activeBookId)}`;
     const opts = { method, headers: { 'Content-Type': 'application/json' }, credentials: 'same-origin' };
     if (body) opts.body = JSON.stringify(body);
+    // Raw fetch used here — chatlog endpoints do not return json.error shape,
+    // and DELETE returns no body on some servers, so apiFetch is not appropriate.
     const res = await fetch(url, opts);
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     return res.json();
@@ -347,15 +344,6 @@ export class SnaraChat {
 
   _randomId() {
     return String(Math.floor(Math.random() * 900_000 + 100_000));
-  }
-
-  _truncate(str, max) {
-    if (typeof str !== 'string') return '';
-    return str.length <= max ? str : str.slice(0, max).trimEnd() + '\u2026';
-  }
-
-  _log(...args) {
-    if (this._debugEnabled) console.log(TAG, ...args);
   }
 
   destroy() {

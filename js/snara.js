@@ -1,6 +1,4 @@
-/* ─────────────────────────────────────────────────
-   snara.js — ES module entry point
-─────────────────────────────────────────────────── */
+/* snara.js — ES module entry point */
 import { SnaraStruct }   from './snara/struct.js';
 import { SnaraTool }     from './snara/tools.js';
 import { SnaraEditor }   from './snara/core.js';
@@ -13,10 +11,11 @@ import icx               from './icons/ge-icon.js';
 import { SnaraExport }   from './export.js';
 import { SnaraGallery }  from './snara/gallery.js';
 import { SnaraRouter }   from './snara/router.js';
-import { SnaraChat }      from './snara/chatbot.js';
+import { SnaraChat }     from './snara/chatbot.js';
 import { SnaraAIToolbar } from './snara/ai-toolbar.js';
-import { SnaraKanban } from './kanban.js';
-import { SnaraNotes } from './notes.js';
+import { SnaraKanban }   from './kanban.js';
+import { SnaraNotes }    from './notes.js';
+import { apiFetch }      from './helpers.js';
 
 // ── Central config store ──────────────────────────
 export const AppConfig = {
@@ -50,12 +49,10 @@ async function boot() {
 
   // ── 1. Fetch config ───────────────────────────
   try {
-    const [cfgRes, defRes] = await Promise.all([
-      fetch(AppConfig.apiPath + '?action=config.get'),
-      fetch(AppConfig.apiPath + '?action=default.get'),
+    const [config, defData] = await Promise.all([
+      apiFetch(AppConfig.apiPath + '?action=config.get'),
+      apiFetch(AppConfig.apiPath + '?action=default.get'),
     ]);
-    const config  = await cfgRes.json();
-    const defData = await defRes.json();
 
     Object.assign(AppConfig,   config);
     Object.assign(AppDefaults, defData.defaults ?? {});
@@ -71,23 +68,23 @@ async function boot() {
   SnaraTool.applyTheme(AppConfig.theme || SnaraTool.savedTheme());
 
   // ── 2. Init all modules ───────────────────────
-  const editor      = new SnaraEditor();
-  const ui          = new SnaraUI();
-  const settings    = new SnaraSettings();
-  const idx         = new SnaraIndex();
-  const tools       = new SnaraTool();
-  const pref        = new SnaraPref();
-  const files       = new SnaraFiles();
-  const gallery     = new SnaraGallery();
-  const exporter    = new SnaraExport();
-  const chat        = new SnaraChat('#chatbot-root');
-  const notes = new SnaraNotes('#notes-root');
-const kanban = new SnaraKanban('#kanban-root', AppConfig.apiPath);
+  const editor   = new SnaraEditor();
+  const ui       = new SnaraUI();
+  const settings = new SnaraSettings();
+  const idx      = new SnaraIndex();
+  const tools    = new SnaraTool();
+  const pref     = new SnaraPref();
+  const files    = new SnaraFiles();
+  const gallery  = new SnaraGallery();
+  const exporter = new SnaraExport();
+  const chat     = new SnaraChat('#chatbot-root');
+  const notes    = new SnaraNotes('#notes-root');
+  const kanban   = new SnaraKanban('#kanban-root', AppConfig.apiPath);
 
-const aiToolbar = new SnaraAIToolbar('#popup', {
-  getEntry:  () => ui.focusedEntry,
-  bindEntry: (el) => editor._bindEntryEvents(el),
-});
+  const aiToolbar = new SnaraAIToolbar('#popup', {
+    getEntry:  () => ui.focusedEntry,
+    bindEntry: (el) => editor._bindEntryEvents(el),
+  });
 
   icx.replace();
 
@@ -100,12 +97,12 @@ const aiToolbar = new SnaraAIToolbar('#popup', {
     editor: { label: 'save doc',   fn: () => ui.saveDocument() },
     meta:   { label: 'save meta',  fn: () => ui.saveDocument() },
     notes:  { label: 'save notes', fn: () => notes.save?.()    },
-    // kanban / files / chatbot → omitted = button hidden
+    // kanban / files / chatbot omitted = button hidden
   };
 
   let _activeArea = 'editor';
 
-// ── 3. Define window.switchArea (base) ────────
+  // ── 3. Define window.switchArea (base) ────────
   const _baseSwitchArea = (area) => {
     _activeArea = area;
     const areas = {
@@ -152,7 +149,7 @@ const aiToolbar = new SnaraAIToolbar('#popup', {
     _baseSwitchArea(area);
     const bookId = AppConfig.activeBookId;
     if (bookId && !router._busy) {
-      const cur = router._read();
+      const cur     = router._read();
       const newPage = SnaraRouter.pageFor(area);
       if (cur.p === newPage && cur.file) return;
       router.go(newPage, bookId);
@@ -170,7 +167,6 @@ const aiToolbar = new SnaraAIToolbar('#popup', {
   window.loadDocument = (bookId, filename) => {
     router.go('editor', bookId, filename);
   };
-  
 
   // ── 6. All other window globals ───────────────
   window.submitEntry   = ()      => editor.submit();
@@ -200,8 +196,8 @@ const aiToolbar = new SnaraAIToolbar('#popup', {
   window.SnaraFiles  = SnaraFiles;
   window.SnaraExport = SnaraExport;
   window.aiToolbar   = aiToolbar;
-  
-  window.SnaraAIToolbar = SnaraAIToolbar;  
+
+  window.SnaraAIToolbar = SnaraAIToolbar;
 
   // ── 7. Keyboard shortcuts ─────────────────────
   document.addEventListener('keydown', e => {
@@ -211,14 +207,14 @@ const aiToolbar = new SnaraAIToolbar('#popup', {
     }
   });
 
-  // ── 8. Book change → apply editor prefs + update URL ──
+  // ── 8. Book change -> apply editor prefs + update URL ──
   window.addEventListener('bookchange', async (e) => {
     const { bookId } = e.detail;
     if (!bookId) return;
     try {
-      const res = await fetch(`${AppConfig.apiPath}?action=editorpref.get&bookId=${bookId}`);
-      if (res.ok) SnaraSettings.applyEditorPrefs(await res.json());
-    } catch {}
+      const prefs = await apiFetch(`${AppConfig.apiPath}?action=editorpref.get&bookId=${bookId}`);
+      SnaraSettings.applyEditorPrefs(prefs);
+    } catch { }
     if (!router._busy) {
       const cur  = router._read();
       const page = cur.p || 'editor';
@@ -229,18 +225,15 @@ const aiToolbar = new SnaraAIToolbar('#popup', {
 
   if (AppConfig.activeBookId) {
     try {
-      const res = await fetch(`${AppConfig.apiPath}?action=editorpref.get&bookId=${AppConfig.activeBookId}`);
-      if (res.ok) SnaraSettings.applyEditorPrefs(await res.json());
-    } catch {}
+      const prefs = await apiFetch(`${AppConfig.apiPath}?action=editorpref.get&bookId=${AppConfig.activeBookId}`);
+      SnaraSettings.applyEditorPrefs(prefs);
+    } catch { }
   }
 
-  //kanban.load(AppConfig.activeBookId);
+  if (AppConfig.activeBookId) {
+    kanban.load(AppConfig.activeBookId);
+  }
 
-
-if (AppConfig.activeBookId) {
-  kanban.load(AppConfig.activeBookId);
-}
-  
   // ── 9. Boot router last ───────────────────────
   router.boot();
 }

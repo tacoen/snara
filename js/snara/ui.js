@@ -1,9 +1,8 @@
-
-import { SnaraTool }   from './tools.js';
-import { AppConfig }   from '../snara.js';
-import { SnaraEditor } from './core.js';
-import icx             from '../icons/ge-icon.js';
-import { esc } from '../helpers.js';
+import { SnaraTool }        from './tools.js';
+import { AppConfig }        from '../snara.js';
+import { SnaraEditor }      from './core.js';
+import icx                  from '../icons/ge-icon.js';
+import { esc, apiFetch, postJson } from '../helpers.js';
 
 export class SnaraUI {
   static instance = null;
@@ -37,9 +36,9 @@ export class SnaraUI {
     if (!div || !this.popup) return;
     this.focusedEntry = div;
     clearTimeout(this._popupTimeout);
-    const rect = div.getBoundingClientRect();
-	const popupWidth = this.popup.offsetWidth;
-	const rcenter = `${rect.left + (rect.width / 2) - (popupWidth / 2)}`
+    const rect       = div.getBoundingClientRect();
+    const popupWidth = this.popup.offsetWidth;
+    const rcenter    = `${rect.left + (rect.width / 2) - (popupWidth / 2)}`;
 
     this.popup.style.left = `${rcenter}px`;
     this.popup.style.top  = `${rect.top - 18}px`;
@@ -81,45 +80,37 @@ export class SnaraUI {
     const btn      = document.getElementById('save-btn');
     const filename = document.getElementById('filename').innerText.trim() || 'untitled';
     const bookId   = AppConfig.activeBookId ?? null;
-    const article = [];
+    const article  = [];
     document.querySelectorAll('.entries .entry').forEach(div => {
-      const cls = AppConfig.classes.find(c => div.classList.contains(c)) || 'beat';
+      const cls        = AppConfig.classes.find(c => div.classList.contains(c)) || 'beat';
       const isRendered = div.children.length > 0 && !div.dataset.editing;
-      const html = isRendered
+      const html       = isRendered
         ? div.innerHTML
         : marked.parse(div.innerText.trim(), { breaks: true });
       article.push({ class: cls, content: html });
     });
 
-// Replace the meta collect block in saveDocument():
-const meta = {};
-document.querySelectorAll('.meta-field').forEach(row => {
-  const key = row.dataset.key || row.querySelector('.field-key')?.innerText.trim();
-  if (!key) return;
+    const meta = {};
+    document.querySelectorAll('.meta-field').forEach(row => {
+      const key = row.dataset.key || row.querySelector('.field-key')?.innerText.trim();
+      if (!key) return;
 
-  const pillContainer = row.querySelector('.field-pills');
-  if (pillContainer) {
-    // Pill field — collect all pill spans, ignore the input
-    const vals = [...pillContainer.querySelectorAll('.field-pill')]
-      .map(p => p.firstChild.textContent.trim())
-      .filter(Boolean);
-    meta[key] = vals.join(', ');
-  } else {
-    meta[key] = row.querySelector('.field-val')?.innerText.trim() || '';
-  }
-});
+      const pillContainer = row.querySelector('.field-pills');
+      if (pillContainer) {
+        const vals = [...pillContainer.querySelectorAll('.field-pill')]
+          .map(p => p.firstChild.textContent.trim())
+          .filter(Boolean);
+        meta[key] = vals.join(', ');
+      } else {
+        meta[key] = row.querySelector('.field-val')?.innerText.trim() || '';
+      }
+    });
 
     const payload = { filename, bookId, meta, article };
     if (btn) { btn.disabled = true; btn.classList.add('saving'); }
 
     try {
-      const res  = await fetch(AppConfig.apiPath + '?action=doc.save', {
-        method:  'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body:    JSON.stringify(payload),
-      });
-      const json = await res.json();
-      if (!res.ok || json.error) throw new Error(json.error || `HTTP ${res.status}`);
+      await postJson(AppConfig.apiPath + '?action=doc.save', payload);
       if (btn) {
         btn.classList.remove('saving');
         btn.classList.add('saved');
@@ -142,34 +133,32 @@ document.querySelectorAll('.meta-field').forEach(row => {
       + `?action=doc.get&filename=${encodeURIComponent(filename)}&bookId=${encodeURIComponent(bookId)}`;
 
     try {
-      const res  = await fetch(url);
-      const data = await res.json();
-      if (!res.ok || data.error) throw new Error(data.error || `HTTP ${res.status}`);
-      this._renderDocument(data,tab);
+      const data = await apiFetch(url);
+      this._renderDocument(data, tab);
     } catch (err) {
       console.error('[snara] load failed:', err);
     }
   }
 
-_renderDocument(data, tab = 'editor') {
-  const fnEl = document.getElementById('filename');
-  if (fnEl) fnEl.innerText = data.filename ?? '';
-  if (this.article) {
-    this.article.dataset.filename = data.filename ?? '';
-    this.article.dataset.bookid   = AppConfig.activeBookId ?? '';
-  }
+  _renderDocument(data, tab = 'editor') {
+    const fnEl = document.getElementById('filename');
+    if (fnEl) fnEl.innerText = data.filename ?? '';
+    if (this.article) {
+      this.article.dataset.filename = data.filename ?? '';
+      this.article.dataset.bookid   = AppConfig.activeBookId ?? '';
+    }
 
-  try {
-    localStorage.setItem('page', tab);
-    localStorage.setItem('editor-filename', data.filename ?? '');
-    localStorage.setItem('bookid',   String(AppConfig.activeBookId ?? ''));
-  } catch {  }
+    try {
+      localStorage.setItem('page', tab);
+      localStorage.setItem('editor-filename', data.filename ?? '');
+      localStorage.setItem('bookid', String(AppConfig.activeBookId ?? ''));
+    } catch { }
 
-  const bookTitle = AppConfig.activeBookTitle;
-  document.title = data.filename
-    ? (bookTitle ? `Snara — ${bookTitle} : ${data.filename}` : `Snara — ${data.filename}`)
-    : 'Snara';
-  this.entriesEl.innerHTML = '';
+    const bookTitle = AppConfig.activeBookTitle;
+    document.title = data.filename
+      ? (bookTitle ? `Snara — ${bookTitle} : ${data.filename}` : `Snara — ${data.filename}`)
+      : 'Snara';
+    this.entriesEl.innerHTML = '';
     const article = Array.isArray(data.article) ? data.article : [];
     article.forEach(item => {
       const div = document.createElement('div');
@@ -183,113 +172,107 @@ _renderDocument(data, tab = 'editor') {
       this.entriesEl.appendChild(div);
     });
 
-const metaFields = this.metaEl.querySelector('.meta-fields');
+    const metaFields = this.metaEl.querySelector('.meta-fields');
 
-if (metaFields) {
-  metaFields.innerHTML = '';
-  const savedMeta     = (data.meta && typeof data.meta === 'object') ? data.meta : {};
-  const defaultFields = AppConfig.metaFields ?? ['characters', 'settings', 'prompts'];
-  const keys = [
-    ...Object.keys(savedMeta),
-    ...defaultFields.filter(k => !Object.keys(savedMeta).includes(k)),
-  ];
-  keys.forEach(key => {
-    metaFields.appendChild(this._buildMetaRow(key, savedMeta[key] ?? ''));
-  });
-}
+    if (metaFields) {
+      metaFields.innerHTML = '';
+      const savedMeta     = (data.meta && typeof data.meta === 'object') ? data.meta : {};
+      const defaultFields = AppConfig.metaFields ?? ['characters', 'settings', 'prompts'];
+      const keys = [
+        ...Object.keys(savedMeta),
+        ...defaultFields.filter(k => !Object.keys(savedMeta).includes(k)),
+      ];
+      keys.forEach(key => {
+        metaFields.appendChild(this._buildMetaRow(key, savedMeta[key] ?? ''));
+      });
+    }
 
-document.getElementById('add-field-btn').onclick = () => this.addField();
+    document.getElementById('add-field-btn').onclick = () => this.addField();
 
-
-this.switchTab(tab);
-this.entriesEl.scrollTop = 0;
-
+    this.switchTab(tab);
+    this.entriesEl.scrollTop = 0;
   }
 
-  
-// New method — builds one meta row based on field type
-_buildMetaRow(key, val) {
-  const PILL_FIELDS = ['characters', 'settings'];
-  const isOrder     = key === 'order';
-  const isPill      = PILL_FIELDS.includes(key);
+  _buildMetaRow(key, val) {
+    const PILL_FIELDS = ['characters', 'settings'];
+    const isOrder     = key === 'order';
+    const isPill      = PILL_FIELDS.includes(key);
 
-  const row = document.createElement('div');
-  row.className = 'meta-field';
+    const row = document.createElement('div');
+    row.className = 'meta-field';
 
-  if (isOrder) {
-    row.dataset.key = key;          // readonly — key never changes
+    if (isOrder) {
+      row.dataset.key = key;
+      row.innerHTML = `
+        <span class="field-key">${esc(key)}</span>
+        <span class="field-sep">:</span>
+        <span class="field-val field-val--readonly">${esc(val)}</span>
+      `;
+      return row;
+    }
+
+    if (isPill) {
+      row.dataset.key = key;
+      const pills = String(val || '').split(',').map(s => s.trim()).filter(Boolean);
+      row.innerHTML = `
+        <span class="field-key" style="cursor:pointer" onclick="SnaraAIToolbar.helper('${esc(key)}')" title="Auto-populate from article">${esc(key)}</span>
+        <span class="field-sep">:</span>
+        <div class="field-pills">
+          ${pills.map(p => `
+            <span class="field-pill">
+              ${esc(p)}<button class="pill-remove" data-val="${esc(p)}" title="Remove">x</button>
+            </span>`).join('')}
+          <input class="pill-input" type="text" placeholder="add…" spellcheck="false">
+        </div>
+        <button class="field-remove" title="Remove field">x</button>
+      `;
+      const input = row.querySelector('.pill-input');
+      input.addEventListener('keydown', e => {
+        if (e.key === 'Enter' || e.key === ',') {
+          e.preventDefault();
+          const v = input.value.replace(',', '').trim();
+          if (v) { this._addPill(input, v); input.value = ''; }
+        }
+      });
+      row.querySelector('.field-pills').addEventListener('click', e => {
+        if (e.target.classList.contains('pill-remove')) {
+          e.target.closest('.field-pill').remove();
+        }
+      });
+      row.querySelector('.field-remove').addEventListener('click', () => row.remove());
+      return row;
+    }
+
+    // Default — contenteditable key and value
     row.innerHTML = `
-	  <span class="field-key">${esc(key)}</span>
+      <span class="field-key" contenteditable spellcheck="false">${esc(key)}</span>
       <span class="field-sep">:</span>
-      <span class="field-val field-val--readonly">${esc(val)}</span>
+      <span class="field-val" contenteditable spellcheck="false">${esc(val)}</span>
+      <button class="field-remove" title="Remove field">x</button>
     `;
-    return row;
-  }
-
-  if (isPill) {
-    row.dataset.key = key;          // pill key is fixed (characters/settings)
-    const pills = String(val || '').split(',').map(s => s.trim()).filter(Boolean);
-    row.innerHTML = `
-      <span class="field-key" style="cursor:pointer" onclick="SnaraAIToolbar.helper('${esc(key)}')" title="Auto-populate from article">${esc(key)}</span>
-      <span class="field-sep">:</span>
-      <div class="field-pills">
-        ${pills.map(p => `
-          <span class="field-pill">
-            ${esc(p)}<button class="pill-remove" data-val="${esc(p)}" title="Remove">×</button>
-          </span>`).join('')}
-        <input class="pill-input" type="text" placeholder="add…" spellcheck="false">
-      </div>
-      <button class="field-remove" title="Remove field">✕</button>
-    `;
-    const input = row.querySelector('.pill-input');
-    input.addEventListener('keydown', e => {
-      if (e.key === 'Enter' || e.key === ',') {
-        e.preventDefault();
-        const v = input.value.replace(',', '').trim();
-        if (v) { this._addPill(input, v); input.value = ''; }
-      }
-    });
-    row.querySelector('.field-pills').addEventListener('click', e => {
-      if (e.target.classList.contains('pill-remove')) {
-        e.target.closest('.field-pill').remove();
-      }
-    });
     row.querySelector('.field-remove').addEventListener('click', () => row.remove());
     return row;
   }
 
-  // Default — contenteditable, key is editable so do NOT fix dataset.key
-  // saveDocument() reads key from .field-key innerText for these rows
-  row.innerHTML = `
-    <span class="field-key" contenteditable spellcheck="false">${esc(key)}</span>
-    <span class="field-sep">:</span>
-    <span class="field-val" contenteditable spellcheck="false">${esc(val)}</span>
-    <button class="field-remove" title="Remove field">✕</button>
-  `;
-  row.querySelector('.field-remove').addEventListener('click', () => row.remove());
-  return row;
-}
+  _addPill(inputEl, value) {
+    const pill = document.createElement('span');
+    pill.className = 'field-pill';
+    pill.innerHTML = `${esc(value)}<button class="pill-remove" data-val="${esc(value)}" title="Remove">x</button>`;
+    pill.querySelector('.pill-remove').addEventListener('click', () => pill.remove());
+    inputEl.parentElement.insertBefore(pill, inputEl);
+  }
 
+  addField() {
+    const list = document.querySelector('.meta-fields');
+    const row  = this._buildMetaRow('field', '');
+    list.appendChild(row);
+    icx.delayreplace('.meta-field:last-child [data-icon]');
+    row.querySelector('.field-key')?.focus();
+  }
 
-_addPill(inputEl, value) {
-  const pill = document.createElement('span');
-  pill.className = 'field-pill';
-  pill.innerHTML = `${esc(value)}<button class="pill-remove" data-val="${esc(value)}" title="Remove">×</button>`;
-  pill.querySelector('.pill-remove').addEventListener('click', () => pill.remove());
-  inputEl.parentElement.insertBefore(pill, inputEl);
-}
-
-addField() {
-  const list = document.querySelector('.meta-fields');
-  const row  = this._buildMetaRow('field', '');
-  list.appendChild(row);
-  icx.delayreplace('.meta-field:last-child [data-icon]');
-  row.querySelector('.field-key')?.focus();
-}
-
-removeField(btn) {
-  btn.closest('.meta-field').remove();
-}  
+  removeField(btn) {
+    btn.closest('.meta-field').remove();
+  }
 
   _initTheme() {
     SnaraTool.applyTheme(SnaraTool.savedTheme());
@@ -300,10 +283,7 @@ removeField(btn) {
       document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark'
     );
     localStorage.setItem('theme', next);
-		  		console.log(next);
-
     SnaraTool.applyTheme(next);
     icx.delayreplace('#theme-toggle [data-icon]');
   }
 }
-

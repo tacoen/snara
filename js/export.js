@@ -1,9 +1,8 @@
-
-import { AppConfig } from './snara.js';
-import { SnaraTool } from './snara/tools.js';
-import icx           from './icons/ge-icon.js';
-import { esc, slug, download } from './helpers.js';
-import { _modalFooter } from './snara/modal.js';
+import { AppConfig }                        from './snara.js';
+import { SnaraTool }                        from './snara/tools.js';
+import icx                                  from './icons/ge-icon.js';
+import { esc, slug, download, listSetState, apiFetch } from './helpers.js';
+import { _modalFooter }                     from './snara/modal.js';
 
 export class SnaraExport {
   static instance = null;
@@ -19,38 +18,35 @@ export class SnaraExport {
     const footer = document.getElementById('files-exp-footer');
     if (!ul) return;
     if (!bookId) {
-      ul.innerHTML = '<li class="flist-empty">No active book — open a book first.</li>';
+      listSetState(ul, 'empty', 'No active book — open a book first.');
       return;
     }
 
-    ul.innerHTML = '<li class="flist-empty" style="opacity:.5">Loading chapters…</li>';
+    listSetState(ul, 'loading', 'Loading chapters…');
 
     try {
-      const listRes = await fetch(`${AppConfig.apiPath}?action=doc.list&bookId=${bookId}`);
-      const filenames = await listRes.json();
+      const filenames = await apiFetch(`${AppConfig.apiPath}?action=doc.list&bookId=${bookId}`);
 
       if (!filenames.length) {
-        ul.innerHTML = '<li class="flist-empty">No documents in this book yet.</li>';
+        listSetState(ul, 'empty', 'No documents in this book yet.');
         return;
       }
 
       let actMap = {};
       try {
-        const actRes  = await fetch(`${AppConfig.dataPath}/${bookId}/cache/act.json`);
-        const actData = await actRes.json();
+        const actData = await apiFetch(`${AppConfig.dataPath}/${bookId}/cache/act.json`);
         actData.forEach(row => { actMap[row.filename] = row.act || 'Uncategorized'; });
       } catch {
-
+        // act.json is optional — proceed without it
       }
 
       this._docs     = {};
       this._chapters = [];
       await Promise.all(filenames.map(async filename => {
         try {
-          const res = await fetch(
+          const doc = await apiFetch(
             `${AppConfig.apiPath}?action=doc.get&bookId=${bookId}&filename=${encodeURIComponent(filename)}`
           );
-          const doc = await res.json();
           this._docs[filename] = doc;
 
           const title   = this._extractTitle(doc);
@@ -79,7 +75,7 @@ export class SnaraExport {
       this._renderFooter(footer);
 
     } catch (e) {
-      ul.innerHTML = `<li class="flist-empty" style="color:var(--danger)">Error: ${esc(e.message)}</li>`;
+      listSetState(ul, 'error', `Error: ${e.message}`);
     }
   }
 
@@ -186,10 +182,9 @@ export class SnaraExport {
     for (const ch of ordered) {
       if (!this._docs[ch.filename]) {
         try {
-          const res = await fetch(
+          this._docs[ch.filename] = await apiFetch(
             `${AppConfig.apiPath}?action=doc.get&bookId=${bookId}&filename=${encodeURIComponent(ch.filename)}`
           );
-          this._docs[ch.filename] = await res.json();
         } catch {
           this._docs[ch.filename] = { filename: ch.filename, article: [] };
         }
