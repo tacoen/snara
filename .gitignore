@@ -1,5 +1,5 @@
 index.html
-*,log
+*.log
 *.backup
 *.tmp
 test.sh
