@@ -214,16 +214,22 @@ export class SnaraNotes {
   }
 
   _render() {
-    this._countEl.textContent =
-      `${this._notes.length} note${this._notes.length === 1 ? '' : 's'}`;
+    const count = this._notes.length;
+
+    if (this._countEl) {
+      this._countEl.textContent = `${count} note${count === 1 ? '' : 's'}`;
+    }
+
+    if (!this._grid) return;
 
     this._grid.querySelectorAll('.notes__card').forEach(c => c.remove());
 
-    if (this._notes.length === 0) {
-      this._emptyMsg.hidden = false;
+    if (count === 0) {
+      if (this._emptyMsg) this._emptyMsg.hidden = false;
       return;
     }
-    this._emptyMsg.hidden = true;
+
+    if (this._emptyMsg) this._emptyMsg.hidden = true;
 
     this._notes.forEach(note => {
       this._grid.appendChild(this._buildCard(note));

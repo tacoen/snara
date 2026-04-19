@@ -1,0 +1,162 @@
+/* fileman.css — File Manager panel styles */
+
+/* ── Dropzone ──────────────────────────────────── */
+#fm-dropzone {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  gap: var(--s-xs);
+  margin: var(--s-sm);
+  padding: var(--s-lg);
+  border: 1.5px dashed var(--border);
+  border-radius: 6px;
+  color: var(--fg-muted);
+  text-align: center;
+  cursor: pointer;
+  transition: all .15s;
+}
+#fm-dropzone svg { width: 20px; height: 20px; opacity: .5; }
+#fm-dropzone p   { font-size: var(--f-xs); line-height: 1.5; }
+#fm-dropzone span { font-size: var(--f-xs); opacity: .6; }
+#fm-dropzone.drag {
+  border-color: var(--primary);
+  background: var(--selection);
+  color: var(--primary);
+}
+
+/* ── File list ─────────────────────────────────── */
+#fm-list {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  overflow-y: auto;
+  list-style: none;
+  padding: 4px var(--s-md);
+  gap: 4px;
+}
+
+/* ── Per-row rename box ────────────────────────── */
+.fm-rename-box {
+  display: flex;
+  align-items: center;
+  gap: var(--s-xs);
+  flex: 1;
+  min-width: 0;
+}
+.fm-rename-input {
+  flex: 1;
+  min-width: 0;
+  font-size: var(--f-xs);
+  font-family: var(--font-mono);
+  background: var(--bg-main);
+  border: 1px solid var(--primary);
+  border-radius: 4px;
+  padding: 2px var(--s-xs);
+  color: var(--fg-main);
+  outline: none;
+}
+.fm-rename-ext {
+  font-size: var(--f-xs);
+  font-family: var(--font-mono);
+  color: var(--fg-muted);
+  flex-shrink: 0;
+}
+
+/* ── Editor view ───────────────────────────────── */
+#fm-editor {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  overflow: hidden;
+}
+#fm-editor[hidden] { display: none; }
+
+.fm-editor-bar {
+  display: flex;
+  align-items: center;
+  gap: var(--s-sm);
+  flex-shrink: 0;
+  padding: var(--s-xs) var(--s-md);
+  border-bottom: 1px solid var(--border);
+  background: var(--bg-alt);
+}
+.fm-editor-filename {
+  font-family: var(--font-mono);
+  font-size: var(--f-xs);
+  color: var(--fg-muted);
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.fm-editor-status {
+  font-family: var(--font-mono);
+  font-size: var(--f-xs);
+  color: var(--fg-muted);
+  min-width: 60px;
+  text-align: right;
+  transition: color .2s;
+}
+.fm-editor-status.ok     { color: var(--success, #2da44e); }
+.fm-editor-status.error  { color: var(--danger); }
+
+.fm-editor-body {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+#fm-textarea {
+  flex: 1;
+  resize: none;
+  border: none;
+  outline: none;
+  padding: var(--s-md);
+  font-family: var(--font-mono);
+  font-size: var(--f-xs);
+  line-height: 1.7;
+  background: var(--bg-main);
+  color: var(--fg-main);
+  overflow-y: auto;
+}
+#fm-textarea::-webkit-scrollbar { width: 4px; }
+#fm-textarea::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+#fm-preview {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--s-md) var(--s-lg);
+  font-family: var(--font-serif);
+  font-size: var(--f-sm);
+  line-height: 1.8;
+  color: var(--fg-main);
+  background: var(--bg-main);
+}
+#fm-preview[hidden] { display: none; }
+#fm-preview h1,
+#fm-preview h2,
+#fm-preview h3 { font-weight: normal; margin: 1.2em 0 .4em; }
+#fm-preview p  { margin-bottom: .8em; }
+#fm-preview code {
+  font-family: var(--font-mono);
+  font-size: var(--f-xs);
+  background: var(--bg-alt);
+  padding: 1px 4px;
+  border-radius: 3px;
+}
+#fm-preview pre {
+  background: var(--bg-alt);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: var(--s-md);
+  overflow-x: auto;
+  font-size: var(--f-xs);
+}
+#fm-preview blockquote {
+  border-left: 3px solid var(--border);
+  margin: 0;
+  padding-left: var(--s-md);
+  color: var(--fg-muted);
+}

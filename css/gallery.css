@@ -1,8 +1,8 @@
 .gallery-scroll { flex: 1;overflow-y: auto;min-height: 0;}
 .gallery-grid {
  columns: 4;
- column-gap: 6px;
- padding: 6px;
+ column-gap: var(--s-sm);
+ padding: var(--s-md);
 }
 @media (max-width: 600px) { .gallery-grid { columns: 2;} }
 .gallery-card {
@@ -39,26 +39,26 @@
 .gallery-name {
  flex: 1;
  font-family: var(--font-mono);
- font-size: var(--f-xs);
+ font-size: .6rem;
  color: var(--bg-main);
  overflow: hidden;
  text-overflow: ellipsis;
  white-space: nowrap;
  min-width: 0;
 }
-.gallery-tools { display: flex;gap: 2px;flex-shrink: 0;}
+.gallery-tools { display: flex;gap: 2px;flex-shrink: 0; font-size: .7rem; }
 .gtool {
  display: flex;
  align-items: center;
  justify-content: center;
  width: 22px;
  height: 22px;
- background: color-mix(in srgb, var(--bg-main) 15%, transparent);
+ background: color-mix(in srgb, var(--bg-main), transparent 30%);
+ color: var(--fg-main);
  border: none;
  border-radius: 4px;
  padding: 0;
  cursor: pointer;
- color: var(--bg-main);
  transition: background .1s;
 }
 .gtool:hover { background: color-mix(in srgb, var(--bg-main) 30%, transparent);}
@@ -66,16 +66,16 @@
 .gallery-card.gallery-deleting { opacity: .45;pointer-events: none;}
 .gallery-rename-box {
  position: absolute;
- bottom: 0;
+ top: 0;
  z-index: 10;
  display: flex;
  flex-direction: column;
  align-items: stretch;
  justify-content: center;
  gap: 6px;
- padding: var(--s-sm);
+ padding: 0 var(--s-sm) var(--s-sm) var(--s-sm);
  height: auto;
- width: calc(100% - 1rem);
+ width: 100%;
  background: color-mix(in srgb, var(--bg-main) 72%, transparent);
 }
 .gallery-rename-input {
@@ -83,7 +83,11 @@
  margin-top: var(--s-md);
  max-height: 1.3rem;
  font-size: var(--f-xs) !important;
- padding: 4px 7px !important;
+ /* padding: 4px 7px !important; */
  background: var(--bg-main) !important;
 }
 .gallery-rename-actions { display: flex;gap: 4px;justify-content: flex-end;}
+
+.gallery-rename-actions button {font-size: .6rem;padding: 2px var(--s-xs);height: .9rem !important;}
+
+#gallery-ac-list {margin: 0;width: 100%;}

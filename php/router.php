@@ -70,6 +70,7 @@ require_once __DIR__ . '/ai.php';
 require_once __DIR__ . '/chatlog.php';
 require_once __DIR__ . '/notes.php';
 require_once __DIR__ . '/kanban.php';
+require_once __DIR__ . '/fileman.php';
 
 class Router
 {
@@ -416,6 +417,51 @@ case 'config.get':
                     AiChat::set(self::body());
                     echo json_encode(['ok' => true]);
                     break;
+                // ── File Manager ─────────────────────────────
+                case 'fileman.list':
+                    self::requireMethod($method, 'GET');
+                    $bookId = (int) self::requireParam('bookId');
+                    echo json_encode(FileMan::list($bookId));
+                    break;
+
+                case 'fileman.upload':
+                    // multipart POST — do NOT use self::body()
+                    self::requireMethod($method, 'POST');
+                    $bookId = (int)($_GET['bookId'] ?? $_POST['bookId'] ?? 0);
+                    if (!$bookId) self::error(400, 'Missing bookId');
+                    $result = FileMan::upload($bookId);
+                    echo json_encode(['ok' => true, 'file' => $result]);
+                    break;
+
+                case 'fileman.delete':
+                    self::requireMethod($method, 'DELETE');
+                    $bookId   = (int) self::requireParam('bookId');
+                    $filename = self::requireParam('filename');
+                    FileMan::delete($bookId, $filename);
+                    echo json_encode(['ok' => true]);
+                    break;
+
+                case 'fileman.rename':
+                    self::requireMethod($method, 'POST');
+                    $body   = self::body();
+                    $bookId = (int)($_GET['bookId'] ?? $body['bookId'] ?? 0);
+                    $from   = trim($body['from'] ?? '');
+                    $to     = trim($body['to']   ?? '');
+                    if (!$bookId || !$from || !$to) self::error(400, 'Missing bookId, from, or to');
+                    echo json_encode(['ok' => true, 'filename' => FileMan::rename($bookId, $from, $to)['filename']]);
+                    break;
+
+                case 'fileman.save':
+                    self::requireMethod($method, 'POST');
+                    $body     = self::body();
+                    $bookId   = (int)($body['bookId']   ?? 0);
+                    $filename = trim($body['filename']  ?? '');
+                    $content  = $body['content'] ?? '';
+                    if (!$bookId || $filename === '') self::error(400, 'Missing bookId or filename');
+                    FileMan::save($bookId, $filename, $content);
+                    echo json_encode(['ok' => true]);
+                    break;
+
                 // ── Unknown ──────────────────────────────────
                 default:
                     self::error(404, 'Unknown action: ' . $action);

@@ -120,9 +120,9 @@ export function confirmDeleteBar(label, onConfirm, onCancel = null) {
   ].join(';');
 
   bar.innerHTML = `
-    <span style="flex:1;color:var(--danger)">${esc(label)}</span>
-    <button class="btn-mini mute" style="padding:2px 8px;font-size:11px" data-action="no">No</button>
-    <button class="btn-mini" style="padding:2px 8px;font-size:11px;border-color:var(--danger);color:var(--danger)" data-action="yes">Yes, delete</button>
+    <span style="flex:1">${esc(label)}</span>
+    <button class="btn-mini mute" data-action="no">No</button>
+    <button class="btn-mini danger" data-action="yes">Yes, delete</button>
   `;
   document.body.appendChild(bar);
 

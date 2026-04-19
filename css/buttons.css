@@ -52,7 +52,9 @@ button.danger {
  background: var(--danger, #dc3545);
  color: var(--bg-main);
 }
-[data-theme='dark'] button.danger,
+[data-theme='dark'] button.danger {
+ color: var(--bg-main);
+}
 [data-theme='dark'] button.primary {
  color: var(--fg-main);
 }
@@ -74,10 +76,14 @@ button.mute:is(:hover, :focus) { background: var(--bg-hover);color: var(--fg-mai
  justify-content: center;
  align-items: center;
 }
+#save-btn svg {
+ width: 24px;
+}
 #save-btn {
  display: flex;
  align-items: center;
  gap: var(--s-xs);
+ height: 30px;
  padding: 3px var(--s-sm);
  margin-right: var(--s-sm);
  font-family: var(--font-mono);
@@ -90,7 +96,7 @@ button.mute:is(:hover, :focus) { background: var(--bg-hover);color: var(--fg-mai
  white-space: nowrap;
  transition: background .15s, color .15s, border-color .15s;
 }
-#save-btn:hover { background: var(--bg-hover);color: var(--fg-main);}
+#save-btn:hover {background: var(--bg-hover);color: var(--fg-main);text-shadow: 0 1px 3px var(--shadow);}
 #save-btn:disabled { opacity: .5;cursor: default;}
 #save-btn.saving { color: var(--primary);animation: save-pulse .8s ease-in-out infinite alternate;}
 #save-btn.saved { color: var(--success-fg);background: var(--success-bg);}

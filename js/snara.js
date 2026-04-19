@@ -15,6 +15,7 @@ import { SnaraChat }     from './snara/chatbot.js';
 import { SnaraAIToolbar } from './snara/ai-toolbar.js';
 import { SnaraKanban }   from './kanban.js';
 import { SnaraNotes }    from './notes.js';
+import { SnaraFileMan }  from './snara/fileman.js';
 import { apiFetch }      from './helpers.js';
 
 // ── Central config store ──────────────────────────
@@ -80,6 +81,7 @@ async function boot() {
   const chat     = new SnaraChat('#chatbot-root');
   const notes    = new SnaraNotes('#notes-root');
   const kanban   = new SnaraKanban('#kanban-root', AppConfig.apiPath);
+  const fileman  = new SnaraFileMan();
 
   const aiToolbar = new SnaraAIToolbar('#popup', {
     getEntry:  () => ui.focusedEntry,

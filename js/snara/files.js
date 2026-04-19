@@ -2,6 +2,7 @@ import { SnaraComponent }                 from './component.js';
 import { AppConfig }                      from '../snara.js';
 import { SnaraStruct }                    from './struct.js';
 import { SnaraGallery }                   from './gallery.js';
+import { SnaraFileMan }                   from './fileman.js';
 import icx                                from '../icons/ge-icon.js';
 import { openModal, _modalHeader, _modalFooter } from './modal.js';
 import { esc, fmtDate, fmtSize, iconFor, listSetState, confirmDeleteBar, apiFetch, postJson } from '../helpers.js';
@@ -53,6 +54,7 @@ export class SnaraFiles extends SnaraComponent {
     if (sec === 'export')  window.SnaraExport?.instance?.load();
     if (sec === 'gallery') SnaraGallery.instance?.load();
     if (sec === 'cache')   this._loadCacheList();
+    if (sec === 'share')   SnaraFileMan.instance?.load();
   }
 
   switchSection(sec) {
@@ -67,7 +69,7 @@ export class SnaraFiles extends SnaraComponent {
       p.hidden = p.id !== `fpanel-${sec}`;
     });
 
-    const titles = { import: 'Import', export: 'Export', gallery: 'Gallery', cache: 'Cache' };
+    const titles = { import: 'Import', export: 'Export', gallery: 'Gallery', cache: 'Cache', share: 'Files' };
     const titleEl = document.getElementById('files-section-title');
     if (titleEl) titleEl.textContent = titles[sec] || sec;
     this._renderTopActions(sec);
@@ -86,6 +88,9 @@ export class SnaraFiles extends SnaraComponent {
       el.innerHTML = `<button class="btn-mini mute" onclick="SnaraFiles.instance._triggerInput('files-input')"><i data-icon="upload"></i> Upload</button>`;
     } else if (sec === 'gallery') {
       el.innerHTML = `<button class="btn-mini mute" onclick="SnaraFiles.instance._triggerInput('files-img-input')"><i data-icon="upload"></i> Upload</button>`;
+    } else if (sec === 'share') {
+      SnaraFileMan.instance?.renderTopActions();
+      return; // SnaraFileMan owns the topbar for this section
     } else {
       el.innerHTML = '';
     }

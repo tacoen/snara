@@ -20,6 +20,7 @@
 @import './css/chat.css'   layer(pages);
 @import './css/settings.css'   layer(pages);
 @import './css/index.css'   layer(pages);
+@import './css/fileman.css'   layer(pages);
 
 @import './css/components.css' layer(components);
 

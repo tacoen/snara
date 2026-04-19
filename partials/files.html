@@ -12,6 +12,9 @@
       <i data-icon="library-photo"></i> Gallery
     </button>
     <div class="fnav-group-label">System</div>
+    <button class="fnav-item" data-section="cache" onclick="SnaraFiles.instance.switchSection('share')">
+      <i data-icon="folder"></i> File(s)
+    </button>	
     <button class="fnav-item" data-section="cache" onclick="SnaraFiles.instance.switchSection('cache')">
       <i data-icon="archive"></i> Cache
     </button>
@@ -74,6 +77,31 @@
   </div>
 </div>
 
+<!-- Files (share) -->
+    <div id="fpanel-share" class="fpanel" hidden>
+
+      <div id="fm-dropzone">
+        <i data-icon="upload"></i>
+        <p>Drop any file here</p>
+        <span>or click to browse</span>
+      </div>
+      <input type="file" id="fm-input" multiple hidden>
+
+      <ul id="fm-list" class="flist"></ul>
+
+      <div id="fm-editor" hidden>
+        <div class="fm-editor-bar">
+          <span id="fm-editor-filename" class="fm-editor-filename"></span>
+          <span id="fm-editor-status"   class="fm-editor-status"></span>
+        </div>
+        <div class="fm-editor-body">
+          <textarea id="fm-textarea" spellcheck="false"></textarea>
+          <div id="fm-preview" hidden></div>
+        </div>
+      </div>
+
+    </div>
+	
     <!-- Cache -->
     <div id="fpanel-cache" class="fpanel" hidden>
       <div class="fpanel-hint">Auto-generated files. Rebuild to refresh indexes.</div>

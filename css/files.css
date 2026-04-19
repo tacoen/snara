@@ -34,7 +34,7 @@
  transition: all .12s;
  justify-content: flex-start;
 }
-#files > div { display: flex;padding: var(--s-md);}
+#files > div {display: flex;/* padding: var(--s-md); */}
 .fnav-item svg { width: 20px;height: 20px;flex-shrink: 0;opacity: .7;}
 .fnav-item:hover { color: var(--fg-main);background: var(--bg-main);}
 .fnav-item.active {color: var(--primary);background: var(--bg-muted);font-weight: 500;font-weight: 600;}
@@ -67,7 +67,7 @@
  justify-content: center;
  flex-shrink: 0;
  gap: var(--s-xs);
- margin: var(--s-sm) var(--s-md);
+ margin: var(--s-sm);
  padding: var(--s-lg);
  border: 1.5px dashed var(--border);
  border-radius: 6px;
@@ -81,7 +81,7 @@
 #files-dropzone span { font-size: var(--f-xs);opacity: .6;}
 #files-dropzone.drag,
 #files-gallery-dz.drag { border-color: var(--primary);background: var(--selection);color: var(--primary);}
-#files-gallery-dz { padding: var(--s-md);}
+#files-gallery-dz {padding: var(--s-md);}
 .flist {
  display: flex;
  flex-direction: column;
