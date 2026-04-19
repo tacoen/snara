@@ -1,44 +1,32 @@
-/* Dynamic, See: color-binding.css */
-
 :root {
-
-  --bg-hover: color-mix(in srgb, var(--border), var(--white) 10%);
-
-  --tag-beat-bd: color-mix(in srgb, var(--tag-beat-fg), transparent 60%);
-  --tag-scene-bd: color-mix(in srgb, var(--tag-scene-fg), transparent 60%);
-  --tag-chapter-bd: color-mix(in srgb, var(--tag-chapter-fg), transparent 60%);
-  --tag-act-bd: color-mix(in srgb, var(--tag-act-fg), transparent 60%);
-
-  --tag-beat-bg: color-mix(in srgb, var(--tag-beat-fg), transparent 90%);
-  --tag-scene-bg: color-mix(in srgb, var(--tag-scene-fg), transparent 85%);
-  --tag-chapter-bg: color-mix(in srgb, var(--tag-chapter-fg), transparent 80%);
-  --tag-act-bg: color-mix(in srgb, var(--tag-act-fg), transparent 75%);
-
-  --success-bd: color-mix(in srgb, var(--success), transparent 60%);
-  --danger-bd: color-mix(in srgb, var(--danger), transparent 60%);
-  --primary-bd: color-mix(in srgb, var(--primary), transparent 60%);
-
-  --success-bg: color-mix(in srgb, var(--success), transparent 95%);
-  --danger-bg: color-mix(in srgb, var(--danger), transparent 95%);
-  --primary-bg: color-mix(in srgb, var(--primary), transparent 95%);
-
-  --entry-font:           var(--font-sans);
-  --article-fg:           var(--fg-main);
-  --entry-act-border:     var(--tag-act-bd);
-  --entry-chapter-border: var(--tag-chapter-bd);
-  --entry-scene-border:   var(--tag-scene-bd);
-  --entry-beat-border:    var(--tag-beat-bd);
-  --article-border:       var(--border);
-  --entry-act-fg:         var(--tag-act-fg);
-  --entry-chapter-fg:     var(--tag-chapter-fg);
-  --entry-scene-fg:       var(--tag-scene-fg);
-  --entry-beat-fg:        var(--tag-beat-fg);
-  --entry-act-bg:         var(--tag-act-bg);
-  --entry-chapter-bg:     var(--tag-chapter-bg);
-  --entry-scene-bg:       var(--tag-scene-bg);
-  --entry-beat-bg:        var(--tag-beat-bg);
-
+ --bg-hover: color-mix(in srgb, var(--border), var(--white) 10%);
+ --tag-beat-bd: color-mix(in srgb, var(--tag-beat-fg), transparent 60%);
+ --tag-scene-bd: color-mix(in srgb, var(--tag-scene-fg), transparent 60%);
+ --tag-chapter-bd: color-mix(in srgb, var(--tag-chapter-fg), transparent 60%);
+ --tag-act-bd: color-mix(in srgb, var(--tag-act-fg), transparent 60%);
+ --tag-beat-bg: color-mix(in srgb, var(--tag-beat-fg), transparent 90%);
+ --tag-scene-bg: color-mix(in srgb, var(--tag-scene-fg), transparent 85%);
+ --tag-chapter-bg: color-mix(in srgb, var(--tag-chapter-fg), transparent 80%);
+ --tag-act-bg: color-mix(in srgb, var(--tag-act-fg), transparent 75%);
+ --success-bd: color-mix(in srgb, var(--success), transparent 60%);
+ --danger-bd: color-mix(in srgb, var(--danger), transparent 60%);
+ --primary-bd: color-mix(in srgb, var(--primary), transparent 60%);
+ --success-bg: color-mix(in srgb, var(--success), transparent 95%);
+ --danger-bg: color-mix(in srgb, var(--danger), transparent 95%);
+ --primary-bg: color-mix(in srgb, var(--primary), transparent 95%);
+ --entry-font: var(--font-sans);
+ --article-fg: var(--fg-main);
+ --entry-act-border: var(--tag-act-bd);
+ --entry-chapter-border: var(--tag-chapter-bd);
+ --entry-scene-border: var(--tag-scene-bd);
+ --entry-beat-border: var(--tag-beat-bd);
+ --article-border: var(--border);
+ --entry-act-fg: var(--tag-act-fg);
+ --entry-chapter-fg: var(--tag-chapter-fg);
+ --entry-scene-fg: var(--tag-scene-fg);
+ --entry-beat-fg: var(--tag-beat-fg);
+ --entry-act-bg: var(--tag-act-bg);
+ --entry-chapter-bg: var(--tag-chapter-bg);
+ --entry-scene-bg: var(--tag-scene-bg);
+ --entry-beat-bg: var(--tag-beat-bg);
 }
-
-
-

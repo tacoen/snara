@@ -1,110 +1,89 @@
-
-/* ═══════════════════════════════════════════════════
-   pages › media gallery
-   DO:  use masonry via `columns` (already set)
-   DON'T: add fixed heights to .gallery-card —
-          let images dictate the flow
-   ═══════════════════════════════════════════════════ */
-
-.gallery-scroll { flex: 1; overflow-y: auto; min-height: 0; }
-
+.gallery-scroll { flex: 1;overflow-y: auto;min-height: 0;}
 .gallery-grid {
-  columns: 4;
-  column-gap: 6px;
-  padding: 6px;
+ columns: 4;
+ column-gap: 6px;
+ padding: 6px;
 }
-@media (max-width: 600px) { .gallery-grid { columns: 2; } }
-
-/* ── Card ── */
+@media (max-width: 600px) { .gallery-grid { columns: 2;} }
 .gallery-card {
-  break-inside: avoid;
-  position: relative;
-  margin-bottom: 6px;
-  border-radius: 6px;
-  overflow: hidden;
-  background: var(--bg-alt);
-  border: 1px solid var(--border);
-  cursor: default;
-  transition: box-shadow .15s;
+ break-inside: avoid;
+ position: relative;
+ margin-bottom: 6px;
+ border-radius: 6px;
+ overflow: hidden;
+ background: var(--bg-alt);
+ border: 1px solid var(--border);
+ cursor: default;
+ transition: box-shadow .15s;
 }
-.gallery-card:hover { box-shadow: 0 2px 12px var(--shadow); }
-
+.gallery-card:hover { box-shadow: 0 2px 12px var(--shadow);}
 .gallery-card img,
 .gallery-card video {
-  display: block;
-  width: 100%;
-  height: auto;
-  object-fit: cover;
+ display: block;
+ width: 100%;
+ height: auto;
+ object-fit: cover;
 }
-
-/* ── Hover overlay bar ── */
 .gallery-bar {
-  position: absolute;
-  bottom: 0; left: 0; right: 0;
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  padding: var(--s-md) var(--s-xs) var(--s-xs) var(--s-md);
-  background: linear-gradient(0deg, var(--fg-main) 0%, transparent 100%);
-  opacity: 0;
-  transition: opacity .15s;
+ position: absolute;
+ bottom: 0;left: 0;right: 0;
+ display: flex;
+ align-items: center;
+ gap: 4px;
+ padding: var(--s-md) var(--s-xs) var(--s-xs) var(--s-md);
+ background: linear-gradient(0deg, var(--fg-main) 0%, transparent 100%);
+ opacity: 0;
+ transition: opacity .15s;
 }
-.gallery-card:hover .gallery-bar { opacity: 1; }
-
+.gallery-card:hover .gallery-bar { opacity: 1;}
 .gallery-name {
-  flex: 1;
-  font-family: var(--font-mono);
-  font-size: var(--f-xs);
-  color: var(--bg-main);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  min-width: 0;
+ flex: 1;
+ font-family: var(--font-mono);
+ font-size: var(--f-xs);
+ color: var(--bg-main);
+ overflow: hidden;
+ text-overflow: ellipsis;
+ white-space: nowrap;
+ min-width: 0;
 }
-
-.gallery-tools { display: flex; gap: 2px; flex-shrink: 0; }
-
+.gallery-tools { display: flex;gap: 2px;flex-shrink: 0;}
 .gtool {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 22px;
-  height: 22px;
-  background: color-mix(in srgb, var(--bg-main) 15%, transparent);
-  border: none;
-  border-radius: 4px;
-  padding: 0;
-  cursor: pointer;
-  color: var(--bg-main);
-  transition: background .1s;
+ display: flex;
+ align-items: center;
+ justify-content: center;
+ width: 22px;
+ height: 22px;
+ background: color-mix(in srgb, var(--bg-main) 15%, transparent);
+ border: none;
+ border-radius: 4px;
+ padding: 0;
+ cursor: pointer;
+ color: var(--bg-main);
+ transition: background .1s;
 }
-.gtool:hover { background: color-mix(in srgb, var(--bg-main) 30%, transparent); }
-.gtool svg   { width: 12px; height: 12px; }
-
-/* ── States ── */
-.gallery-card.gallery-deleting { opacity: .45; pointer-events: none; }
-
-/* ── Inline rename box ── */
+.gtool:hover { background: color-mix(in srgb, var(--bg-main) 30%, transparent);}
+.gtool svg { width: 12px;height: 12px;}
+.gallery-card.gallery-deleting { opacity: .45;pointer-events: none;}
 .gallery-rename-box {
-  position: absolute;
-  bottom: 0;
-  z-index: 10;
-  display: flex;
-  flex-direction: column;
-  align-items: stretch;
-  justify-content: center;
-  gap: 6px;
-  padding: var(--s-sm);
-  height: auto;
-  width: calc(100% - 1rem);
-  background: color-mix(in srgb, var(--bg-main) 72%, transparent);
+ position: absolute;
+ bottom: 0;
+ z-index: 10;
+ display: flex;
+ flex-direction: column;
+ align-items: stretch;
+ justify-content: center;
+ gap: 6px;
+ padding: var(--s-sm);
+ height: auto;
+ width: calc(100% - 1rem);
+ background: color-mix(in srgb, var(--bg-main) 72%, transparent);
 }
 .gallery-rename-input {
-  display: flex;
-  margin-top: var(--s-md);
-  max-height: 1.3rem;
-  font-size: var(--f-xs) !important;
-  padding: 4px 7px !important;
-  background: var(--bg-main) !important;
+ display: flex;
+ margin-top: var(--s-md);
+ max-height: 1.3rem;
+ font-size: var(--f-xs) !important;
+ padding: 4px 7px !important;
+ background: var(--bg-main) !important;
 }
-.gallery-rename-actions { display: flex; gap: 4px; justify-content: flex-end; }
+.gallery-rename-actions { display: flex;gap: 4px;justify-content: flex-end;}

@@ -1,4 +1,3 @@
-
 <div
   id="kanban-root"
   class="kanban"
@@ -7,7 +6,7 @@
 >
   <header class="kanban__header">
     <div class="kanban__header-left">
-	  <span class="title">Story Board</span>
+      <span class="title">Story Board</span>
       <span class="count" id="kanban-card-count">0 scenes</span>
     </div>
     <div class="kanban__header-right">
@@ -16,11 +15,6 @@
       </button>
     </div>
   </header>
-
-  <div class="kanban__board" id="kanban-board" role="list">
-
-  </div>
-
 
   <div class="kanban__quick-form kanban__quick-form--hidden" id="kanban-quick-form">
     <input
@@ -32,8 +26,11 @@
       aria-label="New scene title"
     />
     <div class="kanban__quick-actions">
-      <button class="btn btn-primary kanban__quick-save" id="kanban-quick-save">Add</button>
-      <button class="btn kanban__quick-cancel" id="kanban-quick-cancel">Cancel</button>
+      <button class="btn-mini primary kanban__quick-save" id="kanban-quick-save">Add</button>
+      <button class="btn-mini cancel" id="kanban-quick-cancel">Cancel</button>
     </div>
   </div>
+
+  <div class="kanban__board" id="kanban-board" role="list"></div>
+
 </div>

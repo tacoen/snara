@@ -303,7 +303,7 @@ export class SnaraPref {
 		switch(tab) {
 			case "root":
 				return `
-				<div class='pad'>
+				<div class='pad' data-theme='${tab}'>
 				<p><span class='title'>Header title</span></p>
 				<button class='btn-mini'>Button</button>
 				<div style='padding: var(--s-xs)'>xs we call it extra small</div>
@@ -325,18 +325,40 @@ export class SnaraPref {
 				</div>`;
 				break;
 			default:
-				return `<div class='theme'>
+				return `
+				<div class='theme'>
 				<div style='color:var(--fg-main); background: var(--border)'>In ${tab} theme, you see <span style='color:var(--fg-muted)'>a muted color</span> and <a href='#'>a links</a> together.</div>
 				<div style='color:var(--fg-main); background: var(--bg-muted)'>In ${tab} theme, you see <span style='color:var(--fg-muted)'>a muted color</span> and <a href='#'>a links</a> together.</div>
 				<div style='color:var(--fg-main); background: var(--bg-alt)'>In ${tab} theme, you see <span style='color:var(--fg-muted)'>a muted color</span> and <a href='#'>a links</a> together.</div>
 				<div style='color:var(--fg-main); background: var(--bg-main)'>In ${tab} theme, you see <span style='color:var(--fg-muted)'>a muted color</span> and <a href='#'>a links</a> together.</div>
-				</div><div class='flex'>
+				</div>
+
+				<header>
 				
+				<svg xmlns="http://www.w3.org/2000/svg" class="icx-edit" fill="none" height="32" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1" viewBox="0 0 32 32" width="32"><g transform="translate(4.0000, 4.0000) scale(1.0000)"> <path xmlns:default="http://www.w3.org/2000/svg" d="M7 7h-1a2 2 0 0 0 -2 2v9a2 2 0 0 0 2 2h9a2 2 0 0 0 2 -2v-1"></path> <path xmlns:default="http://www.w3.org/2000/svg" d="M20.385 6.585a2.1 2.1 0 0 0 -2.97 -2.97l-8.415 8.385v3h3l8.385 -8.415"></path> <path xmlns:default="http://www.w3.org/2000/svg" d="M16 5l3 3"></path></g></svg>
+				
+				<span class='title'>SECTION TITLE</span></header>
+
+<div class="editor" contenteditable="true" data-placeholder="Write something…"></div>
+				
+				<div class='flex' data-theme='${tab}'>
+				
+	<button class="btn-icon">
+      <svg xmlns="http://www.w3.org/2000/svg" class="icx-ai-agents" fill="none" height="32" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1" viewBox="0 0 32 32" width="32"><g transform="translate(4.0000, 4.0000) scale(1.0000)"> <path xmlns:default="http://www.w3.org/2000/svg" d="M17 19a2 2 0 1 0 4 0a2 2 0 1 0 -4 0"></path> <path xmlns:default="http://www.w3.org/2000/svg" d="M3 19a2 2 0 1 0 4 0a2 2 0 1 0 -4 0"></path> <path xmlns:default="http://www.w3.org/2000/svg" d="M10 5a2 2 0 1 0 4 0a2 2 0 1 0 -4 0"></path> <path xmlns:default="http://www.w3.org/2000/svg" d="M6 5a1 1 0 1 0 -2 0a1 1 0 0 0 2 0"></path> <path xmlns:default="http://www.w3.org/2000/svg" d="M18 5a1 1 0 1 0 2 0a1 1 0 0 0 -2 0"></path> <path xmlns:default="http://www.w3.org/2000/svg" d="M4 12a1 1 0 1 0 2 0a1 1 0 0 0 -2 0"></path> <path xmlns:default="http://www.w3.org/2000/svg" d="M11 12a1 1 0 1 0 2 0a1 1 0 0 0 -2 0"></path> <path xmlns:default="http://www.w3.org/2000/svg" d="M18 12a1 1 0 1 0 2 0a1 1 0 0 0 -2 0"></path> <path xmlns:default="http://www.w3.org/2000/svg" d="M11 19a1 1 0 1 0 2 0a1 1 0 0 0 -2 0"></path></g></svg>
+    </button>
+	
+	<button class="btn-mini mute">Cancel</button>
+	
 				<button class='primary'>primary</button>
 				<button class='warn'>Warn</button>
 				<button class='success'>success</button>
 				<button class='danger'>Danger</button>
-				
+				<div class='tags'>
+				<div class='entry act'><h1>Act</h1></div>
+				<div class='entry chapter'><h2>Chapter</h2></div>
+				<div class='entry scene'><h3>Scene</h3></div>
+				<div class='entry beat'><h4>Beat</h4></div>
+				</div>
 				</div>`;
 				break;
 		}

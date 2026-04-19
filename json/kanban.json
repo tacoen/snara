@@ -1,0 +1,15 @@
+{
+  "columns": [
+    { "id": "backlog",  "title": "Backlog"          },
+    { "id": "research", "title": "Research/Outline"  },
+    { "id": "drafting", "title": "Drafting (WIP)"    },
+    { "id": "review",   "title": "Review/Edit"       },
+    { "id": "done",     "title": "Polished"          }
+  ],
+  "refTagMap": {
+    "4": "beat",
+    "3": "scene",
+    "2": "chapter",
+    "1": "act"
+  }
+}

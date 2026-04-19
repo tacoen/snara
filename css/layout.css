@@ -1,178 +1,65 @@
-/* ═══════════════════════════════════════════════════
-   layout — grids, nav, header, app shells
-   DO:  structural shells, sticky containers, grids
-   DON'T: style content inside a shell here
-   ═══════════════════════════════════════════════════ */
-/* ── App root ── */
 #app {
-  display: grid;
-  grid-template-columns: 40px auto;
-  grid-template-areas: 
-    "nav header"
-    "nav content"
+ display: grid;
+ grid-template-columns: 40px auto;
+ grid-template-areas:
+	"nav header"
+	"nav content"
 }
-
 #app > nav {
-  grid-area: nav;
-  grid-row: span 2;
+ grid-area: nav;
+ grid-row: span 2;
 }
-
-/* ── App grids ── */
-
 #app main {
-  display: grid;
-  grid-template-rows: 40px auto;
-  grid-template-columns: auto 15rem;
-  grid-gap: 0;
+ display: grid;
+ grid-template-rows: 40px auto;
+ grid-template-columns: auto 15rem;
+ grid-gap: 0;
 }
-
 .dashboard {
-  display: grid;
-  grid-template-columns: auto 15rem;
-  height: calc(100vh - 43px);
+ display: grid;
+ grid-template-columns: auto 15rem;
+ height: calc(100vh - 43px);
 }
-
-/* ── Sticky header bar ── */
 #app header.top {
-  justify-content: space-between;
-  gap: var(--s-md);
-  border-bottom: 1px solid var(--border);
-  grid-column: span 2;
+ justify-content: space-between;
+ gap: var(--s-md);
+ border-bottom: 1px solid var(--border);
+ grid-column: span 2;
 }
-
-
-/* ── Icon nav (left strip) ── */
-
-/* ── Full-width page areas ── */
 #kanban-area,
 #files-area,
 #about-area,
 #notes-area,
 #meta-area,
 #chatbot-area {
-  grid-column: span 2;
+ grid-column: span 2;
 }
-
 #meta-area {
-  display: grid;
-  grid-template-columns: 60% 40%;
+ display: grid;
+ grid-template-columns: 60% 40%;
 }
-
-/* ── Article & entry font ── */
-
-#article .entries { font-family: var(--entry-font); }
-
-/* ── Article container ── */
-
-#article {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  overflow-y: auto;
-  background: var(--bg-main);
-  border-left: 1px solid var(--border);
-  transition: background .25s ease, border-color .25s ease;
-}
-
-/* ── Inline contenteditable editor ── */
-
-#editor {
-  height: 96px;
-  overflow-y: auto;
-  outline: none;
-  padding: var(--s-sm) var(--s-lg);
-  font-size: var(--f-sm);
-  line-height: 1.8;
-  color: var(--fg-main);
-  caret-color: var(--primary);
-  white-space: pre-wrap;
-  word-break: break-word;
-}
-
-#editor:empty::before {
-  content: attr(data-placeholder);
-  color: var(--fg-muted);
-  opacity: .5;
-  font-style: italic;
-  pointer-events: none;
-}
-
-.entry-edit #editor { height: 72px; }
-
-/* ── Editor area (sticky bottom bar) ── */
-
-.editor-area {
-  border-top: 1px solid var(--border);
-  background: var(--bg-input);
-  margin: var(--s-md) var(--s-md) 0 var(--s-md);
-  position: sticky;
-  bottom: 0;
-  box-shadow: inset 0px 0 3px 0 var(--shadow);
-}
-
-[data-theme='dark'] .editor-area {
-  box-shadow: inset 0 1px 4px 0 var(--shadow);
-}
-
-
-/* ── Aside ── */
 aside {
-  grid-row: span 2;
-  border-left: 1px solid var(--border);
+ grid-row: span 2;
+ border-left: 1px solid var(--border);
 }
-
 aside,
 .content-area {
-  height: calc(100dvh - 43px);
+ height: calc(100dvh - 43px);
 }
 aside div.content {
 padding: var(--s-sm);
 }
-
 .content-area {
-  display: flex;
-  flex-direction: column;
-  width: 100%;
+ display: flex;
+ flex-direction: column;
+ width: 100%;
 }
 aside.meta-side,
 aside.chat-side {
-  position: fixed;
-  top: 44px;
-  right: 0;
-  width: 15rem;
-  padding: var(--s-sm);
-  font-size: var(--f-xs);
-}
-
-
-/* ── Tab navigation (header right) ── */
-.tabmenu {
-  display: flex;
-  list-style: none;
-  margin-left: auto;
-}
-
-.tabmenu li {
-  display: flex;
-  align-items: center;
-  font-family: var(--font-mono);
-  font-size: var(--f-xs);
-  text-transform: uppercase;
-  letter-spacing: .07em;
-  padding: 0 var(--s-md);
-  height: 42px;
-  cursor: pointer;
-  color: var(--fg-muted);
-  border-bottom: 2px solid transparent;
-  user-select: none;
-  transition: color .15s, border-color .15s;
-}
-
-.tabmenu li:hover {
-  color: var(--fg-main);
-}
-
-.tabmenu li.active {
-  color: var(--fg-main);
-  border-bottom-color: var(--primary);
+ position: fixed;
+ top: 44px;
+ right: 0;
+ width: 15rem;
+ padding: var(--s-sm);
+ font-size: var(--f-xs);
 }

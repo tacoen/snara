@@ -1,208 +1,154 @@
 :root {
-  /* Spacing scale */
-  --s-xs: .25rem;
-  --s-sm: .5rem;
-  --s-md: 1rem;
-  --s-lg: 1.25rem;
-  --s-xl: 1.5rem;
-
-  /* Type scale */
-  --f-xs: .75rem;
-  --f-sm: 1rem;
-  --f-md: 1.25rem;
-
-  /* Font stacks */
-  --font-sans: system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-  --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, 'Courier New', monospace;
-  --font-serif: Georgia, 'Times New Roman', serif;
-
-  /* */
-  
-  --white: #ffffff;
-  --black: #000000;
-  
+ --s-xs: .25rem;
+ --s-sm: .5rem;
+ --s-md: 1rem;
+ --s-lg: 1.25rem;
+ --s-xl: 1.5rem;
+ --f-xs: .75rem;
+ --f-sm: 1rem;
+ --f-md: 1.25rem;
+ --font-sans: system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+ --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, 'Courier New', monospace;
+ --font-serif: Georgia, 'Times New Roman', serif;
+ --white: #ffffff;
+ --black: #000000;
 }
-
-/* ── Scrollbars ──
-   Compact: 3 entry rules, 2 element rules.
-   Custom scrollbars are cosmetic so they stay in vars. */
-   
-::-webkit-scrollbar           { width: 8px; }
-.entry::-webkit-scrollbar     { width: 4px; }
-.entry::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
-.entry::-webkit-scrollbar-thumb:hover { background: var(--bg-hover); }
-
-
+::-webkit-scrollbar { width: 8px;}
+.entry::-webkit-scrollbar { width: 4px;}
+.entry::-webkit-scrollbar-thumb { background: var(--border);border-radius: 10px;}
+.entry::-webkit-scrollbar-thumb:hover { background: var(--bg-hover);}
 *,
 ::after,
 ::before,
 ::backdrop,
 ::file-selector-button {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
+ margin: 0;
+ padding: 0;
+ box-sizing: border-box;
 }
-
 html {
-  font-family: var(--font-sans);
-  font-size: 100%;
-  line-height: 1.5;
-  background: var(--bg-alt);
-  color: var(--fg-main);
-  -webkit-font-smoothing: antialiased;
+ font-family: var(--font-sans);
+ font-size: 100%;
+ line-height: 1.5;
+ background: var(--bg-alt);
+ color: var(--fg-main);
+ -webkit-font-smoothing: antialiased;
 }
-
 body {
-  margin: 0;
-  padding: 0;
-  font-family: var(--font-sans);
-  color: var(--fg-main);
-  background: var(--bg-main);
+ margin: 0;
+ padding: 0;
+ font-family: var(--font-sans);
+ color: var(--fg-main);
+ background: var(--bg-main);
 }
-
-body.modal-open { overflow: hidden; }
-
-[hidden] { display: none !important; }
-
-*:first-child { margin-top: 0; }
-
+body.modal-open { overflow: hidden;}
+[hidden] { display: none !important;}
+*:first-child { margin-top: 0;}
 button {
-  display: inline-flex;
-  align-items: center;
-  font-family: var(--font-mono);
-  font-size: var(--f-xs);
-  cursor: pointer;
-  user-select: none;
-  white-space: nowrap;
-  transition: all .15s ease;
+ display: inline-flex;
+ align-items: center;
+ font-family: var(--font-mono);
+ font-size: var(--f-xs);
+ cursor: pointer;
+ user-select: none;
+ white-space: nowrap;
+ transition: all .15s ease;
 }
-
 button:disabled {
-  opacity: .5;
-  cursor: default;
+ opacity: .5;
+ cursor: default;
 }
-
-/* L */
-
 a {
-  color: var(--fg-link);
+ color: var(--fg-link);
 }
-
 a:hover {
-  color: var(--bg-hover);
+ color: var(--bg-hover);
 }
-
 header {
-  display: flex;
-  align-items: center;
-  flex-shrink: 0;
-  height: 40px;
-  background: var(--bg-alt);
-  padding: 0 var(--s-sm);
+ display: flex;
+ align-items: center;
+ flex-shrink: 0;
+ height: 40px;
+ background: var(--bg-alt);
+ padding: 0 var(--s-sm);
 }
-
 nav {
-  display: flex;
-  flex-direction: column;
-  flex-wrap: nowrap;
-  align-items: center;
-  justify-content: space-between;
-  padding: 1px 0 var(--s-xs) 0;
-  border-right: 1px solid var(--border);
-  grid-row: span 2;
-  position: sticky;
-  top: 0;
-  z-index: 200;
-  height: 100vh;
-  background-color: var(--bg-alt);
+ display: flex;
+ flex-direction: column;
+ flex-wrap: nowrap;
+ align-items: center;
+ justify-content: space-between;
+ padding: 1px 0 var(--s-xs) 0;
+ border-right: 1px solid var(--border);
+ grid-row: span 2;
+ position: sticky;
+ top: 0;
+ z-index: 200;
+ height: 100vh;
+ background-color: var(--bg-alt);
 }
-
 aside {
-  font-size: var(--f-xs);
-  background: var(--bg-alt);
-  color: var(--fg-main);  
+ font-size: var(--f-xs);
+ background: var(--bg-alt);
+ color: var(--fg-main);
 }
-
-/* Force consistent stroke on all inline SVG icons */
 svg {
-  stroke-width: 1.5px !important;
+ stroke-width: 1.5px !important;
 }
-
 svg.ge,
 svg.icon {
-  width: 1em;
-  height: 1em;
-  display: block;
-  flex-shrink: 0;
+ width: 1em;
+ height: 1em;
+ display: block;
+ flex-shrink: 0;
 }
-
-
-/* ── Display ────────────────────────────────────── */
 .flex {
 	display: flex;
 }
-
 .flex-col, .flex.col {
 	display: flex;
 	flex-direction: column;
 }
-
 .flex-row, .flex.row {
 	display: flex;
 	flex-direction: row;
 }
-
 .flex.grow {
 	flex-grow: 1;
 }
-
 .flex-1 {
 	flex: 1;
 }
-
-/* ── Spacing ────────────────────────────────────── */
 .pad-xs {
 	padding: var(--s-xs);
 }
-
 .pad-sm {
 	padding: var(--s-sm);
 }
-
 .pad-md {
 	padding: var(--s-md);
 }
-
 .pad-lg {
 	padding: var(--s-lg);
 }
-
-/* ── Overflow ───────────────────────────────────── */
 .overflow-auto {
 	overflow: auto;
 }
-
 .overflow-hidden {
 	overflow: hidden;
 }
-
-/* ── Text ───────────────────────────────────────── */
 .text-muted {
 	color: var(--fg-muted);
 }
-
 .text-danger {
 	color: var(--danger);
 }
-
 .text-mono {
 	font-family: var(--font-mono);
 }
-
 .text-xs {
 	font-size: var(--f-xs);
 }
-
 .truncate {
 	overflow: hidden;
 	text-overflow: ellipsis;

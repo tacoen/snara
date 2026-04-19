@@ -1,153 +1,40 @@
-/* ═══════════════════════════════════════════════════
-   duplicate.css — quarantine zone
-   Purpose: duplicated or questionable declarations
-            found across the layer files.
-   Workflow:
-     1. A rule lives here while you decide its fate.
-     2. Once confirmed redundant → delete from source.
-     3. Once confirmed needed → move back, delete here.
-
-   STATUS (last audit):
-     DELETED (#4,#7,#9,#10,#11,#14) — confirmed in active layers.
-     KEPT    (#1,#2,#3,#5,#6,#13)   — orphans; 2-ui.css not in import
-                                       stack. Move to correct file, then
-                                       delete here.
-     MIGRATE (#8,#12)               — old + new names coexist.
-                                       Update HTML first, then drop old.
-   ═══════════════════════════════════════════════════ */
-
-/* ──────────────────────────────────────────────────
-   3. .chatbot__header and sub-elements
-   ORPHAN — not present in chat.css. Only copy.
-   TODO: move into chat.css, then delete here.
-   ────────────────────────────────────────────────── */
-
-
-/* ──────────────────────────────────────────────────
-   5. .settings-footer
-   ORPHAN — was "keep in 2-ui.css" but 2-ui.css is not
-   in the import stack. Only copy in the codebase.
-   TODO: move into components.css, then delete here.
-   ────────────────────────────────────────────────── */
-
 .settings-footer {
-  display: flex;
-  justify-content: flex-end;
-  gap: var(--s-sm);
-  padding: var(--s-md) var(--s-lg);
-  border-top: 1px solid var(--border);
-  flex-shrink: 0;
+ display: flex;
+ justify-content: flex-end;
+ gap: var(--s-sm);
+ padding: var(--s-md) var(--s-lg);
+ border-top: 1px solid var(--border);
+ flex-shrink: 0;
 }
-
-
-/* ──────────────────────────────────────────────────
-   6. .submit-row
-   ORPHAN — same situation as #5.
-   TODO: move into components.css, then delete here.
-   ────────────────────────────────────────────────── */
-
 .submit-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: var(--s-sm);
-  padding: var(--s-xs) var(--s-sm) var(--s-sm);
-  border-top: 1px solid var(--border);
+ display: flex;
+ align-items: center;
+ justify-content: space-between;
+ flex-wrap: wrap;
+ gap: var(--s-sm);
+ padding: var(--s-xs) var(--s-sm) var(--s-sm);
+ border-top: 1px solid var(--border);
 }
-
-
-/* ──────────────────────────────────────────────────
-   8. .cfg-tabs / .cfg-tab / .cfg-tab-content
-   MIGRATE — old names in components.css. New canonical
-   names (.tabmenu-cfg-*) are in tab.css.
-   TODO: update HTML to use .tabmenu-cfg-* then delete
-         .cfg-tabs/.cfg-tab/.cfg-tab-content from
-         components.css and remove this block.
-   ────────────────────────────────────────────────── */
-
-/* source: components.css (old names — kept until HTML migration) */
-
-
-.cfg-tab {
-  background: none;
-  border: none;
-  border-bottom: 2px solid transparent;
-  padding: var(--s-sm) var(--s-md);
-  font-family: var(--font-mono);
-  font-size: var(--f-xs);
-  text-transform: uppercase;
-  letter-spacing: .07em;
-  color: var(--fg-muted);
-  cursor: pointer;
-  margin-bottom: -1px;
-  transition: color .15s, border-color .15s;
-}
-.cfg-tab:hover  { color: var(--fg-main); }
-.cfg-tab.active { color: var(--fg-main); border-bottom-color: var(--primary); }
-
-.cfg-tab-content {
-  display: flex;
-  flex-direction: column;
-  gap: var(--s-xl);
-  padding: var(--s-lg);
-  overflow-y: auto;
-  flex: 1;
-}
-
-
-/* ──────────────────────────────────────────────────
-   12. .btn-tab
-   MIGRATE — old name in buttons.css. Canonical new
-   name is .tabmenu-btn in tab.css.
-   TODO: update HTML to use .tabmenu-btn then delete
-         .btn-tab from buttons.css and remove this block.
-   ────────────────────────────────────────────────── */
-
-/* source: buttons.css (old name — kept until HTML migration) */
 .btn-tab {
-  background: none;
-  border: none;
-  border-bottom: 2px solid transparent;
-  padding: var(--s-sm) var(--s-md);
-  font-family: var(--font-mono);
-  font-size: var(--f-xs);
-  text-transform: uppercase;
-  letter-spacing: .07em;
-  color: var(--fg-muted);
-  cursor: pointer;
-  margin-bottom: -1px;
-  transition: color .15s, border-color .15s;
+ background: none;
+ border: none;
+ border-bottom: 2px solid transparent;
+ padding: var(--s-sm) var(--s-md);
+ font-family: var(--font-mono);
+ font-size: var(--f-xs);
+ text-transform: uppercase;
+ letter-spacing: .07em;
+ color: var(--fg-muted);
+ cursor: pointer;
+ margin-bottom: -1px;
+ transition: color .15s, border-color .15s;
 }
-.btn-tab:is(:hover, :focus) { color: var(--fg-main); }
-.btn-tab.active             { color: var(--fg-main); border-bottom-color: var(--primary); }
-
-
-/* ──────────────────────────────────────────────────
-   13. .fpanel-footer
-   ORPHAN — was "keep in 2-ui.css" but 2-ui.css is not
-   in the import stack. Not found in pages.css either.
-   Only copy in the codebase.
-   TODO: move into pages.css, then delete here.
-   ────────────────────────────────────────────────── */
-
+.btn-tab:is(:hover, :focus) { color: var(--fg-main);}
+.btn-tab.active { color: var(--fg-main);border-bottom-color: var(--primary);}
 .fpanel-footer {
-  display: flex;
-  flex-shrink: 0;
-  gap: var(--s-sm);
-  padding: var(--s-sm) var(--s-md);
-  border-top: 1px solid var(--border);
+ display: flex;
+ flex-shrink: 0;
+ gap: var(--s-sm);
+ padding: var(--s-sm) var(--s-md);
+ border-top: 1px solid var(--border);
 }
-
-
-/* ═══════════════════════════════════════════════════
-   DELETED from this file (confirmed in active layers):
-
-   #4  .kanban__header + sub-elements  → kanban.css
-   #7  .del-confirm                    → utils.css
-   #9  @keyframes save-pulse           → animation.css
-   #10 @keyframes chatbot-pop/
-       chatbot-highlight/chatbot-spin  → animation.css
-   #11 @keyframes kanban-spin          → animation.css
-   #14 .fdelete-bar                    → pages.css
-   ═══════════════════════════════════════════════════ */

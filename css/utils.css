@@ -1,5 +1,3 @@
-
-/* ── Delete confirmation bar (fixed bottom strip) ── */
 .del-confirm {
 	position: fixed;
 	bottom: 0;
@@ -15,51 +13,32 @@
 	border-top: 1px solid var(--border);
 	box-shadow: 0 -2px 12px var(--shadow);
 }
-
-/* ── Spacing helpers ── */
 .seppad-top {
 	margin-top: var(--s-lg);
 }
-
 .seppad-bottom {
 	margin-bottom: var(--s-lg);
 }
-
-/* utilities.css — overrides + one-liners
-   Rule: single-purpose classes that OVERRIDE lower layers.
-         Must be last so they win via layer order, no !important needed.
-
-   DO:   keep each rule to 1–3 declarations
-         use utilities to adapt components to specific contexts
-   DON'T: put layout structure or component styles here
-          use utilities as primary styling (components must be self-contained) */
-
-/* ── Responsive columns ── */
 @media (max-width: 1200px) {
 	.notes {
 		--notes-cols: 4;
 	}
 }
-
 @media (max-width: 900px) {
 	.notes {
 		--notes-cols: 3;
 	}
 }
-
 @media (max-width: 600px) {
 	.notes {
 		--notes-cols: 2;
 	}
 }
-
 @media (max-width: 400px) {
 	.notes {
 		--notes-cols: 1;
 	}
 }
-
-/* ── Pill fields ── */
 .field-pills {
 	display: flex;
 	flex-wrap: wrap;
@@ -68,7 +47,6 @@
 	flex: 1;
 	padding: var(--s-xs) 0;
 }
-
 .field-pill {
 	display: inline-flex;
 	align-items: center;
@@ -81,7 +59,6 @@
 	font-family: var(--font-mono);
 	color: var(--fg-main);
 }
-
 .pill-remove {
 	background: none;
 	border: none;
@@ -91,11 +68,9 @@
 	padding: 0 1px;
 	line-height: 1;
 }
-
 .pill-remove:hover {
 	color: var(--danger);
 }
-
 .pill-input {
 	border: none;
 	outline: none;
@@ -106,7 +81,6 @@
 	min-width: 60px;
 	width: 80px;
 }
-
 .field-val--readonly {
 	color: var(--fg-muted);
 	font-family: var(--font-mono);

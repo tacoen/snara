@@ -1,42 +1,79 @@
-
-
-
-.entry.act     { border-left-color: var(--entry-act-border); padding-left: var(--s-md); }
-.entry.chapter { border-left-color: var(--entry-chapter-border); padding-left: calc(2 * var(--s-md)); }
-.entry.scene   { border-left-color: var(--entry-scene-border); padding-left: calc(3 * var(--s-md)); }
-.entry.beat    { border-left-color: var(--entry-beat-border);  padding-left: calc(4 * var(--s-md)); }
-
-.tag-pill[data-tag='act']     { background-color: var(--entry-act-bg); }
-.tag-pill[data-tag='chapter'] { background-color: var(--entry-chapter-bg); }
-.tag-pill[data-tag='scene']   { background-color: var(--entry-scene-bg); }
-.tag-pill[data-tag='beat']    { background-color: var(--entry-beat-bg); }
-
+.entry.act { border-left: 3px solid var(--entry-act-border);padding-left: var(--s-md);}
+.entry.chapter { border-left: 3px solid var(--entry-chapter-border);padding-left: calc(2 * var(--s-md));}
+.entry.scene { border-left: 3px solid var(--entry-scene-border);padding-left: calc(3 * var(--s-md));}
+.entry.beat { border-left: 3px solid var(--entry-beat-border);padding-left: calc(4 * var(--s-md));}
+.tag-pill[data-tag='act'] { background-color: var(--entry-act-bg);}
+.tag-pill[data-tag='chapter'] { background-color: var(--entry-chapter-bg);}
+.tag-pill[data-tag='scene'] { background-color: var(--entry-scene-bg);}
+.tag-pill[data-tag='beat'] { background-color: var(--entry-beat-bg);}
 .tag-pill.active-scene,
-.pop-pill.scene.sel,   .pop-pill.scene:hover   { background: var(--entry-scene-fg);   color: var(--bg-main); }
+.pop-pill.scene.sel, .pop-pill.scene:hover { background: var(--entry-scene-fg);color: var(--bg-main);}
 .tag-pill.active-beat,
-.pop-pill.beat.sel,    .pop-pill.beat:hover     { background: var(--entry-beat-fg);    color: var(--bg-main); }
+.pop-pill.beat.sel, .pop-pill.beat:hover { background: var(--entry-beat-fg);color: var(--bg-main);}
 .tag-pill.active-chapter,
-.pop-pill.chapter.sel, .pop-pill.chapter:hover  { background: var(--entry-chapter-fg); color: var(--bg-main); }
+.pop-pill.chapter.sel, .pop-pill.chapter:hover { background: var(--entry-chapter-fg);color: var(--bg-main);}
 .tag-pill.active-act,
-.pop-pill.act.sel,     .pop-pill.act:hover      { background: var(--entry-act-fg);     color: var(--bg-main); }
-
-/* Hierarchy indents + left-border colours */
-.toc-act     a { padding-left: var(--s-md);            border-left-color: var(--entry-act-border);     font-weight: 500; }
-.toc-chapter a { padding-left: calc(var(--s-md) * 2); border-left-color: var(--entry-chapter-border); }
-.toc-scene   a { padding-left: calc(var(--s-md) * 3); border-left-color: var(--entry-scene-border); }
-.toc-beat    a { padding-left: calc(var(--s-md) * 4); border-left-color: var(--entry-beat-border); }
-
-input[data-var='--success']        { background-color: var(--success-bg);    border: 1px solid var(--success-bd); }
-input[data-var='--primary']        { background-color: var(--primary-bg);    border: 1px solid var(--primary-bd); }
-input[data-var='--danger']         { background-color: var(--danger-bg);     border: 1px solid var(--danger-bd); }
-input[data-var="--tag-act-fg"]     { background-color: var(--tag-act-bg);    border: 1px solid var(--tag-act-bd); }
-input[data-var="--tag-chapter-fg"] { background-color: var(--tag-chapter-bg); border: 1px solid var(--tag-chapter-bd); }
-input[data-var="--tag-scene-fg"]   { background-color: var(--tag-scene-bg);  border: 1px solid var(--tag-scene-bd); }
-input[data-var="--tag-beat-fg"]    { background-color: var(--tag-beat-bg);   border: 1px solid var(--tag-beat--bd); }
-
+.pop-pill.act.sel, .pop-pill.act:hover { background: var(--entry-act-fg);color: var(--bg-main);}
+.toc-act a { padding-left: var(--s-md);border-left-color: var(--entry-act-border);font-weight: 500;}
+.toc-chapter a { padding-left: calc(var(--s-md) * 2);border-left-color: var(--entry-chapter-border);}
+.toc-scene a { padding-left: calc(var(--s-md) * 3);border-left-color: var(--entry-scene-border);}
+.toc-beat a { padding-left: calc(var(--s-md) * 4);border-left-color: var(--entry-beat-border);}
+input[data-var='--success'] { background-color: var(--success-bg);border: 1px solid var(--success-bd);}
+input[data-var='--primary'] { background-color: var(--primary-bg);border: 1px solid var(--primary-bd);}
+input[data-var='--danger'] { background-color: var(--danger-bg);border: 1px solid var(--danger-bd);}
+input[data-var="--tag-act-fg"] { background-color: var(--tag-act-bg);border: 1px solid var(--tag-act-bd);}
+input[data-var="--tag-chapter-fg"] { background-color: var(--tag-chapter-bg);border: 1px solid var(--tag-chapter-bd);}
+input[data-var="--tag-scene-fg"] { background-color: var(--tag-scene-bg);border: 1px solid var(--tag-scene-bd);}
+input[data-var="--tag-beat-fg"] { background-color: var(--tag-beat-bg);border: 1px solid var(--tag-beat--bd);}
 #about-btn.btn-icon:hover,
-#about-btn.btn-icon { color: var(--danger); }
+#about-btn.btn-icon { color: var(--danger);}
 [data-theme='dark'] #about-btn.btn-icon:hover,
-[data-theme='dark'] #about-btn.btn-icon { color: var(--fg-link); }
-
-
+[data-theme='dark'] #about-btn.btn-icon { color: var(--fg-link);}
+button.btn-icon svg {
+	transform: scale(1);
+	rotate: none;
+	transition: transform 0.5s ease-in-out;
+}
+button.btn-icon:hover svg {
+	transform: scale(0.90);
+	rotate: -10deg;
+}
+button.btn-icon:hover {
+	background: var(--bg-hover);color: var(--fg-main);
+}
+#app-overlay {
+ position: fixed;
+ inset: 0;
+ z-index: 1000;
+ display: flex;
+ padding: var(--s-lg);
+ cursor: default;
+}
+#about,#app-overlay {
+ background: var(--overlay);
+ background-image:
+	url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 320'%3E%3Cpath fill='%23111133' fill-opacity='0.1' d='M0,160L48,176C96,192,192,224,288,213.3C384,203,480,149,576,144C672,139,768,181,864,181.3C960,181,1056,139,1152,122.7C1248,107,1344,117,1392,122.7L1440,128L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z'%3E%3Canimate attributeName='d' dur='4s' repeatCount='indefinite' values='M0,160L48,176C96,192,192,224,288,213.3C384,203,480,149,576,144C672,139,768,181,864,181.3C960,181,1056,139,1152,122.7C1248,107,1344,117,1392,122.7L1440,128L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z;M0,64L48,80C96,96,192,128,288,128C384,128,480,96,576,106.7C672,117,768,171,864,170.7C960,171,1056,117,1152,106.7C1248,96,1344,128,1392,144L1440,160L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z;M0,160L48,176C96,192,192,224,288,213.3C384,203,480,149,576,144C672,139,768,181,864,181.3C960,181,1056,139,1152,122.7C1248,107,1344,117,1392,122.7L1440,128L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z'%3E%3C/animate%3E%3C/path%3E%3C/svg%3E"),
+	url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 320'%3E%3Cpath fill='%2fffff6' fill-opacity='0.2' d='M0,160L48,176C96,192,192,224,288,213.3C384,203,480,149,576,144C672,139,768,181,864,181.3C960,181,1056,139,1152,122.7C1248,107,1344,117,1392,122.7L1440,128L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z'%3E%3Canimate attributeName='d' dur='15s' repeatCount='indefinite' values='M0,160L48,176C96,192,192,224,288,213.3C384,203,480,149,576,144C672,139,768,181,864,181.3C960,181,1056,139,1152,122.7C1248,107,1344,117,1392,122.7L1440,128L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z;M0,64L48,80C96,96,192,128,288,128C384,128,480,96,576,106.7C672,117,768,171,864,170.7C960,171,1056,117,1152,106.7C1248,96,1344,128,1392,144L1440,160L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z;M0,160L48,176C96,192,192,224,288,213.3C384,203,480,149,576,144C672,139,768,181,864,181.3C960,181,1056,139,1152,122.7C1248,107,1344,117,1392,122.7L1440,128L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z'%3E%3C/animate%3E%3C/path%3E%3C/svg%3E"),
+	url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 320'%3E%3Cpath fill='%23233244' fill-opacity='0.3' transform='scale(-1, 1)' transform-origin='center' d='M0,160L48,176C96,192,192,224,288,213.3C384,203,480,149,576,144C672,139,768,181,864,181.3C960,181,1056,139,1152,122.7C1248,107,1344,117,1392,122.7L1440,128L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z'%3E%3Canimate attributeName='d' dur='8s' repeatCount='indefinite' values='M0,160L48,176C96,192,192,224,288,213.3C384,203,480,149,576,144C672,139,768,181,864,181.3C960,181,1056,139,1152,122.7C1248,107,1344,117,1392,122.7L1440,128L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z;M0,64L48,80C96,96,192,128,288,128C384,128,480,96,576,106.7C672,117,768,171,864,170.7C960,171,1056,117,1152,106.7C1248,96,1344,128,1392,144L1440,160L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z;M0,160L48,176C96,192,192,224,288,213.3C384,203,480,149,576,144C672,139,768,181,864,181.3C960,181,1056,139,1152,122.7C1248,107,1344,117,1392,122.7L1440,128L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z'%3E%3C/animate%3E%3C/path%3E%3C/svg%3E");
+ background-position: bottom;
+ background-repeat: no-repeat;
+ background-size: cover;
+}
+@keyframes save-pulse {
+ from { opacity: .6;}
+ to { opacity: 1;}
+}
+@keyframes chatbot-pop {
+ from { opacity: 0;transform: translateY(8px) scale(0.96);}
+ to { opacity: 1;transform: none;}
+}
+@keyframes chatbot-highlight {
+ 0%, 70% { box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 30%, transparent);}
+ 100% { box-shadow: none;}
+}
+@keyframes chatbot-spin {
+ to { transform: rotate(360deg);}
+}
+@keyframes kanban-spin {
+ to { transform: rotate(360deg);}
+}
