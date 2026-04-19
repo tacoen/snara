@@ -79,22 +79,23 @@ $title  = 'Snara';
 // 2. Capture the output and clear the buffer
 $html = ob_get_clean();
 
-// 3. Simple Compression (Logic to remove line breaks and extra spaces)
 // 3. Aggressive Compression
 $search = [
     '/(\s)+/s',         // 1. Replace multiple spaces/newlines with a single space
     '/\s+(?=<)/',       // 2. Remove all spaces leading up to a starting tag
     '/(?<=>)\s+/',      // 3. Remove all spaces following an ending tag
-    '//' // 4. Remove HTML comments
+    '//' // 4. Properly remove HTML comments
 ];
 $replace = [' ', '', '', ''];
+
+// Run the replacement
 $compressedHtml = preg_replace($search, $replace, $html);
 
-// Final trim to catch any strays at the start/end
-$compressedHtml = trim($compressedHtml);$replace, $html);
+// FIX: trim only takes the string (and optionally a list of characters to strip)
+$compressedHtml = trim($compressedHtml);
 
 // 4. Save to index.html
-if (file_put_contents(__DIR__ . '/index.html', $compressedHtml)) {
+if (!empty($compressedHtml) && file_put_contents(__DIR__ . '/index.html', $compressedHtml) !== false) {
     echo "Successfully built index.html (Compressed). Redirecting in 3 seconds...";
     echo "
     <script>
@@ -104,5 +105,10 @@ if (file_put_contents(__DIR__ . '/index.html', $compressedHtml)) {
     </script>
     ";
 } else {
-    echo "Error: Could not write to index.html";
+    // If $compressedHtml is empty, preg_replace failed
+    if (empty($compressedHtml)) {
+        echo "Error: Compression failed. The output string is empty.";
+    } else {
+        echo "Error: Could not write to index.html. Check permissions.";
+    }
 }
