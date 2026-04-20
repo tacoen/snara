@@ -1,192 +1,106 @@
-# Snara
+# Snara — Self-Hosted Novel Editor with Automatic Structure, Kanban & AI
 
-**Finally — a lightweight, self-hosted platform made for long-form storytellers.**
+**A lightweight, self-hosted structured writing tool designed for novelists, screenwriters, and long-form storytellers.**
 
-If you've spent years jumping between bloated apps, cloud services that change pricing, or simple editors that lose your structure the moment your novel grows past 50 pages… I built Snara for you.
+Tired of bloated cloud apps, lost structure in big manuscripts, or paying monthly fees?  
+**Snara** gives you automatic hierarchical organization (**Acts → Chapters → Scenes → Beats**), a built-in Kanban board, and a context-aware AI assistant — all running on your own server with simple flat files.
 
-Snara is a clean, distraction-minimal web-based writing tool designed specifically for **novels, screenplays, web novels, and any large narrative project**. It gives you automatic hierarchical organization without forcing you into rigid templates:
+No database. No tracking. No subscriptions. Just you and your story.
 
-**Acts → Chapters → Scenes → Beats**
+![Snara Screenshot](https://via.placeholder.com/800x400?text=Snara+Editor+Screenshot)  
+*(Replace with actual screenshot URL after uploading images to your repo)*
 
-Everything stays on your own server using simple flat files. No database. No tracking. No monthly fees. Just you, your story, and the tools that actually help.
+## ✨ Why Writers Love Snara
 
----
+- **Automatic Structure** — Write naturally in Markdown; Snara intelligently detects and organizes Acts, Chapters, Scenes, and Beats.
+- **Live Table of Contents** — Always up-to-date, click to jump anywhere instantly.
+- **Multi-Book Support** — Manage multiple novels or screenplays in one clean workspace.
+- **Kanban Board** — Visual drag-and-drop planning for scenes, chapters, and story arcs with real-time sync to your manuscript.
+- **AI Writing Assistant** — Context-aware chatbot + floating toolbar for brainstorming, rewriting, expanding scenes, tone adjustments, and more (works with Groq, OpenAI, or any compatible provider).
+- **Files & Media Workspace** — Import/export Markdown & HTML, media gallery with rename/delete, and smart autocomplete.
+- **Metadata System** — Track characters, locations, settings, and custom fields linked directly to your scenes.
+- **Fully Self-Hosted & Private** — Your words stay on your server.
 
-## Why Snara Exists
+Perfect for **novels, web novels, screenplays, fanfiction**, and any large narrative project.
 
-After trying many “writing apps,” I got tired of:
-- Losing overview when the manuscript gets big
-- Paying for features I rarely use
-- Worrying about data ownership
-- Switching between five different tools for planning, writing, and organizing
+## 🚀 Quick Start
 
-Snara brings the essentials together in one focused place — with the structure serious writers need and the simplicity they crave.
-
----
-
-## ✨ Core Features for Long-Form Writing
-
-- **Structured Markdown Editor**  
-  Automatically detects and organizes your writing into Acts, Chapters, Scenes, and Beats as you type.
-
-- **Live Auto-Generated Table of Contents**  
-  Always up-to-date. Jump anywhere in your story instantly.
-
-- **Multi-Book / Multi-Project Support**  
-  Manage several novels or screenplays in the same instance without confusion.
-
-- **Files Workspace** (powered by **fileman.js**)  
-  - Clean file browser for your documents  
-  - Import & Export (Markdown + HTML)  
-  - Media Gallery for images and videos — with rename, delete, and smart autocomplete  
-  - Cache and workspace management so nothing gets lost
-
-- **Metadata System**  
-  Keep track of characters, locations, settings, and custom fields — all linked to your scenes.
-
-- **Kanban Board** (fully working)  
-  Visual drag-and-drop planning for scenes, chapters, or story arcs.
-
-- **Built-in AI Assistant** (Chatbot + Context-Aware Toolbar)  
-  Brainstorm ideas, rewrite awkward paragraphs, continue a scene, summarize chapters, or get plot suggestions — all while keeping full context of your story.  
-  Works with any OpenAI-compatible provider (default: fast & affordable Groq + Llama 3.3).
-
-- **Advanced Preferences Panel**  
-  Live CSS variable editing, multiple themes, keyboard shortcuts, and deep customization.
-
-- **Autosave + Clean Exports**  
-  Never lose progress. Export your entire manuscript or individual sections anytime.
-
-- **Simple REST API** for future extensions or custom workflows.
-
-Fully **self-hosted** — your words stay private and under your control.
-
----
-
-## Kanban Board
-
-One of the most requested features for long-form writing is a way to **see the big picture** without losing the details of your manuscript.
-
-Snara now includes a **fully working Kanban Board** that lets you visually plan and track your story progress.
-
-### What You Can Do with the Kanban Board
-
-- **Drag & Drop Cards** representing Scenes, Chapters, or even entire Acts  
-- Move them between customizable columns such as:  
-  - **Backlog / To Do**  
-  - **In Progress / Writing**  
-  - **Review / Editing**  
-  - **Done / Completed**  
-  (You can add or rename columns to fit your personal workflow.)
-
-- **Seamless Integration** with your structured editor  
-  Cards are directly linked to your Markdown content. When you move a card, the status updates in your story files and metadata.
-
-- **Visual Progress Tracking**  
-  Instantly see which parts of your novel are stuck, which are flowing well, and where you need to focus next. Perfect for avoiding the “middle muddle” that plagues many long projects.
-
-- **Story Planning Power**  
-  Use it to outline new arcs, rearrange scenes, or manage multiple plot threads without scrolling through thousands of lines of text.
-
-- **Clean & Minimalist Design**  
-  The board matches Snara’s distraction-free aesthetic — no unnecessary buttons or clutter, just your story elements and smooth interactions.
-
-You can switch between the main structured editor and the Kanban Board effortlessly. Changes sync in real time with autosave, so your writing and planning always stay in harmony.
-
-This feature was built specifically for writers who need both **deep focused writing** and **high-level visual organization** — something that’s surprisingly rare in most long-form tools.
-
----
-
-## AI Tools for Storytellers
-
-The AI is designed to feel like a helpful writing partner, not a replacement.
-
-- Chatbot panel for big-picture brainstorming
-- Floating Toolbar for quick in-context actions (rewrite, expand, tone shift, etc.)
-- Easy to switch models or providers in settings
-
-Default setup uses **Groq** (very fast, generous free tier). Test it with `bash test.sh`.
-
----
-
-## Quick Start
-
-1. Clone the repo:
+1. Clone the repository:
    ```bash
    git clone https://github.com/tacoen/snara.git
    cd snara
    ```
 
-2. Give write permissions to:
+2. Set write permissions for the web server on these folders:
    - `/data/`
    - `/json/`
 
 3. Run the app:
-   - For quick testing: `php -S localhost:8000`  
-     (Snara is served through `develope.php`, which auto-generates a clean `index.html` entry point)
+   - For testing: `php -S localhost:8000`
    - For production: Use Apache (`.htaccess` included) or Nginx
 
-### .htaccess
+4. Open `http://localhost:8000` in your browser.
 
-```
-DirectoryIndex index.html develope.php
-```
+Snara auto-creates required folders and config files on first run.
 
-Snara auto-creates needed folders and config files on first run.
+### Test the AI
+Run `bash test.sh` (default uses fast Groq + Llama 3.3).
 
+## Core Features
 
----
+### Structured Markdown Editor
+Automatic hierarchy detection with live Table of Contents.
 
-## Customization & TODO
+### Kanban Board
+Drag-and-drop cards for scenes/chapters. Fully integrated with your writing files — move a card and the status updates in your manuscript.
 
-Snara is designed to be flexible so you can shape it to match **your** writing process:
+### AI Tools for Storytellers
+- Chatbot for big-picture brainstorming
+- Context-aware toolbar for quick rewrites, expansions, summaries, and plot ideas
+- Easy to switch between providers (Groq recommended for speed and free tier)
 
-- **`preprompts.json`** – Contains predefined system prompts for the AI.  
-  You can edit or replace them to better suit your style, genre, or workflow. Easily accessible and modifiable through the **Configuration / Preferences** tab.
+### Additional Highlights
+- Advanced Preferences panel (live CSS theming, shortcuts)
+- Autosave + clean exports (Markdown & HTML)
+- Simple REST API for extensions
+- Lightweight: PHP 7.4+ backend + Vanilla JS frontend
 
-- **`builder-prompts.json`** – Predefined prompts used by the AI Builder / Toolbar.  
-  Feel free to customize these as well to improve how the AI assists you with rewriting, expanding scenes, or generating ideas.
+## Screenshots
 
-- **Hierarchy Flexibility**  
-  The default structure (Acts → Chapters → Scenes → Beats) works great for many long-form projects, but if it doesn’t perfectly fit your writing style, you can adjust or simplify it.  
-  Snara is built to be adaptable — change headings, reduce levels, or create your own conventions. The editor, Table of Contents, and Kanban Board will still work with your custom approach.
-
-These files and settings are all stored locally in the `/json/` folder and can be edited directly or through the in-app interface.
-
----
+![Main Blank Editor](screenshots/s1.jpg)
+![Kanban with todo](screenshots/s2.jpg)
+![Notes](screenshots/s3.jpg)
+![Exports](screenshots/s4.jpg)
 
 ## Tech Stack
 
-- Backend: PHP 7.4+
-- Frontend: Vanilla JavaScript + HTML5 + CSS3 (lightweight & modular)
-- Markdown: marked.js
-- Storage: Flat files (Markdown + JSON)
-
----
-
-## Project Structure
-
-See [STRUCTURE.md](STRUCTURE.md) for details.
-
-Other docs: [PHP_BACKEND.md](PHP_BACKEND.md) • [CHANGELOG.md](CHANGELOG.md)
-
----
+- **Backend**: PHP 7.4+
+- **Frontend**: Vanilla JavaScript + HTML5 + CSS3
+- **Markdown**: marked.js
+- **Storage**: Flat files (Markdown + JSON)
+- **AI**: OpenAI-compatible API (Groq, OpenAI, etc.)
 
 ## Configuration
 
-Most settings live in `json/config.json` (auto-generated).  
-You can also change almost everything through the in-app Preferences panel.
+Most settings are in `json/config.json` (auto-generated) and fully editable via the in-app Preferences panel.  
+Customize AI prompts in `preprompts.json` and `builder-prompts.json`.
 
----
+See also:  
+- [STRUCTURE.md](STRUCTURE.md)  
+- [PHP_BACKEND.md](PHP_BACKEND.md)  
+- [CHANGELOG.md](CHANGELOG.md)
 
 ## License
 
-Open source and free to use, fork, or improve.
+Open source under the **MIT License** — free to use, fork, modify, and improve.
 
-If you've been patiently waiting for a long-form writing platform that respects your workflow, keeps things simple, and actually grows with your story — welcome to Snara.
+Made with ❤️ for fellow storytellers who want structure without complexity and full ownership of their work.
 
-Questions? Ideas? Found a bug?  
-Open an issue or pull request. I'd love to hear from fellow storytellers.
+## Contributing
 
-That's it!
+Found a bug? Have an idea for a new feature (more AI tools, export formats, themes)?  
+Open an **issue** or submit a **pull request**. All contributions welcome!
 
+Star ⭐ this repo if Snara sounds useful for your writing journey!
+
+```
