@@ -103,4 +103,3 @@ Open an **issue** or submit a **pull request**. All contributions welcome!
 
 Star ⭐ this repo if Snara sounds useful for your writing journey!
 
-```
