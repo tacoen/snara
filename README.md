@@ -8,12 +8,12 @@ Tired of bloated cloud apps, lost structure in big manuscripts, or paying monthl
 No database. No tracking. No subscriptions. Just you and your story.
 
 ## Screenshots
-
+<div style='columns:4'>
 ![Main Editor](https://raw.githubusercontent.com/tacoen/snara/main/screenshots/s1.jpg)
 ![Kanban with todo](https://raw.githubusercontent.com/tacoen/snara/main/screenshots/s2.jpg)
 ![Notes](https://raw.githubusercontent.com/tacoen/snara/main/screenshots/s3.jpg)
 ![Exports](https://raw.githubusercontent.com/tacoen/snara/main/screenshots/s4.jpg)
-
+</div>
 ## ✨ Why Writers Love Snara
 
 - **Automatic Structure** — Write naturally in Markdown; Snara intelligently detects and organizes Acts, Chapters, Scenes, and Beats.
