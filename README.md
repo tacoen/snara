@@ -67,10 +67,10 @@ Drag-and-drop cards for scenes/chapters. Fully integrated with your writing file
 
 ## Screenshots
 
-![Main Blank Editor](screenshots/s1.jpg)
-![Kanban with todo](screenshots/s2.jpg)
-![Notes](screenshots/s3.jpg)
-![Exports](screenshots/s4.jpg)
+![Main Blank Editor](https://raw.githubusercontent.com/tacoen/snara/main/screenshots/s1.jpg)
+![Kanban with todo](https://raw.githubusercontent.com/tacoen/snara/main/screenshots/s2.jpg)
+![Notes](https://raw.githubusercontent.com/tacoen/snara/main/screenshots/s3.jpg)
+![Exports](https://raw.githubusercontent.com/tacoen/snara/main/screenshots/s4.jpg)
 
 ## Tech Stack
 
