@@ -7,8 +7,12 @@ Tired of bloated cloud apps, lost structure in big manuscripts, or paying monthl
 
 No database. No tracking. No subscriptions. Just you and your story.
 
-![Snara Screenshot](https://via.placeholder.com/800x400?text=Snara+Editor+Screenshot)  
-*(Replace with actual screenshot URL after uploading images to your repo)*
+## Screenshots
+
+![Main Editor](https://raw.githubusercontent.com/tacoen/snara/main/screenshots/s1.jpg)
+![Kanban with todo](https://raw.githubusercontent.com/tacoen/snara/main/screenshots/s2.jpg)
+![Notes](https://raw.githubusercontent.com/tacoen/snara/main/screenshots/s3.jpg)
+![Exports](https://raw.githubusercontent.com/tacoen/snara/main/screenshots/s4.jpg)
 
 ## ✨ Why Writers Love Snara
 
@@ -64,13 +68,6 @@ Drag-and-drop cards for scenes/chapters. Fully integrated with your writing file
 - Autosave + clean exports (Markdown & HTML)
 - Simple REST API for extensions
 - Lightweight: PHP 7.4+ backend + Vanilla JS frontend
-
-## Screenshots
-
-![Main Editor](https://raw.githubusercontent.com/tacoen/snara/main/screenshots/s1.jpg)
-![Kanban with todo](https://raw.githubusercontent.com/tacoen/snara/main/screenshots/s2.jpg)
-![Notes](https://raw.githubusercontent.com/tacoen/snara/main/screenshots/s3.jpg)
-![Exports](https://raw.githubusercontent.com/tacoen/snara/main/screenshots/s4.jpg)
 
 ## Tech Stack
 
