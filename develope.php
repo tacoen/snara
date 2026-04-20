@@ -72,6 +72,7 @@ $title  = 'Snara';
 <?php include __DIR__ . '/partials/settings.html'; ?>
 </div>
 
+<script src="js/tweak.js"></script>
 <script type="module" src="js/snara.js"></script>
 </body>
 </html>
