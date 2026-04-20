@@ -64,9 +64,30 @@ class Kanban
       $cards = [];
       foreach ($col['cards'] ?? [] as $card) {
         if (!is_array($card)) continue;
+          $desc = [];
+        foreach ($card['desc'] ?? [] as $item) {
+          if (!is_array($item)) continue;
+          $desc[] = [
+            'text' => substr(strip_tags((string)($item['text'] ?? '')), 0, 500),
+            'done' => (bool)($item['done'] ?? false),
+          ];
+        }
+
         $cards[] = [
-          'id'    => substr(preg_replace('/[^\w\-]/', '', (string)($card['id']    ?? '')), 0, 64),
-          'title' => substr(strip_tags((string)($card['title'] ?? '')), 0, 120),
+          'id'         => substr(preg_replace('/[^\w\-]/', '', (string)($card['id']       ?? '')), 0, 64),
+          'title'      => substr(strip_tags((string)($card['title']    ?? '')), 0, 120),
+          'desc'       => $desc,
+          'ref'        => substr(strip_tags((string)($card['ref']      ?? '')), 0, 160),
+          'tag'        => substr(preg_replace('/[^\w\-]/', '', (string)($card['tag']      ?? '')), 0, 32),
+          'revision'   => substr(strip_tags((string)($card['revision'] ?? '')), 0, 500),
+          'references' => array_values(array_filter(array_map(
+            fn($r) => is_string($r) ? substr(strip_tags($r), 0, 200) : null,
+            $card['references'] ?? []
+          ))),
+          'revisions'  => array_values(array_filter(array_map(
+            fn($r) => is_string($r) ? substr(strip_tags($r), 0, 500) : null,
+            $card['revisions'] ?? []
+          ))),
         ];
       }
 
