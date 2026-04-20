@@ -194,9 +194,10 @@ async function boot() {
   window.bookIndex    = () => { router.go('books');    idx.openBookIndex();    };
   window.chapterIndex = () => { router.go('chapters'); idx.openChapterIndex(); };
 
-  window.SnaraIndex  = SnaraIndex;
-  window.SnaraFiles  = SnaraFiles;
-  window.SnaraExport = SnaraExport;
+  window.SnaraIndex   = SnaraIndex;
+  window.SnaraFiles   = SnaraFiles;
+  window.SnaraExport  = SnaraExport;
+  window.SnaraFileMan = SnaraFileMan;
   window.aiToolbar   = aiToolbar;
 
   window.SnaraAIToolbar = SnaraAIToolbar;

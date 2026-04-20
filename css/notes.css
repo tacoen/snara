@@ -57,6 +57,7 @@
 .notes__grid {
 	columns: var(--notes-cols);
 	column-gap: var(--notes-gap);
+	padding: var(--notes-gap);
 }
 .notes__card {
 	break-inside: avoid;

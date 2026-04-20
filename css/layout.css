@@ -60,6 +60,6 @@ aside.chat-side {
  top: 44px;
  right: 0;
  width: 15rem;
- padding: var(--s-sm);
+ /* padding: var(--s-sm); */
  font-size: var(--f-xs);
 }

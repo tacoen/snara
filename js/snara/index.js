@@ -184,6 +184,52 @@ export class SnaraIndex {
     postJson(AppConfig.apiPath + '?action=book.setActive', { bookId: id }).catch(() => {});
   }
 
+  // Probes a URL with HEAD; resolves true if the server returns 200-299.
+  async _checkAsset(url) {
+    try {
+      const res = await fetch(url, { method: 'HEAD' });
+      return res.ok;
+    } catch {
+      return false;
+    }
+  }
+
+  // Tries cover.png, cover.jpg, cover.webp — resolves true on first hit.
+  async _checkCover(bookId) {
+    for (const ext of ['png', 'jpg', 'webp']) {
+      if (await this._checkAsset(`${AppConfig.dataPath}/${bookId}/image/cover.${ext}`)) return true;
+    }
+    return false;
+  }
+
+  _bindOptMenu(modal) {
+    const bookId = this.activeBookId;
+
+    const coverLi    = modal.querySelector('.opt-menu [data-opt="cover"]');
+    const synopsisLi = modal.querySelector('.opt-menu [data-opt="synopsis"]');
+
+    if (coverLi) {
+      coverLi.addEventListener('click', () => {
+        closeModal('chapter-index-modal');
+        window.switchArea?.('files');
+        // switchSection needs the files area rendered first
+        setTimeout(() => window.SnaraFiles?.instance?.switchSection?.('gallery'), 0);
+      });
+    }
+
+    if (synopsisLi) {
+      synopsisLi.addEventListener('click', () => {
+        closeModal('chapter-index-modal');
+        window.switchArea?.('files');
+        setTimeout(() => {
+          window.SnaraFiles?.instance?.switchSection?.('share');
+          // _openEditor is internal; give fileman a tick to render
+          setTimeout(() => window.SnaraFileMan?.instance?._openEditor?.('synopsis.md'), 80);
+        }, 0);
+      });
+    }
+  }
+
   async openChapterIndex() {
     if (!this.activeBookId) {
       await this.openBookIndex();
@@ -192,8 +238,10 @@ export class SnaraIndex {
 
     const modal = document.getElementById('chapter-index-modal');
     const title = this.activeBookTitle || `Book ${this.activeBookId}`;
+    // Render shell immediately with unknown hint state (both false) so the
+    // modal opens without waiting for asset probes.
     modal.innerHTML = this._shell('chapter-index-modal', `${title}`,
-      `<p class="idx-empty idx-loading">Loading chapters…</p>`);
+      `<p class="idx-empty idx-loading">Loading chapters…</p>`, {});
     openModal('chapter-index-modal');
 
     modal.querySelector('#idx-new-chapter')?.addEventListener('click', () => this._createChapter(modal));
@@ -201,11 +249,28 @@ export class SnaraIndex {
       if (e.key === 'Enter') this._createChapter(modal);
     });
 
+    // Bind opt-menu clicks (state unknown yet — links styled after probe resolves)
+    this._bindOptMenu(modal);
+
+    // Probe assets and chapter list in parallel
     try {
-      const [chapters, states] = await Promise.all([
+      const [chapters, states, hasCover, hasSynopsis] = await Promise.all([
         apiFetch(AppConfig.apiPath + `?action=book.chapters&id=${encodeURIComponent(this.activeBookId)}`),
         this._loadStates(this.activeBookId),
+        this._checkCover(this.activeBookId),
+        this._checkAsset(`${AppConfig.dataPath}/${this.activeBookId}/files/synopsis.md`),
       ]);
+
+      // Re-render shell with resolved hints so opt-menu links update
+      modal.innerHTML = this._shell('chapter-index-modal', `${title}`,
+        `<p class="idx-empty idx-loading">Loading chapters…</p>`,
+        { hasCover, hasSynopsis });
+      openModal('chapter-index-modal');
+      modal.querySelector('#idx-new-chapter')?.addEventListener('click', () => this._createChapter(modal));
+      modal.querySelector('#idx-new-chapter-file')?.addEventListener('keydown', e => {
+        if (e.key === 'Enter') this._createChapter(modal);
+      });
+      this._bindOptMenu(modal);
 
       const toDelete = chapters.filter(ch => states[ch.filename] === 'delete');
       if (toDelete.length > 0) {
@@ -395,14 +460,17 @@ export class SnaraIndex {
       .catch(() => {});
   }
 
-  _shell(id, heading, bodyHTML) {
+  // hints: { hasCover: bool, hasSynopsis: bool } — controls opt-link styling
+  _shell(id, heading, bodyHTML, hints = {}) {
+    const coverCls    = hints.hasCover    ? ' opt-link' : '';
+    const synopsisCls = hints.hasSynopsis ? ' opt-link' : '';
     return `
       <div class="modal-header">
         <div class='flex'>
           <span class="modal-title">${esc(heading)}</span>
           ${ id !== 'book-index-modal' ? `<ul class='opt-menu'>
-              <li><i data-icon="photo"></i><span>Cover</span></li>
-              <li><i data-icon="synote"></i><span>Synopsis</span></li>
+              <li class="${coverCls.trim()}" data-opt="cover"><i data-icon="photo"></i><span>Cover</span></li>
+              <li class="${synopsisCls.trim()}" data-opt="synopsis"><i data-icon="synote"></i><span>Synopsis</span></li>
             </ul>` : ''}
         </div>
         <button class="modal-close" onclick="closeModal('${id}')" title="Close">

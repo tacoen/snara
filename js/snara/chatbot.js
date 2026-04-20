@@ -90,7 +90,7 @@ export class SnaraChat {
   _handleClear() {
     this._log('clear triggered');
     this._window.innerHTML = '';
-    if (this._aside) this._aside.innerHTML = '<p class="chat-side__heading">Responses</p>';
+    if (this._aside) this._aside.innerHTML = '<header>Responses</header>';
     this._tocMap.clear();
     if (AppConfig.activeBookId) {
       this._apiRequest('DELETE').catch(err =>
