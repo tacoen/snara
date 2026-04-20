@@ -9,15 +9,12 @@ No database. No tracking. No subscriptions. Just you and your story.
 
 ## Screenshots
 
-## Screenshots
-
 <div align="center">
 
-<img src="https://raw.githubusercontent.com/tacoen/snara/main/screenshots/s1.jpg" width="48%" alt="Main Editor">
-<img src="https://raw.githubusercontent.com/tacoen/snara/main/screenshots/s2.jpg" width="48%" alt="Kanban with todo">
-
-<img src="https://raw.githubusercontent.com/tacoen/snara/main/screenshots/s3.jpg" width="48%" alt="Notes">
-<img src="https://raw.githubusercontent.com/tacoen/snara/main/screenshots/s4.jpg" width="48%" alt="Exports">
+<img src="https://raw.githubusercontent.com/tacoen/snara/main/screenshots/s1.jpg" width="24%" alt="Main Editor">
+<img src="https://raw.githubusercontent.com/tacoen/snara/main/screenshots/s2.jpg" width="24%" alt="Kanban with todo">
+<img src="https://raw.githubusercontent.com/tacoen/snara/main/screenshots/s3.jpg" width="24%" alt="Notes">
+<img src="https://raw.githubusercontent.com/tacoen/snara/main/screenshots/s4.jpg" width="24%" alt="Exports">
 
 </div>
 
