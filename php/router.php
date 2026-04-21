@@ -65,12 +65,12 @@ require_once __DIR__ . '/import.php';
 require_once __DIR__ . '/cache.php';
 require_once __DIR__ . '/gallery.php';
 require_once __DIR__ . '/editor-pref.php';
-
 require_once __DIR__ . '/ai.php';
 require_once __DIR__ . '/chatlog.php';
 require_once __DIR__ . '/notes.php';
 require_once __DIR__ . '/kanban.php';
 require_once __DIR__ . '/fileman.php';
+require_once __DIR__ . '/preprompts.php';
 
 class Router
 {
@@ -462,6 +462,24 @@ case 'config.get':
                     echo json_encode(['ok' => true]);
                     break;
 
+// ── Preprompts ───────────────────────────────
+                case 'preprompts.get':
+                    self::requireMethod($method, 'GET');
+                    echo json_encode(Preprompts::get());
+                    break;
+
+                case 'preprompts.set':
+                    self::requireMethod($method, 'POST');
+                    Preprompts::set(self::body());
+                    echo json_encode(['ok' => true]);
+                    break;
+
+                case 'preprompts.reset':
+                    self::requireMethod($method, 'DELETE');
+                    Preprompts::reset();
+                    echo json_encode(['ok' => true]);
+                    break;
+					
                 // ── Unknown ──────────────────────────────────
                 default:
                     self::error(404, 'Unknown action: ' . $action);

@@ -26,6 +26,8 @@
  border-bottom: 1px solid var(--border);
  grid-column: span 2;
 }
+
+
 #kanban-area,
 #files-area,
 #about-area,

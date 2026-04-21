@@ -1,4 +1,3 @@
-
 import { SnaraComponent }         from './component.js';
 import { AppConfig, AppDefaults } from '../snara.js';
 import { SnaraUI }                from './ui.js';
@@ -27,7 +26,8 @@ export class SnaraSettings extends SnaraComponent {
   constructor() {
     super('settings-modal', { defaultTab: 'defaults' });
     this._editorPrefs = null;
-    this._snap = { general: null, defaults: null, editor: null, ai: null };
+    this._preprompts  = [];
+    this._snap = { general: null, defaults: null, editor: null, ai: null, preprompts: null };
   }
 
   _ensureDOM() {
@@ -53,7 +53,13 @@ export class SnaraSettings extends SnaraComponent {
       metaFields:       (AppDefaults.metaFields || []).join(', '),
     };
     this._snap.editor = this._editorPrefs ? { ...this._editorPrefs } : {};
-	    this._snap.ai = await this._loadAiConfig();
+	    const [aiSnap, preprompts] = await Promise.all([
+      this._loadAiConfig(),
+      this._loadPreprompts(),
+    ]);
+    this._snap.ai         = aiSnap;
+    this._preprompts      = preprompts;
+    this._snap.preprompts = preprompts.map(r => ({ ...r }));
     const { openModal } = await import('./modal.js');
     openModal(this.modalId);
 
@@ -67,7 +73,8 @@ export class SnaraSettings extends SnaraComponent {
       <div class="tabs">
         <button class="cfg-tab${this._activeTab === 'defaults' ? ' active' : ''}" data-tab="defaults">Defaults</button>
         <button class="cfg-tab${this._activeTab === 'editor'   ? ' active' : ''}" data-tab="editor">Editor</button>
-        <button class="cfg-tab${this._activeTab === 'ai' ? ' active' : ''}" data-tab="ai">AI Chat</button>
+        <button class="cfg-tab${this._activeTab === 'ai'       ? ' active' : ''}" data-tab="ai">AI API</button>
+        <button class="cfg-tab${this._activeTab === 'preprompts' ? ' active' : ''}" data-tab="preprompts">Pre Prompts</button>
         <button class="cfg-tab${this._activeTab === 'general'  ? ' active' : ''}" data-tab="general">General</button>
       </div>
       <div class="cfg-tab-content" id="cfg-tab-content">
@@ -81,10 +88,11 @@ export class SnaraSettings extends SnaraComponent {
   }
 
   _renderTab(tab) {
-    if (tab === 'general')  return this._renderGeneral();
-    if (tab === 'defaults') return this._renderDefaults();
-    if (tab === 'editor')   return this._renderEditor();
-    if (tab === 'ai') return this._renderAi();
+    if (tab === 'general')     return this._renderGeneral();
+    if (tab === 'defaults')    return this._renderDefaults();
+    if (tab === 'editor')      return this._renderEditor();
+    if (tab === 'ai')          return this._renderAi();
+    if (tab === 'preprompts')  return this._renderPreprompts();
     return '';
   }
 
@@ -115,13 +123,17 @@ export class SnaraSettings extends SnaraComponent {
       this._bindHmapAdd();
       this._bindHmapRemoves();
     }
+    if (this._activeTab === 'preprompts') {
+      this._bindPrepromptsTab();
+    }
   }
 
 _snapshotTab(tab) {
-  if (tab === 'general')  this._snapshotGeneral();
-  if (tab === 'defaults') this._snapshotDefaults();
-  if (tab === 'editor')   this._snapshotEditor();
-  if (tab === 'ai')       this._snapshotAi();
+  if (tab === 'general')    this._snapshotGeneral();
+  if (tab === 'defaults')   this._snapshotDefaults();
+  if (tab === 'editor')     this._snapshotEditor();
+  if (tab === 'ai')         this._snapshotAi();
+  if (tab === 'preprompts') this._snapshotPreprompts();
 }
 
   _snapshotGeneral() {
@@ -297,7 +309,7 @@ _snapshotTab(tab) {
         </div>
         <div class="cfg-row">
           <label class="cfg-label"></label>
-          <span id="cfg-font-preview" style="font-family:${font};font-size:0.9375rem;color:var(--fg-muted);line-height:1.6">
+          <span id="cfg-font-preview" class="cfg-font-preview" style="font-family:${font}">
             The quick brown fox jumps over the lazy dog.
           </span>
         </div>
@@ -323,44 +335,37 @@ _snapshotTab(tab) {
     const borderHex = resolveToHex(curBorder);
     return `
       <div class="cfg-color-row">
-        <div class="cfg-row" style="margin-bottom:var(--s-sm)">
-          <span class="cfg-label" style="display:flex;align-items:center;gap:8px;font-weight:500;color:var(--fg-main)">
+        <div class="cfg-row cfg-row--mb-sm">
+          <span class="cfg-label cfg-color-label">
             <span class="cfg-color-preview" data-tag="${id}" style="
               background:${bgIsNone ? 'transparent' : bgHex};
-              border-left:3px solid ${borderHex};
-              transition:background 0.1s,border-color 0.1s;
+              border-left-color:${borderHex};
             ">${label}</span>
           </span>
         </div>
-        <div class="cfg-row" style="margin-bottom:var(--s-xs)">
-          <label class="cfg-label" style="font-size:10px;opacity:.7">Background</label>
-          <div style="display:flex;align-items:center;gap:var(--s-sm)">
+        <div class="cfg-row cfg-row--mb-xs">
+          <label class="cfg-label cfg-label--sub">Background</label>
+          <div class="cfg-color-picker-wrap">
             <input type="color" class="cfg-color-input"
               data-tag="${id}" data-prop="bg"
               value="${bgHex}"
               ${bgIsNone ? 'disabled' : ''}
-              title="Background color"
-              style="width:32px;height:26px;padding:1px 2px;border:1px solid var(--border);
-                     border-radius:4px;cursor:pointer;background:none;">
-            <label style="display:flex;align-items:center;gap:4px;font-size:var(--f-xs);
-                          color:var(--fg-muted);cursor:pointer;user-select:none">
+              title="Background color">
+            <label class="cfg-color-none-label">
               <input type="checkbox" class="cfg-color-none"
                 data-tag="${id}" data-prop="bg"
-                ${bgIsNone ? 'checked' : ''}
-                style="accent-color:var(--primary);cursor:pointer">
+                ${bgIsNone ? 'checked' : ''}>
               None
             </label>
           </div>
         </div>
 
         <div class="cfg-row">
-          <label class="cfg-label" style="font-size:10px;opacity:.7">Border</label>
+          <label class="cfg-label cfg-label--sub">Border</label>
           <input type="color" class="cfg-color-input"
             data-tag="${id}" data-prop="border"
             value="${borderHex}"
-            title="Left-border color"
-            style="width:32px;height:26px;padding:1px 2px;border:1px solid var(--border);
-                   border-radius:4px;cursor:pointer;background:none;">
+            title="Left-border color">
         </div>
 
       </div>`;
@@ -372,7 +377,7 @@ _snapshotTab(tab) {
         <input class="cfg-input cfg-hmap-prefix" placeholder='e.g. "# "' value="${esc(prefix)}">
         <span class="cfg-arrow">→</span>
         <input class="cfg-input cfg-hmap-cls" placeholder="cls" value="${esc(cls)}">
-        <button class="cfg-hmap-remove" title="Remove rule"><i data-icon="x"></i></button>
+        <button class="cfg-hmap-remove" title="Remove rule"><i data-icon="trash"></i></button>
       </div>`;
   }
 
@@ -461,25 +466,31 @@ _snapshotTab(tab) {
 
   async save() {
     this._snapshotTab(this._activeTab);
-    const btn = document.getElementById('cfg-save-btn');
-    btn.disabled    = true;
-    btn.textContent = 'saving…';
+    const btn = document.getElementById('modal-save');
+    if (!btn) console.warn('[settings] save button #modal-save not found');
+    if (btn) {
+      btn.disabled    = true;
+      btn.textContent = 'saving…';
+    }
     try {
       await Promise.all([
         this._saveGeneral(),
         this._saveDefaults(),
         this._saveEditor(),
         this._saveAi(),
+        this._savePreprompts(),
       ]);
-      btn.textContent = 'saved ✓';
+      if (btn) btn.textContent = 'saved ✓';
     } catch (e) {
       console.error('[settings] save error', e);
-      btn.textContent = 'error';
+      if (btn) btn.textContent = 'error';
     }
 
     setTimeout(() => {
-      btn.disabled    = false;
-      btn.textContent = 'save';
+      if (btn) {
+        btn.disabled    = false;
+        btn.textContent = 'save';
+      }
       this.close();
     }, 900);
   }
@@ -636,6 +647,126 @@ _snapshotTab(tab) {
 
    }
 
+  }
+
+  // ── Preprompts tab ────────────────────────────
+
+  async _loadPreprompts() {
+    try {
+      const res = await fetch(AppConfig.apiPath + '?action=preprompts.get');
+      if (!res.ok) throw new Error('preprompts.get failed');
+      return await res.json();
+    } catch {
+      return [];
+    }
+  }
+
+  _renderPreprompts() {
+    const LOCKED = ['Characters', 'Summarize'];
+    const rows   = this._snap.preprompts || [];
+    const rowsHtml = rows.map((r, i) => this._prepromptRow(r, i, LOCKED)).join('');
+    return `
+      <section class="cfg-section">
+        <h3 class="cfg-heading">Pre Prompts
+          <span class="cfg-hint">for AI Chat/toolbar</span>
+        </h3>
+        <div id="cfg-preprompts-list">
+          ${rowsHtml}
+        </div>
+        <div class="cfg-row cfg-row--actions">
+          <button class="cfg-add-row" id="cfg-pp-add">+ add prompt</button>
+          <button class="cfg-add-row cfg-add-row--danger" id="cfg-pp-reset">reset to default</button>
+        </div>
+      </section>
+    `;
+  }
+
+  _prepromptRow({ label = '', value = '' } = {}, index = Date.now(), LOCKED = []) {
+    const locked = LOCKED.includes(label);
+    const labelInput = `<input
+      class="cfg-input cfg-pp-label"
+      placeholder="Label"
+      value="${esc(label)}"
+      data-index="${index}"
+      ${locked ? 'disabled title="This label is required by the AI toolbar"' : ''}>`;
+    const valueArea = `<textarea
+      class="cfg-input cfg-pp-value"
+      placeholder="Prompt text..."
+      data-index="${index}"
+      rows="2">${esc(value)}</textarea>`;
+    const deleteBtn = locked
+      ? ''
+      : `<button class="cfg-hmap-remove cfg-pp-remove" title="Remove" data-index="${index}">
+           <i data-icon="trash"></i>
+         </button>`;
+    return `
+      <div class="cfg-hmap-row cfg-pp-row" data-index="${index}">
+        ${labelInput}
+        ${valueArea}
+        ${deleteBtn}
+      </div>`;
+  }
+
+  _snapshotPreprompts() {
+    const rows = [];
+    document.querySelectorAll('#cfg-preprompts-list .cfg-pp-row').forEach(row => {
+      const label = row.querySelector('.cfg-pp-label')?.value?.trim() || '';
+      const value = row.querySelector('.cfg-pp-value')?.value?.trim() || '';
+      if (label || value) rows.push({ label, value });
+    });
+    if (rows.length) this._snap.preprompts = rows;
+  }
+
+  _bindPrepromptsTab() {
+    const LOCKED = ['Characters', 'Summarize'];
+
+    document.getElementById('cfg-pp-add')?.addEventListener('click', () => {
+      const list  = document.getElementById('cfg-preprompts-list');
+      const index = Date.now();
+      const tmp   = document.createElement('div');
+      tmp.innerHTML = this._prepromptRow({}, index, LOCKED);
+      const row = tmp.firstElementChild;
+      list.appendChild(row);
+      row.querySelector('.cfg-pp-remove')?.addEventListener('click', () => {
+        this._snapshotPreprompts();
+        row.remove();
+      });
+      row.querySelector('.cfg-pp-label')?.focus();
+      icx.delayreplace('#cfg-preprompts-list .cfg-pp-row:last-child [data-icon]');
+    });
+
+    document.getElementById('cfg-pp-reset')?.addEventListener('click', async () => {
+      if (!confirm('Reset pre-prompts to default? Your changes will be lost.')) return;
+      try {
+        await fetch(AppConfig.apiPath + '?action=preprompts.reset', { method: 'DELETE' });
+        this._preprompts      = await this._loadPreprompts();
+        this._snap.preprompts = this._preprompts.map(r => ({ ...r }));
+        const content = document.getElementById('cfg-tab-content');
+        if (content) content.innerHTML = this._renderPreprompts();
+        this._bindPrepromptsTab();
+        icx.delayreplace('#cfg-preprompts-list [data-icon]');
+      } catch (e) {
+        console.error('[settings] preprompts reset failed', e);
+      }
+    });
+
+    document.querySelectorAll('#cfg-preprompts-list .cfg-pp-remove').forEach(btn => {
+      btn.addEventListener('click', () => {
+        this._snapshotPreprompts();
+        btn.closest('.cfg-pp-row')?.remove();
+      });
+    });
+  }
+
+  async _savePreprompts() {
+    this._snapshotPreprompts();
+    const rows = this._snap.preprompts;
+    if (!rows || !rows.length) return;
+    await fetch(AppConfig.apiPath + '?action=preprompts.set', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify(rows),
+    });
   }
 
 }

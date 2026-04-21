@@ -44,8 +44,8 @@
 .cfg-tab-content {
  display: flex;
  flex-direction: column;
- gap: var(--s-xl);
- padding: var(--s-lg);
+ gap: var(--s-md);
+ padding: var(--s-md) 0 var(--s-md) var(--s-md);
  overflow-y: auto;
  flex: 1;
 }

@@ -1,15 +1,15 @@
 [
     {
-        "label": "3 Act story structure",
-        "value": "Transform the user's input into a vivid, detailed, and emotionally resonant narrative scene. This scene must strictly adhere to a 3-act story structure, bringing the core elements of the input to life through immersive description and authentic dialogue: "
-    },
-    {
         "label": "Summarize",
         "value": "Act as an expert summarizer for a busy founder. Your Task: Create a concise, comprehensive, and factual summary of the provided text's main ideas. "
     },
     {
         "label": "Characters",
         "value": "Based on the text below, provide two sections: 1. A comma-separated list of individual character names. 2. A list of those same characters, each with a brief detail. Strictly exclude any plural groups or collective characters. Provide only the requested content without headers, introductions, or closing remarks."
+    },
+    {
+        "label": "3 Act story structure",
+        "value": "Transform the user's input into a vivid, detailed, and emotionally resonant narrative scene. This scene must strictly adhere to a 3-act story structure, bringing the core elements of the input to life through immersive description and authentic dialogue: "
     },
     {
         "label": "Professional",
