@@ -1,226 +1,294 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <meta name="google-site-verification" content="bIzij46NdLPEFdnJkH2yJIHLUtgP6q_jB5IkgElJoJY" />
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Snara — Self-Hosted Novel Editor</title>
+    <meta name="description" content="Snara — Self-Hosted Novel Editor with Automatic Structure, Kanban &amp; AI">
+    <title>Snara — Self-Hosted Novel Editor with Automatic Structure, Kanban &amp; AI</title>
     <style>
         :root {
-            --primary: #2563eb;
-            --dark: #0f172a;
-            --light: #f8fafc;
+            --primary: #0ea5e9;
         }
-        
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        * { margin:0; padding:0; box-sizing:border-box; }
         body {
-            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             line-height: 1.6;
-            color: #333;
-            background: #f8fafc;
+            color: #111827;
         }
-        .container {
-            max-width: 1100px;
-            margin: 0 auto;
-            padding: 0 20px;
-        }
-        
         header {
-            background: linear-gradient(135deg, var(--dark), #1e2937);
+            background: #0f172a;
             color: white;
-            padding: 80px 0 60px;
+            padding: 1rem 0;
+            position: sticky;
+            top: 0;
+            z-index: 50;
+        }
+        nav {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .logo { font-size: 1.75rem; font-weight: 700; letter-spacing: -0.5px; }
+        .hero {
+            background: linear-gradient(90deg, #0f172a, #1e2937);
+            color: white;
+            padding: 5rem 2rem 6rem;
             text-align: center;
         }
-        h1 {
-            font-size: 3.2rem;
-            margin-bottom: 16px;
+        .container {
+            max-width: 1280px;
+            margin: 0 auto;
         }
-        .tagline {
-            font-size: 1.4rem;
-            opacity: 0.95;
-            max-width: 700px;
-            margin: 0 auto 30px;
+        h1 { font-size: 3.2rem; margin-bottom: 1rem; line-height: 1.1; }
+        .badge {
+            display: inline-block;
+            background: #22c55e;
+            color: #052e16;
+            padding: 6px 16px;
+            border-radius: 9999px;
+            font-size: 0.95rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+        }
+        .section { padding: 5rem 2rem; }
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+            gap: 2rem;
+        }
+        .card {
+            background: white;
+            border-radius: 16px;
+            padding: 2rem;
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+            transition: transform 0.2s;
+        }
+        .card:hover { transform: translateY(-4px); }
+        .preprompts {
+            background: #f8fafc;
+            border-radius: 16px;
+            padding: 2.5rem;
+            margin: 3rem 0;
+            border: 1px solid #e2e8f0;
+        }
+        code {
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+            background: #1e2937;
+            color: #e0f2fe;
+            padding: 1.5rem;
+            border-radius: 12px;
+            display: block;
+            overflow-x: auto;
+            white-space: pre;
+            font-size: 0.9rem;
+        }
+        .screenshots {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            justify-content: center;
+            margin: 3rem 0;
+        }
+        .screenshots img {
+            border-radius: 12px;
+            box-shadow: 0 10px 25px -5px rgb(0 0 0 / 0.15);
+            max-width: 24%;
+            min-width: 220px;
+        }
+        footer {
+            background: #0f172a;
+            color: #cbd5e1;
+            padding: 4rem 2rem 3rem;
+            text-align: center;
         }
         .btn {
-            display: inline-block;
             background: var(--primary);
             color: white;
             padding: 14px 32px;
-            border-radius: 8px;
+            border-radius: 9999px;
             text-decoration: none;
             font-weight: 600;
-            margin: 10px;
-            transition: all 0.3s;
+            font-size: 1.1rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 2rem;
         }
-        .btn:hover {
-            background: #1d4ed8;
-            transform: translateY(-3px);
-        }
-        .btn-secondary {
-            background: transparent;
-            border: 2px solid white;
-        }
-
-        section {
-            padding: 80px 0;
-        }
-        h2 {
-            text-align: center;
-            font-size: 2.5rem;
-            margin-bottom: 50px;
-            color: var(--dark);
-        }
-
-        .screenshots {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-            gap: 20px;
-            margin: 40px 0;
-        }
-        .screenshot {
-            border-radius: 12px;
-            overflow: hidden;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-            transition: transform 0.3s;
-        }
-        .screenshot:hover {
-            transform: scale(1.03);
-        }
-        .screenshot img {
-            width: 100%;
-            height: auto;
-            display: block;
-        }
-
-        .features {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-            gap: 30px;
-        }
-        .feature-card {
-            background: white;
-            padding: 30px;
-            border-radius: 12px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.06);
-        }
-        .feature-card h3 {
-            margin: 15px 0 10px;
-            color: var(--primary);
-        }
-
-        footer {
-            background: #1e2937;
-            color: #cbd5e1;
-            text-align: center;
-            padding: 60px 20px;
-        }
-
-        @media (max-width: 768px) {
-            h1 { font-size: 2.5rem; }
-            .tagline { font-size: 1.2rem; }
-        }
+        .btn:hover { background: #0284c8; }
     </style>
 </head>
 <body>
 
-    <header>
-        <div class="container">
-            <h1>Snara</h1>
-            <p class="tagline">Self-Hosted Novel Editor with Automatic Structure, Kanban & AI</p>
-            <p style="max-width: 700px; margin: 0 auto 40px; opacity: 0.9;">
-                A lightweight, private writing tool for novelists and storytellers.<br>
-                Automatic hierarchy • Kanban board • Context-aware AI • Flat files only.
-            </p>
-            <a href="https://github.com/tacoen/snara" class="btn">View on GitHub</a>
-            <a href="#quickstart" class="btn btn-secondary">Quick Start</a>
+<header>
+    <nav>
+        <div class="logo">Snara</div>
+        <div>
+            <a href="https://github.com/tacoen/snara" target="_blank" style="color:white; margin-right:1.5rem; text-decoration:none; font-weight:500;">GitHub</a>
+            <a href="#quickstart" style="color:white; text-decoration:none; font-weight:500;">Quick Start</a>
         </div>
-    </header>
+    </nav>
+</header>
 
-    <section id="screenshots">
-        <div class="container">
-            <h2>Screenshots</h2>
-            <div class="screenshots">
-                <div class="screenshot">
-                    <img src="https://raw.githubusercontent.com/tacoen/snara/main/screenshots/s1.jpg" alt="Main Editor">
-                </div>
-                <div class="screenshot">
-                    <img src="https://raw.githubusercontent.com/tacoen/snara/main/screenshots/s2.jpg" alt="Kanban with todo">
-                </div>
-                <div class="screenshot">
-                    <img src="https://raw.githubusercontent.com/tacoen/snara/main/screenshots/s3.jpg" alt="Notes">
-                </div>
-                <div class="screenshot">
-                    <img src="https://raw.githubusercontent.com/tacoen/snara/main/screenshots/s4.jpg" alt="Exports">
-                </div>
+<section class="hero">
+    <div class="container">
+        <div class="badge">Self-Hosted • No subscriptions • Flat files only</div>
+        <h1>Snara — Self-Hosted Novel Editor<br>with Automatic Structure, Kanban &amp; AI</h1>
+        <p style="font-size:1.4rem; max-width:720px; margin:0 auto 2rem; opacity:0.95;">
+            A lightweight tool for novelists, screenwriters, and long-form storytellers.<br>
+            Automatic hierarchy • Live Kanban • Context-aware AI • 100% private
+        </p>
+        <a href="#quickstart" class="btn">Get Started in 60 seconds →</a>
+    </div>
+</section>
+
+<section class="section" style="background:#fff;">
+    <div class="container">
+        <h2 style="text-align:center; margin-bottom:2rem; font-size:2.25rem;">Screenshots</h2>
+        <div class="screenshots">
+            <img src="https://raw.githubusercontent.com/tacoen/snara/web/screenshots/s1.jpg" alt="Main Editor">
+            <img src="https://raw.githubusercontent.com/tacoen/snara/web/screenshots/s2.jpg" alt="Kanban with todo">
+            <img src="https://raw.githubusercontent.com/tacoen/snara/web/screenshots/s3.jpg" alt="Notes">
+            <img src="https://raw.githubusercontent.com/tacoen/snara/web/screenshots/s4.jpg" alt="Exports">
+        </div>
+    </div>
+</section>
+
+<section class="section" style="background:#f8fafc;">
+    <div class="container">
+        <h2 style="text-align:center; margin-bottom:3rem; font-size:2.25rem;">✨ Why Writers Love Snara</h2>
+        <div class="features-grid">
+            <div class="card">
+                <h3>🔄 Automatic Structure</h3>
+                <p>Write naturally in Markdown. Snara intelligently detects and organizes <strong>Acts → Chapters → Scenes → Beats</strong>.</p>
+            </div>
+            <div class="card">
+                <h3>📋 Live Table of Contents</h3>
+                <p>Always up-to-date. Click any heading to jump instantly.</p>
+            </div>
+            <div class="card">
+                <h3>🧭 Kanban Board</h3>
+                <p>Visual drag-and-drop planning for scenes, chapters, and arcs. Real-time sync with your manuscript.</p>
+            </div>
+            <div class="card">
+                <h3>🤖 Context-Aware AI Assistant</h3>
+                <p>Chatbot + floating toolbar. Brainstorm, rewrite, summarize, change tone. Works with Groq, OpenAI, or any compatible provider.</p>
+            </div>
+            <div class="card">
+                <h3>📚 Multi-Book Support</h3>
+                <p>Manage multiple novels or screenplays in one workspace.</p>
+            </div>
+            <div class="card">
+                <h3>📁 Files &amp; Media Workspace</h3>
+                <p>Import/export Markdown &amp; HTML, media gallery, smart autocomplete, metadata (characters, locations, custom fields).</p>
             </div>
         </div>
-    </section>
+    </div>
+</section>
 
-    <section style="background: white;">
-        <div class="container">
-            <h2>✨ Why Writers Love Snara</h2>
-            <div class="features">
-                <div class="feature-card">
-                    <h3>Automatic Structure</h3>
-                    <p>Write naturally in Markdown. Snara intelligently detects and organizes <strong>Acts → Chapters → Scenes → Beats</strong>.</p>
-                </div>
-                <div class="feature-card">
-                    <h3>Kanban Board</h3>
-                    <p>Visual drag-and-drop planning with real-time sync to your manuscript.</p>
-                </div>
-                <div class="feature-card">
-                    <h3>Context-Aware AI Assistant</h3>
-                    <p>Works with Groq, OpenAI, or any compatible provider. Brainstorm, rewrite, expand scenes, and more.</p>
-                </div>
-                <div class="feature-card">
-                    <h3>Fully Self-Hosted & Private</h3>
-                    <p>No database. No tracking. No subscriptions. Your words stay on your own server.</p>
-                </div>
-                <div class="feature-card">
-                    <h3>Live Table of Contents</h3>
-                    <p>Always up-to-date. Click to jump anywhere instantly.</p>
-                </div>
-                <div class="feature-card">
-                    <h3>Multi-Book Support + Metadata</h3>
-                    <p>Manage multiple projects and track characters, locations, and custom fields.</p>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <section id="quickstart" style="background: #f1f5f9;">
-        <div class="container">
-            <h2>🚀 Quick Start</h2>
-            <ol style="max-width: 800px; margin: 0 auto; font-size: 1.1rem; line-height: 2;">
-                <li><strong>Clone the repository:</strong><br>
-                    <code style="display:block; background:#e2e8f0; padding:12px; border-radius:8px; margin:10px 0;">
-                        git clone https://github.com/tacoen/snara.git<br>
-                        cd snara
-                    </code>
-                </li>
-                <li>Set write permissions for the web server on <code>/data/</code> and <code>/json/</code> folders.</li>
-                <li>Run locally for testing:<br>
-                    <code style="background:#e2e8f0; padding:10px 14px; border-radius:6px;">php -S localhost:8000</code>
-                </li>
-                <li>Open <strong>http://localhost:8000</strong> in your browser.</li>
-            </ol>
-            <p style="text-align:center; margin-top:40px;">
-                <a href="https://github.com/tacoen/snara" class="btn">Get Snara on GitHub →</a>
+<!-- Customizable Preprompts Section -->
+<section class="section">
+    <div class="container">
+        <h2 style="text-align:center; margin-bottom:1rem; font-size:2.25rem;">🧠 Customizable Preprompts for AI Agents</h2>
+        <p style="text-align:center; max-width:720px; margin:0 auto 2rem; color:#64748b;">
+            Supercharge brainstorming with ready-to-use (and fully editable) AI preprompts.<br>
+            Edit <code style="background:#e0f2fe;padding:2px 6px;border-radius:4px;">json/preprompts.json</code> — changes appear instantly in the toolbar &amp; chatbot.
+        </p>
+        
+        <div class="preprompts">
+            <p style="margin-bottom:1rem; font-weight:600; color:#0f766e;">Default preprompts included (customize anytime):</p>
+            <pre><code>[
+    {
+        "label": "Summarize",
+        "value": "Act as an expert summarizer for a busy founder. Your Task: Create a concise, comprehensive, and factual summary of the provided text's main ideas. "
+    },
+    {
+        "label": "Characters",
+        "value": "Based on the text below, provide two sections: 1. A comma-separated list of individual character names. 2. A list of those same characters, each with a brief detail. Strictly exclude any plural groups or collective characters. Provide only the requested content without headers, introductions, or closing remarks."
+    },
+    {
+        "label": "3 Act story structure",
+        "value": "Transform the user's input into a vivid, detailed, and emotionally resonant narrative scene. This scene must strictly adhere to a 3-act story structure, bringing the core elements of the input to life through immersive description and authentic dialogue: "
+    },
+    {
+        "label": "Professional",
+        "value": "Reply in a formal, professional business tone: "
+    },
+    {
+        "label": "Unfiltered Dialog",
+        "value": "Create dialog that natural and common, with gesture and bodylanguage: "
+    }
+]</code></pre>
+            <p style="margin-top:1.5rem; font-size:0.95rem; color:#64748b; text-align:center;">
+                These appear directly in the AI toolbar and chatbot. Perfect for fast brainstorming, character work, plot structuring, and tone control.
             </p>
         </div>
-    </section>
+    </div>
+</section>
 
-    <footer>
-        <div class="container">
-            <p><strong>Snara</strong> — Open source under the MIT License</p>
-            <p style="margin-top: 15px; opacity: 0.8;">
-                Made for writers who want full control over their stories.
-            </p>
-            <p style="margin-top: 30px;">
-                <a href="https://github.com/tacoen/snara" style="color:#60a5fa; text-decoration:none;">GitHub Repository</a>
-            </p>
-        </div>
-    </footer>
+<section class="section" id="quickstart" style="background:#f1f5f9;">
+    <div class="container">
+        <h2 style="text-align:center; margin-bottom:2.5rem;">🚀 Quick Start</h2>
+        <ol style="max-width:720px; margin:0 auto; font-size:1.15rem; line-height:2;">
+            <li><strong>Clone the repo</strong><br>
+                <code style="display:block; background:#0f172a; color:#e0f2fe; padding:12px; border-radius:8px; margin:8px 0;">git clone https://github.com/tacoen/snara.git && cd snara</code></li>
+            <li><strong>Set permissions</strong> on <code>/data/</code> and <code>/json/</code> folders (web server must write to them).</li>
+            <li><strong>Run locally</strong><br>
+                <code style="display:block; background:#0f172a; color:#e0f2fe; padding:12px; border-radius:8px; margin:8px 0;">php -S localhost:8000</code></li>
+            <li>Open <strong>http://localhost:8000</strong> — Snara auto-creates everything on first run.</li>
+        </ol>
+        <p style="text-align:center; margin-top:2rem; font-size:1.1rem;">
+            <strong>Test the AI instantly:</strong> <code>bash test.sh</code> (uses Groq + Llama 3.3 by default)
+        </p>
+    </div>
+</section>
+
+<section class="section" style="background:#fff;">
+    <div class="container">
+        <h2 style="text-align:center; margin-bottom:2rem;">Project Structure (from STRUCTURE.md)</h2>
+        <pre style="background:#0f172a; color:#e0f2fe; padding:2rem; border-radius:16px; font-size:0.85rem; line-height:1.5; overflow:auto; max-height:420px;"><code>snara/
+├── api.php
+├── index.php
+├── json/preprompts.json       ← ← YOUR custom AI preprompts live here
+├── partials/                  ← chatbot.html, kanban.html, editor.html, etc.
+├── js/                        ← Vanilla JS modules
+├── php/                       ← Backend modules
+├── data/                      ← Your books (flat Markdown + JSON)
+├── css/ + style.css
+└── screenshots/</code></pre>
+        <p style="text-align:center; margin-top:1rem; color:#64748b; font-size:0.95rem;">
+            Lightweight, transparent, and fully self-hosted. See full <a href="https://github.com/tacoen/snara/blob/web/STRUCTURE.md" target="_blank" style="color:var(--primary);">STRUCTURE.md</a>.
+        </p>
+    </div>
+</section>
+
+<footer>
+    <div class="container">
+        <p><strong>Snara</strong> — Self-hosted. Open source. Built for storytellers.</p>
+        <p style="margin-top:1rem;">
+            MIT License • 
+            <a href="https://github.com/tacoen/snara" style="color:#cbd5e1;">GitHub</a> • 
+            Customize preprompts in <code>json/preprompts.json</code>
+        </p>
+        <p style="margin-top:2rem; opacity:0.7; font-size:0.85rem;">
+            Made with ❤️ for novelists, screenwriters, and long-form writers who want full control.
+        </p>
+    </div>
+</footer>
+
+<script>
+// Smooth scroll for anchor links
+document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+    anchor.addEventListener("click", function(e) {
+        if (this.getAttribute("href") !== "#") {
+            e.preventDefault();
+            document.querySelector(this.getAttribute("href")).scrollIntoView({ behavior: "smooth" });
+        }
+    });
+});
+</script>
 
 </body>
 </html>
