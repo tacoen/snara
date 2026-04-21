@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        /* 1. PAPER SETTINGS */
+        @media print {
+            @page {
+                size: A4;
+                margin: 20mm; /* Standard book margin */
+            }
+            
+            .no-print {
+                display: none !important;
+            }
+
+            .page-footer {
+                position: fixed;
+                bottom: 0;
+                right: 0;
+                font-size: 10pt;
+                color: #666;
+            }
+
+            .page-footer::after {
+                content: "Page " counter(page);
+            }
+
+            h1 {
+                page-break-before: always; /* New chapter = New page */
+            }
+        }
+
+        /* 2. SCREEN SETTINGS (How it looks while reading) */
+        @media screen {
+            body {
+                background: #f4f4f4;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                padding: 50px;
+                font-family: serif;
+            }
+            .book-content {
+                background: white;
+                width: 210mm; /* Match A4 width on screen */
+                padding: 40px;
+                box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            }
+            .page-footer {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="no-print" style="margin-bottom: 20px; text-align: center;">
+        <p>This novel is formatted for A4 printing.</p>
+        <button onclick="window.print()" style="padding: 10px 20px; cursor: pointer;">
+            Print / Export to PDF
+        </button>
+        <hr>
+    </div>
+
+    <div class="page-footer"></div>
+
+    <div class="book-content">
+        <h1>Chapter 1</h1>
+        <p>Your novel text starts here...</p>
+        
+        <h1>Chapter 2</h1>
+        <p>More story here...</p>
+    </div>
+
+</body>
+</html>
