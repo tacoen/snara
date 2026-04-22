@@ -3,7 +3,10 @@
  flex-direction: column;
  gap: var(--s-lg);
 }
-.meta-fields {display: flex;flex-direction: column;padding: 0 var(--s-md);}
+.meta-fields {
+ overflow-y: scroll;
+	height: 80vh;
+ display: flex;flex-direction: column;padding: 0 var(--s-md);}
 .meta-field {
  display: flex;
  align-items: baseline;

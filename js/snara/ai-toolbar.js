@@ -109,7 +109,17 @@ export class SnaraAIToolbar {
       text.split(',').map(s => s.trim()).filter(Boolean).forEach(name => {
         ui?._addPill(input, name);
       });
-    } else {
+    } else if (fieldKey === 'settings') {
+      const row = [...document.querySelectorAll('.meta-field')]
+        .find(r => r.dataset.key === 'settings');
+      if (!row) return;
+      const input = row.querySelector('.pill-input');
+      if (!input) return;
+      const ui = (await import('./ui.js')).SnaraUI.instance;
+      text.split(',').map(s => s.trim()).filter(Boolean).forEach(name => {
+        ui?._addPill(input, name);
+      });
+	 } else {
       const row = [...document.querySelectorAll('.meta-field')]
         .find(r => (r.dataset.key === fieldKey) ||
                    (r.querySelector('.field-key')?.innerText.trim() === fieldKey));

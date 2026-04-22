@@ -254,13 +254,67 @@ export class SnaraUI {
     return row;
   }
 
-  _addPill(inputEl, value) {
-    const pill = document.createElement('span');
-    pill.className = 'field-pill';
-    pill.innerHTML = `${esc(value)}<button class="pill-remove" data-val="${esc(value)}" title="Remove">x</button>`;
-    pill.querySelector('.pill-remove').addEventListener('click', () => pill.remove());
-    inputEl.parentElement.insertBefore(pill, inputEl);
-  }
+_addPill(inputEl, value) {
+  const bid = AppConfig.activeBookId;
+  const pill = document.createElement('span');
+  pill.className = 'field-pill';
+
+  const safeValue = esc(value);
+
+  pill.innerHTML = `
+    <span class="pill-text">${safeValue}</span>
+    <button class="pill-remove" data-val="${safeValue}" title="Remove">×</button>
+  `;
+
+  // Remove button
+  pill.querySelector('.pill-remove').addEventListener('click', (e) => {
+    e.stopImmediatePropagation();
+    pill.remove();
+  });
+
+  // Click on pill text → load JSON result into aside .content
+  const pillText = pill.querySelector('.pill-text');
+  pillText.style.cursor = 'pointer';
+  pillText.title = `Search "${value}"`;
+
+  pillText.addEventListener('click', (e) => {
+    e.stopImmediatePropagation();
+
+    const queryValue = encodeURIComponent(value.trim());
+    const url = `query.php?bid=${bid}&query=${queryValue}`;
+
+    const contentArea = document.querySelector('aside .content');
+    if (!contentArea) return;
+
+    // Show loading state
+    contentArea.innerHTML = '<div class="loading">Loading...</div>';
+
+fetch(url)
+  .then(r => r.json())
+  .then(data => {
+    let html = `<h4>Found ${data.count} paragraph(s) for <code>${data.query}</code></h4>`;
+
+    data.results.forEach(item => {
+      html += `
+          <div class="query">
+          <div class='header'><small><strong>${item.filename}</strong> — ${item.class}</small></div>
+		  <div class='text'>${item.content}</div>
+		</div>`;
+    });
+
+    contentArea.innerHTML = html;
+
+    })
+    .catch(err => {
+      console.error(err);
+      contentArea.innerHTML = `<p class='danger'>Error searching for "${value}"</p>`;
+    });
+});
+
+  // Insert the pill before the input field
+  inputEl.parentElement.insertBefore(pill, inputEl);
+}
+
 
   addField() {
     const list = document.querySelector('.meta-fields');
