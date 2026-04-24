@@ -23,7 +23,7 @@ button,.btn {
 .btn-mini:active { transform: scale(.98);}
 .btn-mini:disabled { opacity: .5;cursor: not-allowed;}
 .btn-mini svg { width: 20px;height: 22px;}
-button.naked { border:none;backround: none;}
+button.naked {border: 1px solid var(--border);background: none !important;color: var(--border);font-size: var(--f-xs);}
 button.primary {
  background: var(--primary);
  color: var(--bg-main);

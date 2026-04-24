@@ -46,11 +46,6 @@ private static function purgeStaleCacheFiles(int $bookId): void
   $files     = glob($cacheDir . '/*.json') ?: [];
   $threshold = time() - 86400; // 1 day in seconds
 
-file_put_contents('/var/www/snara/snara-purge.log', 
-  "file: $file | mtime: " . filemtime($file) . " | threshold: $threshold\n", 
-  FILE_APPEND
-);
-
   foreach ($files as $file) {
     if (filemtime($file) < $threshold) {
       @unlink($file);

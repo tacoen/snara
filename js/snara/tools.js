@@ -1,15 +1,9 @@
-// js/snara/tools.js
-// Merged from: js/snara/tool.js + js/tools.js
-// Class: SnaraTool
-
-import icx from '../icons/ge-icon.js';
+import icx             from '../icons/ge-icon.js';
+import { SnaraEditor } from './core.js';
 
 export class SnaraTool {
-
-  // ─── Singleton reference ───────────────────────────────────────────────────
   static instance = null;
 
-  // ─── Instance constructor (from js/tools.js :: SnaraTools) ────────────────
   constructor() {
     SnaraTool.instance = this;
     this.aside   = document.querySelector('aside.side-panel');
@@ -19,7 +13,6 @@ export class SnaraTool {
     this._observe();
   }
 
-  // ─── Instance: TOC builder ─────────────────────────────────────────────────
   _buildToc() {
     const items = this._collect();
     if (!items.length) {
@@ -39,7 +32,8 @@ export class SnaraTool {
       a.textContent = text;
       a.addEventListener('click', e => {
         e.preventDefault();
-        document.getElementById(anchor)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        const target = document.getElementById(anchor);
+        if (target) SnaraEditor.instance?._openEntry(target);
       });
 
       li.appendChild(a);
@@ -53,7 +47,6 @@ export class SnaraTool {
   _collect() {
     const items   = [];
     const entries = this.entries.querySelectorAll('.entry');
-    let   counter = {};
 
     entries.forEach((div, idx) => {
       const level = this._levelOf(div);
@@ -108,7 +101,6 @@ export class SnaraTool {
     this._buildToc();
   }
 
-  // ─── Static: HTML → Markdown (from js/snara/tool.js :: SnaraTool) ─────────
   static htmlToMd(html) {
     const tmp = document.createElement('div');
     tmp.innerHTML = html;
@@ -157,7 +149,6 @@ export class SnaraTool {
     return md;
   }
 
-  // ─── Static: cursor insertion (from js/snara/tool.js :: SnaraTool) ─────────
   static insertAtCursor(el, text) {
     el.focus();
     const sel = window.getSelection();
@@ -171,7 +162,6 @@ export class SnaraTool {
     sel.addRange(range);
   }
 
-  // ─── Static: selection wrapping (from js/snara/tool.js :: SnaraTool) ───────
   static wrapSelection(el, before, after, placeholder = 'text') {
     el.focus();
     const sel = window.getSelection();
@@ -187,12 +177,10 @@ export class SnaraTool {
     sel.addRange(range);
   }
 
-  // ─── Static: theme application (from js/snara/tool.js :: SnaraTool) ────────
   static applyTheme(theme) {
     if (theme === 'system' || !theme) {
       theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
     }
-
     document.documentElement.setAttribute('data-theme', theme);
     const btn = document.getElementById('theme-toggle');
     if (btn) {
@@ -210,7 +198,6 @@ export class SnaraTool {
     }
   }
 
-  // ─── Static: saved theme resolver (from js/snara/tool.js :: SnaraTool) ─────
   static savedTheme() {
     return localStorage.getItem('theme')
       || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');

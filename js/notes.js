@@ -106,6 +106,11 @@ export class SnaraNotes {
     document.addEventListener('keydown', handler, { signal: this._abortCtrl.signal });
   }
 
+  save() {
+    this._syncFromDOM();
+    this._save();
+  }
+
   async load() {
     this._setStatus('Loading…', '');
     try {

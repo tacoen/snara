@@ -1,11 +1,12 @@
-import { SnaraTool }        from './tools.js';
-import { AppConfig }        from '../snara.js';
-import { SnaraEditor }      from './core.js';
-import icx                  from '../icons/ge-icon.js';
+import { SnaraTool }             from './tools.js';
+import { AppConfig, AppDefaults } from '../snara.js';
+import { SnaraEditor }           from './core.js';
+import icx                       from '../icons/ge-icon.js';
 import { esc, apiFetch, postJson } from '../helpers.js';
 
 export class SnaraUI {
   static instance = null;
+
   constructor() {
     SnaraUI.instance = this;
     this.article       = document.getElementById('article');
@@ -80,11 +81,15 @@ export class SnaraUI {
     const btn      = document.getElementById('save-btn');
     const filename = document.getElementById('filename').innerText.trim() || 'untitled';
     const bookId   = AppConfig.activeBookId ?? null;
-    const article  = [];
-    document.querySelectorAll('.entries .entry').forEach(div => {
-      const cls        = AppConfig.classes.find(c => div.classList.contains(c)) || 'beat';
-      const isRendered = div.children.length > 0 && !div.dataset.editing;
-      const html       = isRendered
+
+    // commit any open entry first so its HTML is rendered before collection
+    const openEntry = this.entriesEl.querySelector('.entry[data-editing]');
+    if (openEntry) SnaraEditor.instance?._commitEntry(openEntry);
+
+    const article = [];
+    this.entriesEl.querySelectorAll('.entry').forEach(div => {
+      const cls  = AppConfig.classes.find(c => div.classList.contains(c)) || 'beat';
+      const html = div.children.length > 0
         ? div.innerHTML
         : marked.parse(div.innerText.trim(), { breaks: true });
       article.push({ class: cls, content: html });
@@ -94,11 +99,10 @@ export class SnaraUI {
     document.querySelectorAll('.meta-field').forEach(row => {
       const key = row.dataset.key || row.querySelector('.field-key')?.innerText.trim();
       if (!key) return;
-
       const pillContainer = row.querySelector('.field-pills');
       if (pillContainer) {
         const vals = [...pillContainer.querySelectorAll('.field-pill')]
-          .map(p => p.firstChild.textContent.trim())
+          .map(p => (p.querySelector('.pill-text') ?? p.firstChild)?.textContent.trim() ?? '')
           .filter(Boolean);
         meta[key] = vals.join(', ');
       } else {
@@ -116,6 +120,10 @@ export class SnaraUI {
         btn.classList.add('saved');
         setTimeout(() => btn.classList.remove('saved'), 1800);
       }
+      // clear dirty indicators — document is now in sync with saved state
+      this.entriesEl.querySelectorAll('.entry[data-advice]').forEach(el =>
+        delete el.dataset.advice
+      );
     } catch (err) {
       if (btn) {
         btn.classList.remove('saving');
@@ -131,7 +139,6 @@ export class SnaraUI {
   async loadDocument(bookId, filename, tab = 'editor') {
     const url = AppConfig.apiPath
       + `?action=doc.get&filename=${encodeURIComponent(filename)}&bookId=${encodeURIComponent(bookId)}`;
-
     try {
       const data = await apiFetch(url);
       this._renderDocument(data, tab);
@@ -141,6 +148,20 @@ export class SnaraUI {
   }
 
   _renderDocument(data, tab = 'editor') {
+
+// guard against discarding unsaved work
+    if (SnaraEditor.instance?._isDirty()) {
+      const ok = confirm('You have unsaved edits. Discard and load new document?');
+      if (!ok) return;
+      // strip editing state directly — DOM is about to be wiped,
+      // no need to commit or dirty-check, just clean the attributes.
+      const open = this.entriesEl.querySelector('.entry[data-editing]');
+      if (open) {
+        delete open.dataset.editing;
+        delete open.dataset.originalHtml;
+      }
+    }
+	
     const fnEl = document.getElementById('filename');
     if (fnEl) fnEl.innerText = data.filename ?? '';
     if (this.article) {
@@ -158,6 +179,7 @@ export class SnaraUI {
     document.title = data.filename
       ? (bookTitle ? `Snara — ${bookTitle} : ${data.filename}` : `Snara — ${data.filename}`)
       : 'Snara';
+
     this.entriesEl.innerHTML = '';
     const article = Array.isArray(data.article) ? data.article : [];
     article.forEach(item => {
@@ -165,19 +187,18 @@ export class SnaraUI {
       div.contentEditable = 'true';
       div.className = `entry ${item.class ?? 'beat'}`;
       div.innerHTML = item.content ?? '';
-
       const editor = SnaraEditor.instance ?? null;
       if (editor) editor._bindEntryEvents(div);
-
       this.entriesEl.appendChild(div);
     });
 
     const metaFields = this.metaEl.querySelector('.meta-fields');
-
     if (metaFields) {
       metaFields.innerHTML = '';
       const savedMeta     = (data.meta && typeof data.meta === 'object') ? data.meta : {};
-      const defaultFields = AppConfig.metaFields ?? ['characters', 'settings', 'prompts'];
+
+	  const defaultFields = AppDefaults.metaFields ?? ['characters', 'settings', 'prompts'];	  
+
       const keys = [
         ...Object.keys(savedMeta),
         ...defaultFields.filter(k => !Object.keys(savedMeta).includes(k)),
@@ -218,15 +239,16 @@ export class SnaraUI {
         <span class="field-key" style="cursor:pointer" onclick="SnaraAIToolbar.helper('${esc(key)}')" title="Auto-populate from article">${esc(key)}</span>
         <span class="field-sep">:</span>
         <div class="field-pills">
-          ${pills.map(p => `
-            <span class="field-pill">
-              ${esc(p)}<button class="pill-remove" data-val="${esc(p)}" title="Remove">x</button>
-            </span>`).join('')}
+          ${pills.map(p => `<span class="field-pill"><span class="pill-text">${esc(p)}</span><button class="pill-remove" data-val="${esc(p)}" title="Remove">x</button></span>`).join('')}
           <input class="pill-input" type="text" placeholder="add…" spellcheck="false">
         </div>
         <button class="field-remove" title="Remove field">x</button>
       `;
       const input = row.querySelector('.pill-input');
+      row.querySelectorAll('.field-pill').forEach(pillEl => {
+        const v = pillEl.querySelector('.pill-text')?.textContent.trim();
+        if (v) this._bindPillSearch(pillEl, v);
+      });
       input.addEventListener('keydown', e => {
         if (e.key === 'Enter' || e.key === ',') {
           e.preventDefault();
@@ -243,7 +265,7 @@ export class SnaraUI {
       return row;
     }
 
-    // Default — contenteditable key and value
+    // default — contenteditable key and value
     row.innerHTML = `
       <span class="field-key" contenteditable spellcheck="false">${esc(key)}</span>
       <span class="field-sep">:</span>
@@ -254,67 +276,82 @@ export class SnaraUI {
     return row;
   }
 
-_addPill(inputEl, value) {
-  const bid = AppConfig.activeBookId;
-  const pill = document.createElement('span');
-  pill.className = 'field-pill';
+  _bindPillSearch(pillEl, value) {
+    const pillText = pillEl.querySelector('.pill-text');
+    if (!pillText) return;
+    pillText.style.cursor = 'pointer';
+    pillText.title = `Search "${value}"`;
 
-  const safeValue = esc(value);
+    pillText.addEventListener('click', (e) => {
+      e.stopImmediatePropagation();
 
-  pill.innerHTML = `
-    <span class="pill-text">${safeValue}</span>
-    <button class="pill-remove" data-val="${safeValue}" title="Remove">×</button>
-  `;
+      const bid         = AppConfig.activeBookId;
+      const url         = `${AppConfig.apiPath}?action=query.search&bookId=${encodeURIComponent(bid)}&query=${encodeURIComponent(value.trim())}`;
+      const contentArea = document.querySelector('aside .content');
+      if (!contentArea) return;
 
-  // Remove button
-  pill.querySelector('.pill-remove').addEventListener('click', (e) => {
-    e.stopImmediatePropagation();
-    pill.remove();
-  });
+      contentArea.innerHTML = '<div class="loading">Loading...</div>';
 
-  // Click on pill text → load JSON result into aside .content
-  const pillText = pill.querySelector('.pill-text');
-  pillText.style.cursor = 'pointer';
-  pillText.title = `Search "${value}"`;
-
-  pillText.addEventListener('click', (e) => {
-    e.stopImmediatePropagation();
-
-    const queryValue = encodeURIComponent(value.trim());
-    const url = `query.php?bid=${bid}&query=${queryValue}`;
-
-    const contentArea = document.querySelector('aside .content');
-    if (!contentArea) return;
-
-    // Show loading state
-    contentArea.innerHTML = '<div class="loading">Loading...</div>';
-
-fetch(url)
-  .then(r => r.json())
-  .then(data => {
-    let html = `<h4>Found ${data.count} paragraph(s) for <code>${data.query}</code></h4>`;
-
-    data.results.forEach(item => {
-      html += `
-          <div class="query">
-          <div class='header'><small><strong>${item.filename}</strong> — ${item.class}</small></div>
-		  <div class='text'>${item.content}</div>
-		</div>`;
+      fetch(url)
+        .then(r => r.json())
+        .then(data => {
+          if (data.error) { contentArea.innerHTML = `<p class='danger'>${data.error}</p>`; return; }
+          let html = `<div class='header between'>
+            <h4>Found ${data.count} paragraph(s) for <code>${data.query}</code></h4>
+            <button class="btn-mini naked">Keep checked</button></div>`;
+          data.results.forEach(item => {
+            html += `<div class="query" data-id="${item.id}">
+              <div class="header"><input type="checkbox" class="query-check" checked data-id="${item.id}"><small><strong>${item.filename}</strong> — ${item.class}</small></div>
+              <div class="text">${item.content}</div>
+            </div>`;
+          });
+          contentArea.innerHTML = html;
+          contentArea.querySelector('.build-results-btn')?.addEventListener('click', () => {
+            this._buildResults(bid, value.trim(), contentArea);
+          });
+        })
+        .catch(err => {
+          console.error('[query.search]', err);
+          contentArea.innerHTML = `<p class='danger'>Error searching for "${value}"</p>`;
+        });
     });
+  }
 
-    contentArea.innerHTML = html;
+  _buildResults(bid, query, contentArea) {
+    const unchecked = [...contentArea.querySelectorAll('.query-check:not(:checked)')]
+      .map(cb => cb.dataset.id)
+      .filter(Boolean);
 
+    fetch(`${AppConfig.apiPath}?action=query.build`, {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify({ bookId: bid, query, remove: unchecked }),
     })
-    .catch(err => {
-      console.error(err);
-      contentArea.innerHTML = `<p class='danger'>Error searching for "${value}"</p>`;
+      .then(r => r.json())
+      .then(data => {
+        if (data.error) { console.error('[query.build]', data.error); return; }
+        unchecked.forEach(id => {
+          contentArea.querySelector(`.query[data-id="${id}"]`)?.remove();
+        });
+        const remaining = contentArea.querySelectorAll('.query').length;
+        const h4 = contentArea.querySelector('h4');
+        if (h4) h4.textContent = `${remaining} paragraph(s) kept for "${query}"`;
+      })
+      .catch(err => console.error('[query.build] fetch failed:', err));
+  }
+
+  _addPill(inputEl, value) {
+    const pill = document.createElement('span');
+    pill.className = 'field-pill';
+    const safeValue = esc(value);
+    pill.innerHTML = `<span class="pill-text">${safeValue}</span><button class="pill-remove" data-val="${safeValue}" title="Remove">x</button>`;
+    pill.querySelector('.pill-remove').addEventListener('click', (e) => {
+      e.stopImmediatePropagation();
+      pill.remove();
     });
-});
-
-  // Insert the pill before the input field
-  inputEl.parentElement.insertBefore(pill, inputEl);
-}
-
+    this._bindPillSearch(pill, value);
+    inputEl.parentElement.insertBefore(pill, inputEl);
+  }
 
   addField() {
     const list = document.querySelector('.meta-fields');

@@ -63,3 +63,25 @@ aside.chat-side {
  /* padding: var(--s-sm); */
  font-size: var(--f-xs);
 }
+
+aside .content .header {
+	display: flex;
+	justify-content: flex-start;
+	align-items: center;
+	padding: var(--s-xs) 0;
+	gap: var(--s-xs);
+}
+
+aside .content .header.between {
+	justify-content: space-between;
+}
+
+aside .content .header a {
+	font-weight: 600;
+	text-decoration: none;
+}
+
+aside .content .header a:hover {
+	font-weight: 600; color: var(--fg-link);
+	text-decoration: underline
+}

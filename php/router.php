@@ -71,6 +71,7 @@ require_once __DIR__ . '/notes.php';
 require_once __DIR__ . '/kanban.php';
 require_once __DIR__ . '/fileman.php';
 require_once __DIR__ . '/preprompts.php';
+require_once __DIR__ . '/query.php';
 
 class Router
 {
@@ -480,6 +481,26 @@ case 'config.get':
                     echo json_encode(['ok' => true]);
                     break;
 					
+                // ── Query ────────────────────────────────────
+                case 'query.search':
+                    self::requireMethod($method, 'GET');
+                    $bookId = (int) self::requireParam('bookId');
+                    $query  = trim($_GET['query'] ?? '');
+                    if ($query === '') self::error(400, 'Missing query');
+                    echo json_encode(Query::search($bookId, $query));
+                    break;
+
+                case 'query.build':
+                    self::requireMethod($method, 'POST');
+                    $body   = self::body();
+                    $bookId = (int)($body['bookId'] ?? 0);
+                    $query  = trim($body['query'] ?? '');
+                    $remove = $body['remove'] ?? [];
+                    if (!$bookId || $query === '') self::error(400, 'Missing bookId or query');
+                    if (!is_array($remove)) self::error(400, 'remove must be an array');
+                    echo json_encode(Query::build($bookId, $query, $remove));
+                    break;
+
                 // ── Unknown ──────────────────────────────────
                 default:
                     self::error(404, 'Unknown action: ' . $action);
