@@ -1,7 +1,6 @@
-.query  { margin-top: var(--s-md); }
-.query .header { opacity: .6; }
+.query { margin-top: var(--s-md);}
+.query .header { opacity: .6;}
 .query .text { }
-
 .del-confirm {
 	position: fixed;
 	bottom: 0;

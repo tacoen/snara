@@ -9,10 +9,8 @@
  box-shadow: 0 8px 32px var(--shadow);
  z-index: 1001;
 }
-
 #settings-modal,
 #pref-modal { width: 80%;max-height: 91vh;margin-left:10%;}
-
 .app-modal.open {
  opacity: 1;
  pointer-events: all;
@@ -190,7 +188,6 @@
 }
 .pref-reset-btn:hover { opacity: 1;background: rgba(207,34,46,.07);}
 .pref-export-btn { display: flex;align-items: center;gap: var(--s-xs);}
-
 .popup-toolbar {
  position: fixed;
  padding: 0 var(--s-sm);

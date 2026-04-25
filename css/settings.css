@@ -243,43 +243,32 @@
 	grid-column: span 2;
 	height: 240px;
 }
-
-/* Pre-prompts tab */
 .cfg-pp-row {
  display: grid;
  grid-template-columns: 34% auto 22px;
  gap: var(--s-xs);
- /* margin-bottom: var(--s-sm); */
  align-items: flex-start;
 }
 .cfg-pp-label {
  width: 100%;
  flex-shrink: 0;
 }
-
 .cfg-pp-label[disabled] {
 opacity: .5;
 }
-
 .cfg-pp-value {
  width: 100%;
  resize: vertical;
  font-size: var(--f-xs);
  line-height: 1.5;
 }
-
 .cfg-preprompts-list {
-	
 }
-
-/* Font preview */
 .cfg-font-preview {
  font-size: 0.9375rem;
  color: var(--fg-muted);
  line-height: 1.6;
 }
-
-/* Color section label — flex wrapper for the preview strip */
 .cfg-color-label {
  display: flex;
  align-items: center;
@@ -287,25 +276,17 @@ opacity: .5;
  font-weight: 500;
  color: var(--fg-main);
 }
-
-/* Sub-labels (Background / Border) inside a color row */
 .cfg-label--sub {
  font-size: 10px;
  opacity: .7;
 }
-
-/* cfg-row spacing modifiers */
-.cfg-row--mb-sm { margin-bottom: var(--s-sm); }
-.cfg-row--mb-xs { margin-bottom: var(--s-xs); }
-
-/* Flex wrapper around color swatch + None checkbox */
+.cfg-row--mb-sm { margin-bottom: var(--s-sm);}
+.cfg-row--mb-xs { margin-bottom: var(--s-xs);}
 .cfg-color-picker-wrap {
  display: flex;
  align-items: center;
  gap: var(--s-sm);
 }
-
-/* Native color swatch inputs */
 input[type="color"].cfg-color-input {
  width: 32px;
  height: 26px;
@@ -315,14 +296,10 @@ input[type="color"].cfg-color-input {
  cursor: pointer;
  background: none;
 }
-
-/* None checkbox */
 .cfg-color-none {
  accent-color: var(--primary);
  cursor: pointer;
 }
-
-/* Label wrapping the None checkbox */
 .cfg-color-none-label {
  display: flex;
  align-items: center;
@@ -332,14 +309,10 @@ input[type="color"].cfg-color-input {
  cursor: pointer;
  user-select: none;
 }
-
-/* Preprompts footer row (add / reset buttons) */
 .cfg-row--actions {
  margin-top: var(--s-sm);
  gap: var(--s-sm);
 }
-
-/* Danger-tinted action button (reset to default) */
 .cfg-add-row--danger {
  margin-left: auto;
  color: var(--fg-danger, #c0392b);
@@ -348,5 +321,4 @@ input[type="color"].cfg-color-input {
  border-color: var(--fg-danger, #c0392b);
  background: var(--bg-hover);
 }
-
-.cfg-pp-remove svg { width: 20px; }
+.cfg-pp-remove svg { width: 20px;}

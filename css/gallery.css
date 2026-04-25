@@ -46,7 +46,7 @@
  white-space: nowrap;
  min-width: 0;
 }
-.gallery-tools { display: flex;gap: 2px;flex-shrink: 0; font-size: .7rem; }
+.gallery-tools { display: flex;gap: 2px;flex-shrink: 0;font-size: .7rem;}
 .gtool {
  display: flex;
  align-items: center;
@@ -83,11 +83,8 @@
  margin-top: var(--s-md);
  max-height: 1.3rem;
  font-size: var(--f-xs) !important;
- /* padding: 4px 7px !important; */
  background: var(--bg-main) !important;
 }
 .gallery-rename-actions { display: flex;gap: 4px;justify-content: flex-end;}
-
 .gallery-rename-actions button {font-size: .6rem;padding: 2px var(--s-xs);height: .9rem !important;}
-
 #gallery-ac-list {margin: 0;width: 100%;}

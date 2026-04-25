@@ -26,8 +26,6 @@
  border-bottom: 1px solid var(--border);
  grid-column: span 2;
 }
-
-
 #kanban-area,
 #files-area,
 #about-area,
@@ -60,10 +58,8 @@ aside.chat-side {
  top: 44px;
  right: 0;
  width: 15rem;
- /* padding: var(--s-sm); */
  font-size: var(--f-xs);
 }
-
 aside .content .header {
 	display: flex;
 	justify-content: flex-start;
@@ -71,17 +67,14 @@ aside .content .header {
 	padding: var(--s-xs) 0;
 	gap: var(--s-xs);
 }
-
 aside .content .header.between {
 	justify-content: space-between;
 }
-
 aside .content .header a {
 	font-weight: 600;
 	text-decoration: none;
 }
-
 aside .content .header a:hover {
-	font-weight: 600; color: var(--fg-link);
+	font-weight: 600;color: var(--fg-link);
 	text-decoration: underline
 }

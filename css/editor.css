@@ -161,8 +161,6 @@
  opacity: .6;
  color: var(--fg-muted);
 }
-
-
 .entry p { margin-bottom: .6em;}
 .entry p:last-child { margin-bottom: 0;}
 .entry strong { font-weight: 600;}

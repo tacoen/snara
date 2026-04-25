@@ -34,7 +34,7 @@
  transition: all .12s;
  justify-content: flex-start;
 }
-#files > div {display: flex;/* padding: var(--s-md); */}
+#files > div {display: flex;}
 .fnav-item svg { width: 20px;height: 20px;flex-shrink: 0;opacity: .7;}
 .fnav-item:hover { color: var(--fg-main);background: var(--bg-main);}
 .fnav-item.active {color: var(--primary);background: var(--bg-muted);font-weight: 500;font-weight: 600;}
@@ -55,7 +55,6 @@
  padding: 0 var(--s-md) 8px;
  border-bottom: 1px solid var(--border);
 }
-
 .fpanel { display: flex;flex-direction: column;flex: 1;overflow: hidden;}
 .fpanel[hidden] { display: none;}
 .fpanel-hint { padding: 8px var(--s-md) 4px;font-size: var(--f-xs);color: var(--fg-muted);}
@@ -143,7 +142,6 @@
 .ftool.erase-btn:hover { color: var(--danger);}
 .fcheck-row { display: flex;align-items: center;gap: var(--s-sm);cursor: pointer;font-size: var(--f-xs);padding: 4px var(--s-sm);}
 .fcheck-row input { accent-color: var(--primary);width: 13px;height: 13px;cursor: pointer;}
-
 #files-topbar-actions {
 	height: 22px;
 }
