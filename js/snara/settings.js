@@ -1,33 +1,51 @@
-import { SnaraComponent }         from './component.js';
-import { AppConfig, AppDefaults } from '../snara.js';
-import { SnaraUI }                from './ui.js';
-import icx                        from '../icons/ge-icon.js';
-import { esc, splitCsv }          from '../helpers.js';
-import { _modalHeader, _modalFooter } from './modal.js';
+import { SnaraComponent } from "./component.js";
+import { AppConfig, AppDefaults } from "../snara.js";
+import { SnaraUI } from "./ui.js";
+import icx from "../icons/ge-icon.js";
+import { esc, splitCsv } from "../helpers.js";
+import { _modalHeader, _modalFooter } from "./modal.js";
 function resolveToHex(value) {
-  if (!value || value === 'transparent') return '#000000';
+  if (!value || value === "transparent") return "#000000";
   if (/^#[0-9a-fA-F]{3,8}$/.test(value)) {
-    const h = value.replace('#', '');
-    if (h.length === 3) return '#' + h.split('').map(c => c + c).join('');
-    return '#' + h.slice(0, 6);
+    const h = value.replace("#", "");
+    if (h.length === 3)
+      return (
+        "#" +
+        h
+          .split("")
+          .map((c) => c + c)
+          .join("")
+      );
+    return "#" + h.slice(0, 6);
   }
-  const el = document.createElement('div');
+  const el = document.createElement("div");
   el.style.cssText = `position:absolute;visibility:hidden;pointer-events:none;color:${value}`;
   document.body.appendChild(el);
   const rgb = getComputedStyle(el).color;
   document.body.removeChild(el);
   const m = rgb.match(/(\d+),\s*(\d+),\s*(\d+)/);
-  if (m) return '#' + [m[1], m[2], m[3]]
-    .map(n => parseInt(n).toString(16).padStart(2, '0')).join('');
-  return '#000000';
+  if (m)
+    return (
+      "#" +
+      [m[1], m[2], m[3]]
+        .map((n) => parseInt(n).toString(16).padStart(2, "0"))
+        .join("")
+    );
+  return "#000000";
 }
 
 export class SnaraSettings extends SnaraComponent {
   constructor() {
-    super('settings-modal', { defaultTab: 'defaults' });
+    super("settings-modal", { defaultTab: "defaults" });
     this._editorPrefs = null;
-    this._preprompts  = [];
-    this._snap = { general: null, defaults: null, editor: null, ai: null, preprompts: null };
+    this._preprompts = [];
+    this._snap = {
+      general: null,
+      defaults: null,
+      editor: null,
+      ai: null,
+      preprompts: null,
+    };
   }
 
   _ensureDOM() {
@@ -39,43 +57,53 @@ export class SnaraSettings extends SnaraComponent {
   async open() {
     await this._loadEditorPrefs();
     this._snap.general = {
-      apiPath:    AppConfig.apiPath,
-      dataPath:   AppConfig.dataPath,
-      theme:      AppConfig.theme || 'light',
-      classes:    (AppConfig.classes || []).join(', '),
+      apiPath: AppConfig.apiPath,
+      dataPath: AppConfig.dataPath,
+      theme: AppConfig.theme || "light",
+      classes: (AppConfig.classes || []).join(", "),
       headingMap: AppConfig.headingMap || [],
     };
     this._snap.defaults = {
-      act:              AppDefaults.act,
-      defaultTag:       AppDefaults.defaultTag,
-      autosave:         AppDefaults.autosave,
+      act: AppDefaults.act,
+      defaultTag: AppDefaults.defaultTag,
+      autosave: AppDefaults.autosave,
       autosaveInterval: AppDefaults.autosaveInterval,
-      metaFields:       (AppDefaults.metaFields || []).join(', '),
+      metaFields: (AppDefaults.metaFields || []).join(", "),
     };
     this._snap.editor = this._editorPrefs ? { ...this._editorPrefs } : {};
-	    const [aiSnap, preprompts] = await Promise.all([
+    const [aiSnap, preprompts] = await Promise.all([
       this._loadAiConfig(),
       this._loadPreprompts(),
     ]);
-    this._snap.ai         = aiSnap;
-    this._preprompts      = preprompts;
-    this._snap.preprompts = preprompts.map(r => ({ ...r }));
-    const { openModal } = await import('./modal.js');
+    this._snap.ai = aiSnap;
+    this._preprompts = preprompts;
+    this._snap.preprompts = preprompts.map((r) => ({ ...r }));
+    const { openModal } = await import("./modal.js");
     openModal(this.modalId);
 
     this._render();
   }
 
   _render() {
-    const body = document.getElementById('settings-body');
+    const body = document.getElementById("settings-body");
     if (!body) return;
     body.innerHTML = `
       <div class="tabs">
-        <button class="cfg-tab${this._activeTab === 'defaults' ? ' active' : ''}" data-tab="defaults">Defaults</button>
-        <button class="cfg-tab${this._activeTab === 'editor'   ? ' active' : ''}" data-tab="editor">Editor</button>
-        <button class="cfg-tab${this._activeTab === 'ai'       ? ' active' : ''}" data-tab="ai">AI API</button>
-        <button class="cfg-tab${this._activeTab === 'preprompts' ? ' active' : ''}" data-tab="preprompts">Pre Prompts</button>
-        <button class="cfg-tab${this._activeTab === 'general'  ? ' active' : ''}" data-tab="general">General</button>
+        <button class="cfg-tab${
+          this._activeTab === "defaults" ? " active" : ""
+        }" data-tab="defaults">Defaults</button>
+        <button class="cfg-tab${
+          this._activeTab === "editor" ? " active" : ""
+        }" data-tab="editor">Editor</button>
+        <button class="cfg-tab${
+          this._activeTab === "ai" ? " active" : ""
+        }" data-tab="ai">AI API</button>
+        <button class="cfg-tab${
+          this._activeTab === "preprompts" ? " active" : ""
+        }" data-tab="preprompts">Pre Prompts</button>
+        <button class="cfg-tab${
+          this._activeTab === "general" ? " active" : ""
+        }" data-tab="general">General</button>
       </div>
       <div class="cfg-tab-content" id="cfg-tab-content">
         ${this._renderTab(this._activeTab)}
@@ -84,34 +112,34 @@ export class SnaraSettings extends SnaraComponent {
 
     this._bindTabs();
     this._bindCurrentTab();
-    icx.delayreplace('#settings-body [data-icon]');
+    icx.delayreplace("#settings-body [data-icon]");
   }
 
   _renderTab(tab) {
-    if (tab === 'general')     return this._renderGeneral();
-    if (tab === 'defaults')    return this._renderDefaults();
-    if (tab === 'editor')      return this._renderEditor();
-    if (tab === 'ai')          return this._renderAi();
-    if (tab === 'preprompts')  return this._renderPreprompts();
-    return '';
+    if (tab === "general") return this._renderGeneral();
+    if (tab === "defaults") return this._renderDefaults();
+    if (tab === "editor") return this._renderEditor();
+    if (tab === "ai") return this._renderAi();
+    if (tab === "preprompts") return this._renderPreprompts();
+    return "";
   }
 
   _switchTab(newTab) {
     this._snapshotTab(this._activeTab);
     this._activeTab = newTab;
-    document.querySelectorAll('#settings-body .cfg-tab').forEach(b =>
-      b.classList.toggle('active', b.dataset.tab === newTab)
-    );
-    const content = document.getElementById('cfg-tab-content');
+    document
+      .querySelectorAll("#settings-body .cfg-tab")
+      .forEach((b) => b.classList.toggle("active", b.dataset.tab === newTab));
+    const content = document.getElementById("cfg-tab-content");
     if (!content) return;
     content.innerHTML = this._renderTab(newTab);
     this._bindCurrentTab();
-    icx.delayreplace('#settings-body [data-icon]');
+    icx.delayreplace("#settings-body [data-icon]");
   }
 
   _bindTabs() {
-    document.querySelectorAll('#settings-body .cfg-tab').forEach(btn => {
-      btn.addEventListener('click', () => this._switchTab(btn.dataset.tab));
+    document.querySelectorAll("#settings-body .cfg-tab").forEach((btn) => {
+      btn.addEventListener("click", () => this._switchTab(btn.dataset.tab));
     });
   }
 
@@ -119,74 +147,105 @@ export class SnaraSettings extends SnaraComponent {
     this._bindSegmented();
     this._bindToggle();
     this._bindColorPickers();
-    if (this._activeTab === 'general') {
+    if (this._activeTab === "general") {
       this._bindHmapAdd();
       this._bindHmapRemoves();
     }
-    if (this._activeTab === 'preprompts') {
+    if (this._activeTab === "preprompts") {
       this._bindPrepromptsTab();
     }
   }
 
-_snapshotTab(tab) {
-  if (tab === 'general')    this._snapshotGeneral();
-  if (tab === 'defaults')   this._snapshotDefaults();
-  if (tab === 'editor')     this._snapshotEditor();
-  if (tab === 'ai')         this._snapshotAi();
-  if (tab === 'preprompts') this._snapshotPreprompts();
-}
+  _snapshotTab(tab) {
+    if (tab === "general") this._snapshotGeneral();
+    if (tab === "defaults") this._snapshotDefaults();
+    if (tab === "editor") this._snapshotEditor();
+    if (tab === "ai") this._snapshotAi();
+    if (tab === "preprompts") this._snapshotPreprompts();
+  }
 
   _snapshotGeneral() {
-    const apiPath  = document.getElementById('cfg-apiPath');
-    const dataPath = document.getElementById('cfg-dataPath');
-    const theme    = document.querySelector('#cfg-theme .cfg-seg.active');
-    const classes  = document.getElementById('cfg-classes');
+    const apiPath = document.getElementById("cfg-apiPath");
+    const dataPath = document.getElementById("cfg-dataPath");
+    const theme = document.querySelector("#cfg-theme .cfg-seg.active");
+    const classes = document.getElementById("cfg-classes");
     if (!apiPath && !theme) return;
     const headingMap = [];
-    document.querySelectorAll('.cfg-hmap-row').forEach(row => {
-      const prefix = row.querySelector('.cfg-hmap-prefix')?.value ?? '';
-      const cls    = row.querySelector('.cfg-hmap-cls')?.value.trim() ?? '';
+    document.querySelectorAll(".cfg-hmap-row").forEach((row) => {
+      const prefix = row.querySelector(".cfg-hmap-prefix")?.value ?? "";
+      const cls = row.querySelector(".cfg-hmap-cls")?.value.trim() ?? "";
       if (prefix || cls) headingMap.push({ prefix, cls });
     });
 
     this._snap.general = {
-      apiPath:    apiPath?.value     || this._snap.general?.apiPath    || AppConfig.apiPath,
-      dataPath:   dataPath?.value    || this._snap.general?.dataPath   || AppConfig.dataPath,
-      theme:      theme?.dataset.val || this._snap.general?.theme      || AppConfig.theme || 'light',
-      classes:    classes?.value     || this._snap.general?.classes    || (AppConfig.classes || []).join(', '),
-      headingMap: headingMap.length  ? headingMap : (this._snap.general?.headingMap || AppConfig.headingMap || []),
+      apiPath:
+        apiPath?.value || this._snap.general?.apiPath || AppConfig.apiPath,
+      dataPath:
+        dataPath?.value || this._snap.general?.dataPath || AppConfig.dataPath,
+      theme:
+        theme?.dataset.val ||
+        this._snap.general?.theme ||
+        AppConfig.theme ||
+        "light",
+      classes:
+        classes?.value ||
+        this._snap.general?.classes ||
+        (AppConfig.classes || []).join(", "),
+      headingMap: headingMap.length
+        ? headingMap
+        : this._snap.general?.headingMap || AppConfig.headingMap || [],
     };
   }
 
   _snapshotDefaults() {
-    const actEl      = document.getElementById('cfg-act');
-    const tagEl      = document.querySelector('#cfg-defaultTag .cfg-seg.active');
-    const autosaveEl = document.getElementById('cfg-autosave');
-    const intervalEl = document.getElementById('cfg-autosaveInterval');
-    const metaEl     = document.getElementById('cfg-metaFields');
+    const actEl = document.getElementById("cfg-act");
+    const tagEl = document.querySelector("#cfg-defaultTag .cfg-seg.active");
+    const autosaveEl = document.getElementById("cfg-autosave");
+    const intervalEl = document.getElementById("cfg-autosaveInterval");
+    const metaEl = document.getElementById("cfg-metaFields");
     if (!actEl && !tagEl) return;
     this._snap.defaults = {
-      act:              actEl?.value                         ?? this._snap.defaults?.act              ?? AppDefaults.act,
-      defaultTag:       tagEl?.dataset.val                   ?? this._snap.defaults?.defaultTag       ?? AppDefaults.defaultTag,
-      autosave:         autosaveEl?.classList.contains('on') ?? this._snap.defaults?.autosave         ?? AppDefaults.autosave,
-      autosaveInterval: parseInt(intervalEl?.value)          || this._snap.defaults?.autosaveInterval || AppDefaults.autosaveInterval,
-      metaFields:       metaEl?.value                        ?? this._snap.defaults?.metaFields       ?? (AppDefaults.metaFields || []).join(', '),
+      act: actEl?.value ?? this._snap.defaults?.act ?? AppDefaults.act,
+      defaultTag:
+        tagEl?.dataset.val ??
+        this._snap.defaults?.defaultTag ??
+        AppDefaults.defaultTag,
+      autosave:
+        autosaveEl?.classList.contains("on") ??
+        this._snap.defaults?.autosave ??
+        AppDefaults.autosave,
+      autosaveInterval:
+        parseInt(intervalEl?.value) ||
+        this._snap.defaults?.autosaveInterval ||
+        AppDefaults.autosaveInterval,
+      metaFields:
+        metaEl?.value ??
+        this._snap.defaults?.metaFields ??
+        (AppDefaults.metaFields || []).join(", "),
     };
   }
 
   _snapshotEditor() {
-    const fontGroup = document.getElementById('cfg-entry-font');
+    const fontGroup = document.getElementById("cfg-entry-font");
     if (!fontGroup) return;
-    const font = fontGroup.querySelector('.cfg-seg.active')?.dataset.val || 'var(--font-sans)';
+    const font =
+      fontGroup.querySelector(".cfg-seg.active")?.dataset.val ||
+      "var(--font-sans)";
     const tags = {};
 
-    for (const tag of ['act', 'chapter', 'scene', 'beat']) {
-      const bgPicker = document.querySelector(`#settings-body .cfg-color-input[data-tag="${tag}"][data-prop="bg"]`);
-      const bdPicker = document.querySelector(`#settings-body .cfg-color-input[data-tag="${tag}"][data-prop="border"]`);
-      const noneBox  = document.querySelector(`#settings-body .cfg-color-none[data-tag="${tag}"]`);
+    for (const tag of ["act", "chapter", "scene", "beat"]) {
+      const bgPicker = document.querySelector(
+        `#settings-body .cfg-color-input[data-tag="${tag}"][data-prop="bg"]`
+      );
+      const bdPicker = document.querySelector(
+        `#settings-body .cfg-color-input[data-tag="${tag}"][data-prop="border"]`
+      );
+      const noneBox = document.querySelector(
+        `#settings-body .cfg-color-none[data-tag="${tag}"]`
+      );
       tags[tag] = {
-        bg:     noneBox?.checked ? 'transparent' : (bgPicker?.value || 'transparent'),
-        border: bdPicker?.value  || `var(--tag-${tag}-bd)`,
+        bg: noneBox?.checked ? "transparent" : bgPicker?.value || "transparent",
+        border: bdPicker?.value || `var(--tag-${tag}-bd)`,
       };
     }
 
@@ -213,9 +272,14 @@ _snapshotTab(tab) {
         <div class="cfg-row">
           <label class="cfg-label">Theme</label>
           <div class="cfg-segmented" id="cfg-theme">
-            ${['light', 'dark', 'system'].map(t =>
-              `<button class="cfg-seg${c.theme === t ? ' active' : ''}" data-val="${t}">${t}</button>`
-            ).join('')}
+            ${["light", "dark", "system"]
+              .map(
+                (t) =>
+                  `<button class="cfg-seg${
+                    c.theme === t ? " active" : ""
+                  }" data-val="${t}">${t}</button>`
+              )
+              .join("")}
           </div>
         </div>
       </section>
@@ -225,13 +289,15 @@ _snapshotTab(tab) {
         <div class="cfg-row">
           <label class="cfg-label">Classes</label>
           <input class="cfg-input cfg-input-full" id="cfg-classes"
-            value="${esc((c.classes || []).join(', '))}">
+            value="${esc((c.classes || []).join(", "))}">
         </div>
       </section>
       <section class="cfg-section">
         <h3 class="cfg-heading">Heading map</h3>
         <div id="cfg-headingMap" class="cfg-hmap">
-          ${(c.headingMap || []).map((row, i) => this._hmapRow(row, i)).join('')}
+          ${(c.headingMap || [])
+            .map((row, i) => this._hmapRow(row, i))
+            .join("")}
         </div>
         <button class="cfg-add-row" id="cfg-hmap-add">+ add rule</button>
       </section>
@@ -256,14 +322,21 @@ _snapshotTab(tab) {
         <div class="cfg-row">
           <label class="cfg-label">Default tag</label>
           <div class="cfg-segmented" id="cfg-defaultTag">
-            ${(AppConfig.classes || ['act', 'chapter', 'scene', 'beat']).map(t =>
-              `<button class="cfg-seg${d.defaultTag === t ? ' active' : ''}" data-val="${t}">${t}</button>`
-            ).join('')}
+            ${(AppConfig.classes || ["act", "chapter", "scene", "beat"])
+              .map(
+                (t) =>
+                  `<button class="cfg-seg${
+                    d.defaultTag === t ? " active" : ""
+                  }" data-val="${t}">${t}</button>`
+              )
+              .join("")}
           </div>
         </div>
         <div class="cfg-row">
           <label class="cfg-label">Autosave</label>
-          <button class="cfg-toggle${d.autosave ? ' on' : ''}" id="cfg-autosave" aria-pressed="${d.autosave}">
+          <button class="cfg-toggle${
+            d.autosave ? " on" : ""
+          }" id="cfg-autosave" aria-pressed="${d.autosave}">
             <span class="cfg-toggle-thumb"></span>
           </button>
         </div>
@@ -280,15 +353,15 @@ _snapshotTab(tab) {
         </h3>
         <div class="cfg-row">
           <input class="cfg-input cfg-input-full" id="cfg-metaFields"
-            value="${esc((d.metaFields || []).join(', '))}">
+            value="${esc((d.metaFields || []).join(", "))}">
         </div>
       </section>
     `;
   }
 
   _renderEditor() {
-    const p    = this._editorPrefs || {};
-    const font = p.font || 'var(--font-sans)';
+    const p = this._editorPrefs || {};
+    const font = p.font || "var(--font-sans)";
 
     return `
       <section class="cfg-section">
@@ -299,12 +372,17 @@ _snapshotTab(tab) {
           <label class="cfg-label">Font</label>
           <div class="cfg-segmented" id="cfg-entry-font">
             ${[
-              { val: 'var(--font-sans)',  label: 'Sans'  },
-              { val: 'var(--font-serif)', label: 'Serif' },
-              { val: 'var(--font-mono)',  label: 'Mono'  },
-            ].map(f =>
-              `<button class="cfg-seg${font === f.val ? ' active' : ''}" data-val="${f.val}">${f.label}</button>`
-            ).join('')}
+              { val: "var(--font-sans)", label: "Sans" },
+              { val: "var(--font-serif)", label: "Serif" },
+              { val: "var(--font-mono)", label: "Mono" },
+            ]
+              .map(
+                (f) =>
+                  `<button class="cfg-seg${
+                    font === f.val ? " active" : ""
+                  }" data-val="${f.val}">${f.label}</button>`
+              )
+              .join("")}
           </div>
         </div>
         <div class="cfg-row">
@@ -318,27 +396,30 @@ _snapshotTab(tab) {
         <h3 class="cfg-heading">Entry colors
           <span class="cfg-hint">background &amp; left-border per tag</span>
         </h3>
-        ${['act', 'chapter', 'scene', 'beat'].map(id => this._renderTagColorRow(id)).join('')}
+        ${["act", "chapter", "scene", "beat"]
+          .map((id) => this._renderTagColorRow(id))
+          .join("")}
       </section>
     `;
   }
 
   _renderTagColorRow(id) {
     const label = id.charAt(0).toUpperCase() + id.slice(1);
-    const p     = this._editorPrefs || {};
+    const p = this._editorPrefs || {};
 
-    const defaultBorder = id === 'beat' ? 'var(--tag-beat-fg)' : `var(--tag-${id}-fg)`;
-    const curBg         = p[id]?.bg     || 'transparent';
-    const curBorder     = p[id]?.border || defaultBorder;
-    const bgIsNone  = curBg === 'transparent';
-    const bgHex     = bgIsNone ? '#ffffff' : resolveToHex(curBg);
+    const defaultBorder =
+      id === "beat" ? "var(--tag-beat-fg)" : `var(--tag-${id}-fg)`;
+    const curBg = p[id]?.bg || "transparent";
+    const curBorder = p[id]?.border || defaultBorder;
+    const bgIsNone = curBg === "transparent";
+    const bgHex = bgIsNone ? "#ffffff" : resolveToHex(curBg);
     const borderHex = resolveToHex(curBorder);
     return `
       <div class="cfg-color-row">
         <div class="cfg-row cfg-row--mb-sm">
           <span class="cfg-label cfg-color-label">
             <span class="cfg-color-preview" data-tag="${id}" style="
-              background:${bgIsNone ? 'transparent' : bgHex};
+              background:${bgIsNone ? "transparent" : bgHex};
               border-left-color:${borderHex};
             ">${label}</span>
           </span>
@@ -349,12 +430,12 @@ _snapshotTab(tab) {
             <input type="color" class="cfg-color-input"
               data-tag="${id}" data-prop="bg"
               value="${bgHex}"
-              ${bgIsNone ? 'disabled' : ''}
+              ${bgIsNone ? "disabled" : ""}
               title="Background color">
             <label class="cfg-color-none-label">
               <input type="checkbox" class="cfg-color-none"
                 data-tag="${id}" data-prop="bg"
-                ${bgIsNone ? 'checked' : ''}>
+                ${bgIsNone ? "checked" : ""}>
               None
             </label>
           </div>
@@ -371,106 +452,135 @@ _snapshotTab(tab) {
       </div>`;
   }
 
-  _hmapRow({ prefix = '', cls = '' } = {}, i = Date.now()) {
+  _hmapRow({ prefix = "", cls = "" } = {}, i = Date.now()) {
     return `
       <div class="cfg-hmap-row">
-        <input class="cfg-input cfg-hmap-prefix" placeholder='e.g. "# "' value="${esc(prefix)}">
+        <input class="cfg-input cfg-hmap-prefix" placeholder='e.g. "# "' value="${esc(
+          prefix
+        )}">
         <span class="cfg-arrow">→</span>
-        <input class="cfg-input cfg-hmap-cls" placeholder="cls" value="${esc(cls)}">
+        <input class="cfg-input cfg-hmap-cls" placeholder="cls" value="${esc(
+          cls
+        )}">
         <button class="cfg-hmap-remove" title="Remove rule"><i data-icon="trash"></i></button>
       </div>`;
   }
 
   _bindColorPickers() {
-    document.querySelectorAll('#settings-body .cfg-color-input').forEach(input => {
-      input.addEventListener('input', () => {
-        const { tag, prop } = input.dataset;
-        document.documentElement.style.setProperty(
-          prop === 'bg' ? `--entry-${tag}-bg` : `--entry-${tag}-border`,
-          input.value
-        );
-        this._updatePreviewStrip(tag);
-        this._snapshotEditor();
+    document
+      .querySelectorAll("#settings-body .cfg-color-input")
+      .forEach((input) => {
+        input.addEventListener("input", () => {
+          const { tag, prop } = input.dataset;
+          document.documentElement.style.setProperty(
+            prop === "bg" ? `--entry-${tag}-bg` : `--entry-${tag}-border`,
+            input.value
+          );
+          this._updatePreviewStrip(tag);
+          this._snapshotEditor();
+        });
       });
-    });
 
-    document.querySelectorAll('#settings-body .cfg-color-none').forEach(checkbox => {
-      checkbox.addEventListener('change', () => {
-        const { tag } = checkbox.dataset;
-        const picker  = document.querySelector(
-          `#settings-body .cfg-color-input[data-tag="${tag}"][data-prop="bg"]`
-        );
-        if (!picker) return;
-        picker.disabled = checkbox.checked;
-        document.documentElement.style.setProperty(
-          `--entry-${tag}-bg`,
-          checkbox.checked ? 'transparent' : picker.value
-        );
-        this._updatePreviewStrip(tag);
-        this._snapshotEditor();
+    document
+      .querySelectorAll("#settings-body .cfg-color-none")
+      .forEach((checkbox) => {
+        checkbox.addEventListener("change", () => {
+          const { tag } = checkbox.dataset;
+          const picker = document.querySelector(
+            `#settings-body .cfg-color-input[data-tag="${tag}"][data-prop="bg"]`
+          );
+          if (!picker) return;
+          picker.disabled = checkbox.checked;
+          document.documentElement.style.setProperty(
+            `--entry-${tag}-bg`,
+            checkbox.checked ? "transparent" : picker.value
+          );
+          this._updatePreviewStrip(tag);
+          this._snapshotEditor();
+        });
       });
-    });
   }
 
   _updatePreviewStrip(tag) {
-    const strip    = document.querySelector(`#settings-body .cfg-color-preview[data-tag="${tag}"]`);
-    const bgPicker = document.querySelector(`#settings-body .cfg-color-input[data-tag="${tag}"][data-prop="bg"]`);
-    const bdPicker = document.querySelector(`#settings-body .cfg-color-input[data-tag="${tag}"][data-prop="border"]`);
-    const noneBox  = document.querySelector(`#settings-body .cfg-color-none[data-tag="${tag}"]`);
+    const strip = document.querySelector(
+      `#settings-body .cfg-color-preview[data-tag="${tag}"]`
+    );
+    const bgPicker = document.querySelector(
+      `#settings-body .cfg-color-input[data-tag="${tag}"][data-prop="bg"]`
+    );
+    const bdPicker = document.querySelector(
+      `#settings-body .cfg-color-input[data-tag="${tag}"][data-prop="border"]`
+    );
+    const noneBox = document.querySelector(
+      `#settings-body .cfg-color-none[data-tag="${tag}"]`
+    );
     if (!strip) return;
-    if (bgPicker) strip.style.background      = noneBox?.checked ? 'transparent' : bgPicker.value;
+    if (bgPicker)
+      strip.style.background = noneBox?.checked
+        ? "transparent"
+        : bgPicker.value;
     if (bdPicker) strip.style.borderLeftColor = bdPicker.value;
   }
 
   _bindSegmented() {
-    document.querySelectorAll('#settings-body .cfg-segmented').forEach(group => {
-      group.addEventListener('click', e => {
-        const btn = e.target.closest('.cfg-seg');
-        if (!btn) return;
-        group.querySelectorAll('.cfg-seg').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        if (group.id === 'cfg-entry-font') {
-          const preview = document.getElementById('cfg-font-preview');
-          if (preview) preview.style.fontFamily = btn.dataset.val;
-          this._snapshotEditor();
-        }
+    document
+      .querySelectorAll("#settings-body .cfg-segmented")
+      .forEach((group) => {
+        group.addEventListener("click", (e) => {
+          const btn = e.target.closest(".cfg-seg");
+          if (!btn) return;
+          group
+            .querySelectorAll(".cfg-seg")
+            .forEach((b) => b.classList.remove("active"));
+          btn.classList.add("active");
+          if (group.id === "cfg-entry-font") {
+            const preview = document.getElementById("cfg-font-preview");
+            if (preview) preview.style.fontFamily = btn.dataset.val;
+            this._snapshotEditor();
+          }
+        });
       });
-    });
   }
 
   _bindToggle() {
-    document.getElementById('cfg-autosave')?.addEventListener('click', function () {
-      this.classList.toggle('on');
-      this.setAttribute('aria-pressed', this.classList.contains('on'));
-    });
+    document
+      .getElementById("cfg-autosave")
+      ?.addEventListener("click", function () {
+        this.classList.toggle("on");
+        this.setAttribute("aria-pressed", this.classList.contains("on"));
+      });
   }
 
   _bindHmapAdd() {
-    document.getElementById('cfg-hmap-add')?.addEventListener('click', () => {
-      const container = document.getElementById('cfg-headingMap');
-      const tmp = document.createElement('div');
+    document.getElementById("cfg-hmap-add")?.addEventListener("click", () => {
+      const container = document.getElementById("cfg-headingMap");
+      const tmp = document.createElement("div");
       tmp.innerHTML = this._hmapRow({});
       const row = tmp.firstElementChild;
       container.appendChild(row);
-      row.querySelector('.cfg-hmap-remove').addEventListener('click', () => row.remove());
-      row.querySelector('.cfg-hmap-prefix').focus();
-      icx.delayreplace('.cfg-hmap-row:last-child [data-icon]');
+      row
+        .querySelector(".cfg-hmap-remove")
+        .addEventListener("click", () => row.remove());
+      row.querySelector(".cfg-hmap-prefix").focus();
+      icx.delayreplace(".cfg-hmap-row:last-child [data-icon]");
     });
   }
 
   _bindHmapRemoves() {
-    document.querySelectorAll('.cfg-hmap-remove').forEach(btn => {
-      btn.addEventListener('click', () => btn.closest('.cfg-hmap-row').remove());
+    document.querySelectorAll(".cfg-hmap-remove").forEach((btn) => {
+      btn.addEventListener("click", () =>
+        btn.closest(".cfg-hmap-row").remove()
+      );
     });
   }
 
   async save() {
     this._snapshotTab(this._activeTab);
-    const btn = document.getElementById('modal-save');
-    if (!btn) console.warn('[settings] save button #modal-save not found');
+    const btn = document.getElementById("modal-save");
+    if (!btn) console.warn("[settings] save button #modal-save not found");
     if (btn) {
-      btn.disabled    = true;
-      btn.textContent = 'saving…';
+      btn.disabled = true;
+      btn.textContent = "saving…";
     }
     try {
       await Promise.all([
@@ -480,16 +590,16 @@ _snapshotTab(tab) {
         this._saveAi(),
         this._savePreprompts(),
       ]);
-      if (btn) btn.textContent = 'saved ✓';
+      if (btn) btn.textContent = "saved ✓";
     } catch (e) {
-      console.error('[settings] save error', e);
-      if (btn) btn.textContent = 'error';
+      console.error("[settings] save error", e);
+      if (btn) btn.textContent = "error";
     }
 
     setTimeout(() => {
       if (btn) {
-        btn.disabled    = false;
-        btn.textContent = 'save';
+        btn.disabled = false;
+        btn.textContent = "save";
       }
       this.close();
     }, 900);
@@ -499,19 +609,23 @@ _snapshotTab(tab) {
     const s = this._snap.general;
     if (!s) return;
     const updated = {
-      apiPath:    s.apiPath,
-      dataPath:   s.dataPath,
-      theme:      s.theme,
-      classes:    splitCsv(s.classes),
+      apiPath: s.apiPath,
+      dataPath: s.dataPath,
+      theme: s.theme,
+      classes: splitCsv(s.classes),
       headingMap: s.headingMap,
     };
     Object.assign(AppConfig, updated);
-    const resolved = s.theme === 'system'
-      ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
-      : s.theme;
+    const resolved =
+      s.theme === "system"
+        ? window.matchMedia("(prefers-color-scheme: dark)").matches
+          ? "dark"
+          : "light"
+        : s.theme;
     SnaraUI.instance.toggleTheme(resolved);
-    await fetch(AppConfig.apiPath + '?action=config.set', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
+    await fetch(AppConfig.apiPath + "?action=config.set", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify(updated),
     });
   }
@@ -520,44 +634,57 @@ _snapshotTab(tab) {
     const s = this._snap.defaults;
     if (!s) return;
     const updated = {
-      act:              s.act,
-      defaultTag:       s.defaultTag,
-      autosave:         s.autosave,
+      act: s.act,
+      defaultTag: s.defaultTag,
+      autosave: s.autosave,
       autosaveInterval: s.autosaveInterval,
-      metaFields:       splitCsv(s.metaFields),
+      metaFields: splitCsv(s.metaFields),
     };
     Object.assign(AppDefaults, updated);
     const bookId = AppConfig.activeBookId;
-    if (!bookId) { console.warn('[snara] No active book — defaults not saved.'); return; }
-    await fetch(AppConfig.apiPath + `?action=bookdefault.set&bookId=${encodeURIComponent(bookId)}`, {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ defaults: updated }),
-    });
+    if (!bookId) {
+      console.warn("[snara] No active book — defaults not saved.");
+      return;
+    }
+    await fetch(
+      AppConfig.apiPath +
+        `?action=bookdefault.set&bookId=${encodeURIComponent(bookId)}`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ defaults: updated }),
+      }
+    );
   }
 
   async _saveEditor() {
     const bookId = AppConfig.activeBookId;
-    const s      = this._snap.editor;
+    const s = this._snap.editor;
     if (!bookId || !s) return;
     this._editorPrefs = s;
     SnaraSettings.applyEditorPrefs(s);
-    await fetch(AppConfig.apiPath + `?action=editorpref.set&bookId=${encodeURIComponent(bookId)}`, {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(s),
-    });
+    await fetch(
+      AppConfig.apiPath +
+        `?action=editorpref.set&bookId=${encodeURIComponent(bookId)}`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(s),
+      }
+    );
   }
 
   async _loadAiConfig() {
     try {
-      const res = await fetch(AppConfig.apiPath + '?action=ai.get');
-      if (!res.ok) throw new Error('ai.get failed');
+      const res = await fetch(AppConfig.apiPath + "?action=ai.get");
+      if (!res.ok) throw new Error("ai.get failed");
       return await res.json();
     } catch {
-      return { url: '', model: '', key_set: false };
+      return { url: "", model: "", key_set: false };
     }
   }
 
- _renderAi() {
+  _renderAi() {
     const ai = this._snap.ai ?? {};
     const keyLabel = ai.key_set
       ? '<span class="cfg-ai-key-ok">configured ✓</span>'
@@ -573,13 +700,13 @@ _snapshotTab(tab) {
           <label class="cfg-label" for="cfg-ai-url">Endpoint URL</label>
           <input class="cfg-input cfg-input-full" id="cfg-ai-url"
             placeholder="https:
-            value="${esc(ai.url ?? '')}">
+            value="${esc(ai.url ?? "")}">
         </div>
         <div class="cfg-row">
           <label class="cfg-label" for="cfg-ai-model">Model</label>
           <input class="cfg-input" id="cfg-ai-model"
             placeholder="llama-3.3-70b-versatile"
-            value="${esc(ai.model ?? '')}">
+            value="${esc(ai.model ?? "")}">
         </div>
 
         <div class="cfg-row">
@@ -591,13 +718,13 @@ _snapshotTab(tab) {
   }
 
   _snapshotAi() {
-    const urlEl   = document.getElementById('cfg-ai-url');
-    const modelEl = document.getElementById('cfg-ai-model');
+    const urlEl = document.getElementById("cfg-ai-url");
+    const modelEl = document.getElementById("cfg-ai-model");
     if (!urlEl && !modelEl) return;
     this._snap.ai = {
       ...this._snap.ai,
-      url:   urlEl?.value.trim()   ?? this._snap.ai?.url   ?? '',
-      model: modelEl?.value.trim() ?? this._snap.ai?.model ?? '',
+      url: urlEl?.value.trim() ?? this._snap.ai?.url ?? "",
+      model: modelEl?.value.trim() ?? this._snap.ai?.model ?? "",
     };
   }
 
@@ -605,20 +732,25 @@ _snapshotTab(tab) {
     this._snapshotAi();
     const s = this._snap.ai;
     if (!s || (!s.url && !s.model)) return;
-    await fetch(AppConfig.apiPath + '?action=ai.set', {
-      method:  'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body:    JSON.stringify({ url: s.url, model: s.model }),
+    await fetch(AppConfig.apiPath + "?action=ai.set", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ url: s.url, model: s.model }),
     });
   }
 
   async _loadEditorPrefs() {
     const bookId = AppConfig.activeBookId;
-    if (!bookId) { this._editorPrefs = {}; return; }
+    if (!bookId) {
+      this._editorPrefs = {};
+      return;
+    }
     try {
-      const res = await fetch(`${AppConfig.apiPath}?action=editorpref.get&bookId=${bookId}`);
+      const res = await fetch(
+        `${AppConfig.apiPath}?action=editorpref.get&bookId=${bookId}`
+      );
       if (res.ok) this._editorPrefs = await res.json();
-      else        this._editorPrefs = {};
+      else this._editorPrefs = {};
     } catch {
       this._editorPrefs = {};
     }
@@ -627,34 +759,32 @@ _snapshotTab(tab) {
   static applyEditorPrefs(prefs) {
     if (!prefs) return;
     const r = document.documentElement;
-    if (prefs.font) r.style.setProperty('--entry-font', prefs.font);
-    for (const tag of ['act', 'chapter', 'scene', 'beat']) {
+    if (prefs.font) r.style.setProperty("--entry-font", prefs.font);
+    for (const tag of ["act", "chapter", "scene", "beat"]) {
       const t = prefs[tag];
       if (!t) continue;
-      if (t.bg && t.bg !== 'transparent') {
+      if (t.bg && t.bg !== "transparent") {
         r.style.setProperty(`--entry-${tag}-bg`, t.bg);
       } else {
         r.style.removeProperty(`--entry-${tag}-bg`);
       }
 
       if (t.border) {
-		  //console.log(t.border);
-			t.border = `var(--tag-${tag}-bd)`
+        //console.log(t.border);
+        t.border = `var(--tag-${tag}-bd)`;
         r.style.setProperty(`--entry-${tag}-border`, t.border);
       } else {
         r.style.removeProperty(`--entry-${tag}-border`);
       }
-
-   }
-
+    }
   }
 
   // ── Preprompts tab ────────────────────────────
 
   async _loadPreprompts() {
     try {
-      const res = await fetch(AppConfig.apiPath + '?action=preprompts.get');
-      if (!res.ok) throw new Error('preprompts.get failed');
+      const res = await fetch(AppConfig.apiPath + "?action=preprompts.get");
+      if (!res.ok) throw new Error("preprompts.get failed");
       return await res.json();
     } catch {
       return [];
@@ -662,9 +792,11 @@ _snapshotTab(tab) {
   }
 
   _renderPreprompts() {
-    const LOCKED = ['Characters', 'Summarize'];
-    const rows   = this._snap.preprompts || [];
-    const rowsHtml = rows.map((r, i) => this._prepromptRow(r, i, LOCKED)).join('');
+    const LOCKED = ["Characters", "Summarize"];
+    const rows = this._snap.preprompts || [];
+    const rowsHtml = rows
+      .map((r, i) => this._prepromptRow(r, i, LOCKED))
+      .join("");
     return `
       <section class="cfg-section">
         <h3 class="cfg-heading">Pre Prompts
@@ -681,21 +813,29 @@ _snapshotTab(tab) {
     `;
   }
 
-  _prepromptRow({ label = '', value = '' } = {}, index = Date.now(), LOCKED = []) {
+  _prepromptRow(
+    { label = "", value = "" } = {},
+    index = Date.now(),
+    LOCKED = []
+  ) {
     const locked = LOCKED.includes(label);
     const labelInput = `<input
       class="cfg-input cfg-pp-label"
       placeholder="Label"
       value="${esc(label)}"
       data-index="${index}"
-      ${locked ? 'disabled title="This label is required by the AI toolbar"' : ''}>`;
+      ${
+        locked
+          ? 'disabled title="This label is required by the AI toolbar"'
+          : ""
+      }>`;
     const valueArea = `<textarea
       class="cfg-input cfg-pp-value"
       placeholder="Prompt text..."
       data-index="${index}"
       rows="2">${esc(value)}</textarea>`;
     const deleteBtn = locked
-      ? ''
+      ? ""
       : `<button class="cfg-hmap-remove cfg-pp-remove" title="Remove" data-index="${index}">
            <i data-icon="trash"></i>
          </button>`;
@@ -709,64 +849,76 @@ _snapshotTab(tab) {
 
   _snapshotPreprompts() {
     const rows = [];
-    document.querySelectorAll('#cfg-preprompts-list .cfg-pp-row').forEach(row => {
-      const label = row.querySelector('.cfg-pp-label')?.value?.trim() || '';
-      const value = row.querySelector('.cfg-pp-value')?.value?.trim() || '';
-      if (label || value) rows.push({ label, value });
-    });
+    document
+      .querySelectorAll("#cfg-preprompts-list .cfg-pp-row")
+      .forEach((row) => {
+        const label = row.querySelector(".cfg-pp-label")?.value?.trim() || "";
+        const value = row.querySelector(".cfg-pp-value")?.value?.trim() || "";
+        if (label || value) rows.push({ label, value });
+      });
     if (rows.length) this._snap.preprompts = rows;
   }
 
   _bindPrepromptsTab() {
-    const LOCKED = ['Characters', 'Summarize'];
+    const LOCKED = ["Characters", "Summarize"];
 
-    document.getElementById('cfg-pp-add')?.addEventListener('click', () => {
-      const list  = document.getElementById('cfg-preprompts-list');
+    document.getElementById("cfg-pp-add")?.addEventListener("click", () => {
+      const list = document.getElementById("cfg-preprompts-list");
       const index = Date.now();
-      const tmp   = document.createElement('div');
+      const tmp = document.createElement("div");
       tmp.innerHTML = this._prepromptRow({}, index, LOCKED);
       const row = tmp.firstElementChild;
       list.appendChild(row);
-      row.querySelector('.cfg-pp-remove')?.addEventListener('click', () => {
+      row.querySelector(".cfg-pp-remove")?.addEventListener("click", () => {
         this._snapshotPreprompts();
         row.remove();
       });
-      row.querySelector('.cfg-pp-label')?.focus();
-      icx.delayreplace('#cfg-preprompts-list .cfg-pp-row:last-child [data-icon]');
+      row.querySelector(".cfg-pp-label")?.focus();
+      icx.delayreplace(
+        "#cfg-preprompts-list .cfg-pp-row:last-child [data-icon]"
+      );
     });
 
-    document.getElementById('cfg-pp-reset')?.addEventListener('click', async () => {
-      if (!confirm('Reset pre-prompts to default? Your changes will be lost.')) return;
-      try {
-        await fetch(AppConfig.apiPath + '?action=preprompts.reset', { method: 'DELETE' });
-        this._preprompts      = await this._loadPreprompts();
-        this._snap.preprompts = this._preprompts.map(r => ({ ...r }));
-        const content = document.getElementById('cfg-tab-content');
-        if (content) content.innerHTML = this._renderPreprompts();
-        this._bindPrepromptsTab();
-        icx.delayreplace('#cfg-preprompts-list [data-icon]');
-      } catch (e) {
-        console.error('[settings] preprompts reset failed', e);
-      }
-    });
-
-    document.querySelectorAll('#cfg-preprompts-list .cfg-pp-remove').forEach(btn => {
-      btn.addEventListener('click', () => {
-        this._snapshotPreprompts();
-        btn.closest('.cfg-pp-row')?.remove();
+    document
+      .getElementById("cfg-pp-reset")
+      ?.addEventListener("click", async () => {
+        if (
+          !confirm("Reset pre-prompts to default? Your changes will be lost.")
+        )
+          return;
+        try {
+          await fetch(AppConfig.apiPath + "?action=preprompts.reset", {
+            method: "DELETE",
+          });
+          this._preprompts = await this._loadPreprompts();
+          this._snap.preprompts = this._preprompts.map((r) => ({ ...r }));
+          const content = document.getElementById("cfg-tab-content");
+          if (content) content.innerHTML = this._renderPreprompts();
+          this._bindPrepromptsTab();
+          icx.delayreplace("#cfg-preprompts-list [data-icon]");
+        } catch (e) {
+          console.error("[settings] preprompts reset failed", e);
+        }
       });
-    });
+
+    document
+      .querySelectorAll("#cfg-preprompts-list .cfg-pp-remove")
+      .forEach((btn) => {
+        btn.addEventListener("click", () => {
+          this._snapshotPreprompts();
+          btn.closest(".cfg-pp-row")?.remove();
+        });
+      });
   }
 
   async _savePreprompts() {
     this._snapshotPreprompts();
     const rows = this._snap.preprompts;
     if (!rows || !rows.length) return;
-    await fetch(AppConfig.apiPath + '?action=preprompts.set', {
-      method:  'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body:    JSON.stringify(rows),
+    await fetch(AppConfig.apiPath + "?action=preprompts.set", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(rows),
     });
   }
-
 }

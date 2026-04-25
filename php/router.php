@@ -209,7 +209,12 @@ case 'config.get':
                     self::requireMethod($method, 'POST');
                     $body = self::body();
                     if (empty($body['filename'])) self::error(400, 'Missing filename');
-                    $bookId = isset($body['bookId']) ? (int)$body['bookId'] : null;
+                    // Always use the server-side active book as authority.
+                    // Ignores $body['bookId'] — it may carry a stale value from
+                    // a doc copied across books.
+                    $active = Config::getActive();
+                    $bookId = isset($active['activeBookId']) ? (int)$active['activeBookId'] : null;
+                    if (!$bookId) self::error(400, 'No active book on server — open a book first');
                     Document::save($body['filename'], $body, $bookId);
                     echo json_encode(['ok' => true, 'body' => $body['filename']]);
                     break;
@@ -230,6 +235,17 @@ case 'config.get':
                     if (!$filename) self::error(400, 'Missing filename');
                     Document::setOrder($filename, $order, $bookId);
                     echo json_encode(['ok' => true]);
+                    break;
+
+                case 'doc.rename':
+                    self::requireMethod($method, 'POST');
+                    $body   = self::body();
+                    $from   = trim($body['from']   ?? '');
+                    $to     = trim($body['to']     ?? '');
+                    $bookId = isset($body['bookId']) ? (int)$body['bookId'] : null;
+                    if (!$from || !$to) self::error(400, 'Missing from or to');
+                    $newName = Document::rename($from, $to, $bookId);
+                    echo json_encode(['ok' => true, 'filename' => $newName]);
                     break;
 
                 // ── Books ────────────────────────────────────

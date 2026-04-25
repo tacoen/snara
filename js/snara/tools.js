@@ -1,13 +1,13 @@
-import icx             from '../icons/ge-icon.js';
-import { SnaraEditor } from './core.js';
+import icx from "../icons/ge-icon.js";
+import { SnaraEditor } from "./core.js";
 
 export class SnaraTool {
   static instance = null;
 
   constructor() {
     SnaraTool.instance = this;
-    this.aside   = document.querySelector('aside.side-panel');
-    this.entries = document.querySelector('.entries');
+    this.aside = document.querySelector("aside.side-panel");
+    this.entries = document.querySelector(".entries");
     if (!this.aside || !this.entries) return;
     this._buildToc();
     this._observe();
@@ -20,17 +20,17 @@ export class SnaraTool {
       return;
     }
 
-    const ul = document.createElement('ul');
-    ul.className = 'toc-list';
+    const ul = document.createElement("ul");
+    ul.className = "toc-list";
 
     items.forEach(({ level, text, anchor }) => {
-      const li = document.createElement('li');
+      const li = document.createElement("li");
       li.className = `toc-item toc-${level}`;
 
-      const a = document.createElement('a');
-      a.href        = `#${anchor}`;
+      const a = document.createElement("a");
+      a.href = `#${anchor}`;
       a.textContent = text;
-      a.addEventListener('click', e => {
+      a.addEventListener("click", (e) => {
         e.preventDefault();
         const target = document.getElementById(anchor);
         if (target) SnaraEditor.instance?._openEntry(target);
@@ -45,16 +45,16 @@ export class SnaraTool {
   }
 
   _collect() {
-    const items   = [];
-    const entries = this.entries.querySelectorAll('.entry');
+    const items = [];
+    const entries = this.entries.querySelectorAll(".entry");
 
     entries.forEach((div, idx) => {
       const level = this._levelOf(div);
       if (!level) return;
-      const hEl  = div.querySelector('h1, h2, h3, h4');
+      const hEl = div.querySelector("h1, h2, h3, h4");
       const text = hEl
         ? hEl.textContent.trim()
-        : div.textContent.trim().split('\n')[0].trim();
+        : div.textContent.trim().split("\n")[0].trim();
       if (!text) return;
 
       const anchor = `entry-${idx}`;
@@ -66,20 +66,21 @@ export class SnaraTool {
   }
 
   _levelOf(div) {
-    if (div.classList.contains('act'))     return 'act';
-    if (div.classList.contains('chapter')) return 'chapter';
-    if (div.classList.contains('scene'))   return 'scene';
-    if (div.classList.contains('beat') && div.querySelector('h1,h2,h3,h4')) return 'beat';
+    if (div.classList.contains("act")) return "act";
+    if (div.classList.contains("chapter")) return "chapter";
+    if (div.classList.contains("scene")) return "scene";
+    if (div.classList.contains("beat") && div.querySelector("h1,h2,h3,h4"))
+      return "beat";
     return null;
   }
 
   _slug(text) {
     return text
       .toLowerCase()
-      .replace(/[^\w\s-]/g, '')
+      .replace(/[^\w\s-]/g, "")
       .trim()
-      .replace(/[\s_]+/g, '-')
-      .replace(/-+/g, '-')
+      .replace(/[\s_]+/g, "-")
+      .replace(/-+/g, "-")
       .slice(0, 64);
   }
 
@@ -90,10 +91,10 @@ export class SnaraTool {
     });
 
     this._mo.observe(this.entries, {
-      childList:     true,
-      subtree:       true,
+      childList: true,
+      subtree: true,
       characterData: true,
-      attributes:    false,
+      attributes: false,
     });
   }
 
@@ -102,51 +103,73 @@ export class SnaraTool {
   }
 
   static htmlToMd(html) {
-    const tmp = document.createElement('div');
+    const tmp = document.createElement("div");
     tmp.innerHTML = html;
-    tmp.querySelectorAll('.label-tag').forEach(el => el.remove());
+    tmp.querySelectorAll(".label-tag").forEach((el) => el.remove());
 
     function nodeToMd(node) {
       if (node.nodeType === Node.TEXT_NODE) return node.textContent.trim();
-      if (node.nodeType !== Node.ELEMENT_NODE) return '';
+      if (node.nodeType !== Node.ELEMENT_NODE) return "";
       const tag = node.tagName?.toLowerCase();
       const inner = () => {
-        let content = Array.from(node.childNodes).map(nodeToMd).join('');
-        content = content.replace(/\s*>\s*</g, '><');
+        let content = Array.from(node.childNodes).map(nodeToMd).join("");
+        content = content.replace(/\s*>\s*</g, "><");
         return content.trim();
       };
 
       switch (tag) {
-        case 'h1':         return `# ${inner()}\n\n`;
-        case 'h2':         return `## ${inner()}\n\n`;
-        case 'h3':         return `### ${inner()}\n\n`;
-        case 'h4':         return `#### ${inner()}\n\n`;
-        case 'strong':
-        case 'b':          return `**${inner()}**`;
-        case 'em':
-        case 'i':          return `*${inner()}*`;
-        case 'code':       return node.closest('pre') ? inner() : `\`${inner()}\``;
-        case 'pre':        return `\`\`\`\n${inner().trim()}\n\`\`\`\n\n`;
-        case 'blockquote': return inner().split('\n').map(l => `> ${l}`).join('\n') + '\n\n';
-        case 'a':          return `[${inner()}](${node.href || ''})`;
-        case 'li':         return `- ${inner().trim()}\n`;
-        case 'ul':
-        case 'ol':         return inner() + '\n';
-        case 'br':         return '\n';
-        case 'p':          return `${inner().trim()}\n\n`;
-        case 'div':        return inner() + '\n\n';
-        case 'hr':         return `---\n\n`;
-        default:           return inner();
+        case "h1":
+          return `# ${inner()}\n\n`;
+        case "h2":
+          return `## ${inner()}\n\n`;
+        case "h3":
+          return `### ${inner()}\n\n`;
+        case "h4":
+          return `#### ${inner()}\n\n`;
+        case "strong":
+        case "b":
+          return `**${inner()}**`;
+        case "em":
+        case "i":
+          return `*${inner()}*`;
+        case "code":
+          return node.closest("pre") ? inner() : `\`${inner()}\``;
+        case "pre":
+          return `\`\`\`\n${inner().trim()}\n\`\`\`\n\n`;
+        case "blockquote":
+          return (
+            inner()
+              .split("\n")
+              .map((l) => `> ${l}`)
+              .join("\n") + "\n\n"
+          );
+        case "a":
+          return `[${inner()}](${node.href || ""})`;
+        case "li":
+          return `- ${inner().trim()}\n`;
+        case "ul":
+        case "ol":
+          return inner() + "\n";
+        case "br":
+          return "\n";
+        case "p":
+          return `${inner().trim()}\n\n`;
+        case "div":
+          return inner() + "\n\n";
+        case "hr":
+          return `---\n\n`;
+        default:
+          return inner();
       }
     }
 
     let md = Array.from(tmp.childNodes)
       .map(nodeToMd)
-      .join('\n\n')
-      .replace(/\n{4,}/g, '\n\n')
+      .join("\n\n")
+      .replace(/\n{4,}/g, "\n\n")
       .trim();
-    md = md.replace(/^\s*-\s*$/gm, '');
-    md = md.replace(/\n\s*\n\s*-\s/g, '\n- ');
+    md = md.replace(/^\s*-\s*$/gm, "");
+    md = md.replace(/\n\s*\n\s*-\s/g, "\n- ");
     return md;
   }
 
@@ -155,7 +178,7 @@ export class SnaraTool {
     const sel = window.getSelection();
     if (!sel || !sel.rangeCount) return;
     const range = sel.getRangeAt(0);
-    const node  = document.createTextNode(text);
+    const node = document.createTextNode(text);
     range.insertNode(node);
     range.setStartAfter(node);
     range.collapse(true);
@@ -163,13 +186,15 @@ export class SnaraTool {
     sel.addRange(range);
   }
 
-  static wrapSelection(el, before, after, placeholder = 'text') {
+  static wrapSelection(el, before, after, placeholder = "text") {
     el.focus();
     const sel = window.getSelection();
     if (!sel || !sel.rangeCount) return;
-    const range    = sel.getRangeAt(0);
+    const range = sel.getRangeAt(0);
     const selected = range.toString();
-    const node     = document.createTextNode(before + (selected || placeholder) + after);
+    const node = document.createTextNode(
+      before + (selected || placeholder) + after
+    );
     range.deleteContents();
     range.insertNode(node);
     range.setStartAfter(node);
@@ -179,28 +204,34 @@ export class SnaraTool {
   }
 
   static applyTheme(theme) {
-    if (theme === 'system' || !theme) {
-      theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    if (theme === "system" || !theme) {
+      theme = window.matchMedia("(prefers-color-scheme: dark)").matches
+        ? "dark"
+        : "light";
     }
-    document.documentElement.setAttribute('data-theme', theme);
-    const btn = document.getElementById('theme-toggle');
+    document.documentElement.setAttribute("data-theme", theme);
+    const btn = document.getElementById("theme-toggle");
     if (btn) {
-      let i = btn.querySelector('i[data-icon]');
+      let i = btn.querySelector("i[data-icon]");
       if (i) {
-        i.setAttribute('data-icon', theme === 'dark' ? 'moon' : 'sun');
-        icx.delayreplace('#theme-toggle [data-icon]');
+        i.setAttribute("data-icon", theme === "dark" ? "moon" : "sun");
+        icx.delayreplace("#theme-toggle [data-icon]");
       } else {
-        btn.textContent = '';
-        const newI = document.createElement('i');
-        newI.setAttribute('data-icon', theme === 'dark' ? 'moon' : 'sun');
+        btn.textContent = "";
+        const newI = document.createElement("i");
+        newI.setAttribute("data-icon", theme === "dark" ? "moon" : "sun");
         btn.appendChild(newI);
-        icx.delayreplace('#theme-toggle [data-icon]');
+        icx.delayreplace("#theme-toggle [data-icon]");
       }
     }
   }
 
   static savedTheme() {
-    return localStorage.getItem('theme')
-      || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+    return (
+      localStorage.getItem("theme") ||
+      (window.matchMedia("(prefers-color-scheme: dark)").matches
+        ? "dark"
+        : "light")
+    );
   }
 }

@@ -86,7 +86,8 @@ private static function purgeStaleCacheFiles(int $bookId): void
     if ($bookId) Config::ensureBookDirs($bookId);
 
     $data['filename'] = self::safeName($filename);
-    if ($bookId) $data['bookId'] = $bookId;
+    // Always overwrite bookId — corrects stale values from docs copied across books
+    if ($bookId !== null) $data['bookId'] = $bookId;
 
     // Ensure meta.order exists, default 99
     if (!isset($data['meta']['order'])) {
@@ -99,12 +100,12 @@ private static function purgeStaleCacheFiles(int $bookId): void
       throw new RuntimeException("Failed to write document: $writePath");
     }
 
-    // Rebuild act.json for this book
-
-
+    // Rebuild all caches in one pass — same logic chapterIndex() reads from.
+    // Order matters: act index must be fresh before Book::chapters() reads it.
     if ($bookId) {
       self::rebuildActIndex($bookId);
       Cache::clearChapters($bookId);
+      Book::chapters($bookId);
       self::rebuildStoryCache($bookId, 'characters');
       self::rebuildStoryCache($bookId, 'settings');
     }
@@ -115,10 +116,10 @@ private static function purgeStaleCacheFiles(int $bookId): void
     $path = self::path($filename, $bookId);
     if (file_exists($path)) unlink($path);
 
-    // Rebuild act.json after deletion
     if ($bookId) {
       self::rebuildActIndex($bookId);
       Cache::clearChapters($bookId);
+      Book::chapters($bookId);
       self::rebuildStoryCache($bookId, 'characters');
       self::rebuildStoryCache($bookId, 'settings');
     }
@@ -164,6 +165,48 @@ private static function purgeStaleCacheFiles(int $bookId): void
     );
   }
 
+  // Rename a document file on disk and update its internal filename field.
+  // Returns the sanitized new filename (no extension).
+  // Throws RuntimeException if source missing or destination already exists.
+  public static function rename(string $from, string $to, ?int $bookId = null): string
+  {
+    $srcName = self::safeName($from);
+    $dstName = self::safeName($to);
+
+    if ($srcName === $dstName) return $dstName;
+
+    $srcPath = self::path($from, $bookId);
+    $dstPath = self::path($to,   $bookId);
+
+    if (!file_exists($srcPath)) {
+      throw new RuntimeException("Source document not found: $srcName");
+    }
+    if (file_exists($dstPath)) {
+      throw new RuntimeException("A document named '$dstName' already exists");
+    }
+
+    $data = json_decode(file_get_contents($srcPath), true);
+    if (!is_array($data)) throw new RuntimeException("Corrupt document: $srcName");
+
+    $data['filename'] = $dstName;
+
+    if (!rename($srcPath, $dstPath)) {
+      throw new RuntimeException("File rename failed: $srcName -> $dstName");
+    }
+
+    file_put_contents($dstPath, json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+
+    if ($bookId) {
+      self::rebuildActIndex($bookId);
+      Cache::clearChapters($bookId);
+      Book::chapters($bookId);
+      self::rebuildStoryCache($bookId, 'characters');
+      self::rebuildStoryCache($bookId, 'settings');
+    }
+
+    return $dstName;
+  }
+
   public static function setOrder(string $filename, int $order, ?int $bookId = null): void
   {
     $path = self::path($filename, $bookId);
@@ -202,7 +245,10 @@ private static function purgeStaleCacheFiles(int $bookId): void
       $doc = json_decode($raw, true);
       if (!is_array($doc)) continue;
 
-      $filename = $doc['filename'] ?? basename($file, '.json');
+      // Use filesystem name as key — must match what Book::chapters() looks up.
+      // $doc['filename'] can be stale (e.g. from a pre-rename save), so
+      // basename is the ground truth.
+      $filename = basename($file, '.json');
       $actText  = $actDefault;
 
       // Find first entry with class "act"
