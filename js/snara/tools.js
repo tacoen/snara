@@ -120,6 +120,7 @@ export class SnaraTool {
         case 'h1':         return `# ${inner()}\n\n`;
         case 'h2':         return `## ${inner()}\n\n`;
         case 'h3':         return `### ${inner()}\n\n`;
+        case 'h4':         return `#### ${inner()}\n\n`;
         case 'strong':
         case 'b':          return `**${inner()}**`;
         case 'em':
