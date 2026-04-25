@@ -1,3 +1,5 @@
+
+node-modules/
 index.html
 *.log
 *.backup
