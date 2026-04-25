@@ -370,12 +370,13 @@ button[data-preprompt-index] svg {
   margin-left: auto;
   letter-spacing: 0.04em;
 }
+
 .submit-btn {
   display: flex;
   align-items: center;
   gap: var(--s-xs);
   background: var(--primary);
-  color: var(--fg-main);
+  color: var(--bg-main);
   border: none;
   border-radius: 6px;
   padding: var(--s-xs) var(--s-md);
@@ -386,6 +387,12 @@ button[data-preprompt-index] svg {
   white-space: nowrap;
   transition: opacity 0.15s;
 }
+
+[data-theme='dark'] .submit-btn {
+  background: var(--primary);
+  color: var(--fg-main);
+}
+
 .submit-btn:hover {
   opacity: 0.85;
 }

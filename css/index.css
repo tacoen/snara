@@ -57,6 +57,7 @@
   position: relative;
   outline: none;
   transition: background 0.1s;
+  color: var(--tag-act-fg);
 }
 .idx-act-header:first-child {
   margin-top: 0;

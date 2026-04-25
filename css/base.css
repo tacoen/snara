@@ -15,29 +15,78 @@
   --white: #ffffff;
   --black: #000000;
 }
-::-webkit-scrollbar {
-  width: 8px;
+
+[data-theme="light"] body {
+
+  --fg-muted: color-mix(in srgb, var(--fg-main), var(--white) 30%);
+  
+  --bg-alt: color-mix(in srgb, var(--bg-main), var(--black) 3%);
+  --border: color-mix(in srgb, var(--bg-main), var(--black) 20%);
+  --bg-muted: color-mix(in srgb, var(--bg-main), var(--black) 6%);
+  --bg-hover: color-mix(in srgb, var(--bg-main), var(--black) 3%);
+  --overlay: color-mix(in srgb, color-mix(in srgb, var(--bg-main), var(--black) 5%), transparent 9%);
+  --shadow: color-mix(in srgb,  var(--black) 60%, transparent 5%);
+  --scroll: var(--border);
+  --scroll-track: color-mix(in srgb, color-mix(in srgb, var(--scroll), var(--white) 60%), transparent 60%);
+  --scroll-thumb: color-mix(in srgb, var(--scroll), var(--black) 15%);
 }
+
+[data-theme="dark"] body {
+
+  --fg-muted: color-mix(in srgb, var(--fg-main), var(--black) 30%);
+
+  --bg-alt: color-mix(in srgb, var(--bg-main), var(--white) 10%);
+  --border: color-mix(in srgb, var(--bg-main), var(--white) 20%);
+  --bg-muted: color-mix(in srgb, var(--bg-main), var(--white) 15%);
+  --bg-hover: color-mix(in srgb, var(--bg-main), var(--white) 25%);
+  --overlay: color-mix(in srgb, color-mix(in srgb, var(--bg-main), var(--black) 5%), transparent 9%);
+  --shadow: color-mix(in srgb,  var(--black) 50%, transparent 25%);
+  --scroll: var(--border);
+  --scroll-track: color-mix(in srgb, color-mix(in srgb, var(--scroll), var(--black) 60%), transparent 60%);
+  --scroll-thumb: color-mix(in srgb, var(--scroll), var(--white) 15%);
+}
+
+::-webkit-scrollbar {
+  width: 4px;
+  background: var(--scroll-bg);  
+}
+::-webkit-scrollbar-thumb {
+  border-radius: 4px;
+  background: var(--scroll);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--scroll-ho);
+}
+
+
 .content::-webkit-scrollbar {
   width: 2px;
+  background: var(--scroll-bg);  
 }
 .content::-webkit-scrollbar-thumb {
-  background: var(--border);
+  background: var(--scroll);
   border-radius: 4px;
 }
 .content::-webkit-scrollbar-thumb:hover {
-  background: var(--bg-hover);
+  background: var(--scroll-ho);
 }
+
+
 #article::-webkit-scrollbar {
-  width: 3px;
+  width: 4px;
+  background: var(--scroll-track);  
 }
+
 #article::-webkit-scrollbar-thumb {
-  background: #931;
-  border-radius: 4px;
+  background: var(--scroll-thumb);
 }
+
 #article::-webkit-scrollbar-thumb:hover {
-  background: #fc3;
+  background: var(--scroll);
 }
+
+
 .entry::-webkit-scrollbar {
   width: 4px;
 }
@@ -48,6 +97,7 @@
 .entry::-webkit-scrollbar-thumb:hover {
   background: var(--bg-hover);
 }
+
 *,
 ::after,
 ::before,
@@ -195,4 +245,92 @@ svg.icon {
 }
 code {
   font-weight: 200;
+}
+
+
+#app {
+  display: grid;
+  grid-template-columns: 40px auto;
+  grid-template-areas:
+    "nav header"
+    "nav content";
+}
+#app > nav {
+  grid-area: nav;
+  grid-row: span 2;
+}
+#app main {
+  display: grid;
+  grid-template-rows: 40px auto;
+  grid-template-columns: auto 15rem;
+  grid-gap: 0;
+}
+.dashboard {
+  display: grid;
+  grid-template-columns: auto 15rem;
+  height: calc(100vh - 43px);
+}
+#app header.top {
+  justify-content: space-between;
+  gap: var(--s-md);
+  border-bottom: 1px solid var(--border);
+  grid-column: span 2;
+}
+#kanban-area,
+#files-area,
+#about-area,
+#notes-area,
+#meta-area,
+#chatbot-area {
+  grid-column: span 2;
+}
+#meta-area {
+  display: grid;
+  grid-template-columns: 60% 40%;
+}
+aside {
+  grid-row: span 2;
+  border-left: 1px solid var(--border);
+}
+aside,
+.content-area {
+  height: calc(100dvh - 43px);
+}
+aside div.content {
+  padding: var(--s-sm);
+  overflow-y: scroll;
+  height: 80vh;
+  margin-right: var(--s-md);
+}
+.content-area {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+aside.meta-side,
+aside.chat-side {
+  position: fixed;
+  top: 44px;
+  right: 0;
+  width: 15rem;
+  font-size: var(--f-xs);
+}
+aside .content .header {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  padding: var(--s-xs) 0;
+  gap: var(--s-xs);
+}
+aside .content .header.between {
+  justify-content: space-between;
+}
+aside .content .header a {
+  font-weight: 600;
+  text-decoration: none;
+}
+aside .content .header a:hover {
+  font-weight: 600;
+  color: var(--fg-link);
+  text-decoration: underline;
 }

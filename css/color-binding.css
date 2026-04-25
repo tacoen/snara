@@ -118,10 +118,11 @@ input[data-var="--tag-beat-fg"] {
 }
 
 #about-btn.btn-icon:hover, #about-btn.btn-icon {
-	color: var(--danger);
+	color: var(--primary);
 }
 
-[data-theme='dark'] #about-btn.btn-icon:hover, [data-theme='dark'] #about-btn.btn-icon {
+
+[data-theme='dark'] #about-btn.btn-icon:hover, #about-btn.btn-icon {
 	color: var(--fg-link);
 }
 
