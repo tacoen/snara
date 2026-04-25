@@ -12,288 +12,361 @@
 
 class Document
 {
-
-  private static function safeName(string $filename): string
-  {
-    $name = basename($filename);
-    $name = preg_replace('/[^a-zA-Z0-9\-_.]/', '-', $name);
-    $name = preg_replace('/\.json$/i', '', $name);
-    if ($name === '' || $name === '.') {
-      throw new InvalidArgumentException('Invalid filename');
-    }
-    return $name;
-  }
-
-  private static function dir(?int $bookId): string
-  {
-    $base = Config::dataDir();
-    return $bookId ? $base . '/' . $bookId : $base;
-  }
-
-  private static function path(string $filename, ?int $bookId = null): string
-  {
-    return self::dir($bookId) . '/' . self::safeName($filename) . '.json';
-  }
-
-
-// ── Purge stale cache files (>1 day old) ──────
-
-private static function purgeStaleCacheFiles(int $bookId): void
-{
-  $cacheDir = Config::dataDir() . '/' . $bookId . '/cache';
-  if (!is_dir($cacheDir)) return;
-
-  $files     = glob($cacheDir . '/*.json') ?: [];
-  $threshold = time() - 86400; // 1 day in seconds
-
-  foreach ($files as $file) {
-    if (filemtime($file) < $threshold) {
-      @unlink($file);
-    }
-  }
-}
-
-  // ── CRUD ──────────────────────────────────────
-
-  public static function list(?int $bookId = null): array
-  {
-    $dir   = self::dir($bookId);
-    if (!is_dir($dir)) return [];
-	
-	  if ($bookId) self::purgeStaleCacheFiles($bookId); 
-	  
-    $files = glob($dir . '/*.json') ?: [];
-    // Exclude act.json from document list
-    $files = array_filter($files, fn($f) => strpos($f, '/cache/') === false && strpos($f, '/conf/') === false);
-    return array_map(fn($f) => basename($f, '.json'), array_values($files));
-  }
-
-  public static function get(string $filename, ?int $bookId = null): array
-  {
-    $path = self::path($filename, $bookId);
-    if (!file_exists($path)) {
-      http_response_code(404);
-      throw new RuntimeException("Document not found: $filename");
-    }
-    $data = json_decode(file_get_contents($path), true);
-    return is_array($data) ? $data : [];
-  }
-
-  public static function save(string $filename, array $data, ?int $bookId = null): void
-  {
-    $dir = self::dir($bookId);
-    if (!is_dir($dir)) mkdir($dir, 0755, true);
-    if ($bookId) Config::ensureBookDirs($bookId);
-
-    $data['filename'] = self::safeName($filename);
-    // Always overwrite bookId — corrects stale values from docs copied across books
-    if ($bookId !== null) $data['bookId'] = $bookId;
-
-    // Ensure meta.order exists, default 99
-    if (!isset($data['meta']['order'])) {
-      $data['meta'] = array_merge(['order' => 99], $data['meta'] ?? []);
-    }
-
-    $writePath = self::path($filename, $bookId);
-    $encoded   = json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
-    if (file_put_contents($writePath, $encoded) === false) {
-      throw new RuntimeException("Failed to write document: $writePath");
-    }
-
-    // Rebuild all caches in one pass — same logic chapterIndex() reads from.
-    // Order matters: act index must be fresh before Book::chapters() reads it.
-    if ($bookId) {
-      self::rebuildActIndex($bookId);
-      Cache::clearChapters($bookId);
-      Book::chapters($bookId);
-      self::rebuildStoryCache($bookId, 'characters');
-      self::rebuildStoryCache($bookId, 'settings');
-    }
-  }
-
-  public static function delete(string $filename, ?int $bookId = null): void
-  {
-    $path = self::path($filename, $bookId);
-    if (file_exists($path)) unlink($path);
-
-    if ($bookId) {
-      self::rebuildActIndex($bookId);
-      Cache::clearChapters($bookId);
-      Book::chapters($bookId);
-      self::rebuildStoryCache($bookId, 'characters');
-      self::rebuildStoryCache($bookId, 'settings');
-    }
-  }
-
-
-  public static function rebuildStoryCache(int $bookId, string $field): void
-  {
-    $dir   = self::dir($bookId);
-    $files = glob($dir . '/*.json') ?: [];
-    $index = [];
-
-    foreach ($files as $file) {
-
-		if (strpos($file, '/cache/') !== false || strpos($file, '/conf/') !== false) continue;
-
-      $raw = @file_get_contents($file);
-      if (!$raw) continue;
-      $doc = json_decode($raw, true);
-      if (!is_array($doc)) continue;
-
-      $raw_val = $doc['meta'][$field] ?? '';
-      if (!$raw_val) continue;
-
-      $values = array_values(array_unique(array_filter(
-        array_map('trim', explode(',', $raw_val))
-      )));
-
-      if (!empty($values)) {
-        $index[] = [
-          'filename' => $doc['filename'] ?? basename($file, '.json'),
-          'values'   => $values,
-        ];
-      }
-    }
-
-    $cacheDir  = Config::dataDir() . '/' . $bookId . '/cache';
-    if (!is_dir($cacheDir)) mkdir($cacheDir, 0755, true);
-
-    file_put_contents(
-      $cacheDir . '/story-' . $field . '.json',
-      json_encode($index, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE)
-    );
-  }
-
-  // Rename a document file on disk and update its internal filename field.
-  // Returns the sanitized new filename (no extension).
-  // Throws RuntimeException if source missing or destination already exists.
-  public static function rename(string $from, string $to, ?int $bookId = null): string
-  {
-    $srcName = self::safeName($from);
-    $dstName = self::safeName($to);
-
-    if ($srcName === $dstName) return $dstName;
-
-    $srcPath = self::path($from, $bookId);
-    $dstPath = self::path($to,   $bookId);
-
-    if (!file_exists($srcPath)) {
-      throw new RuntimeException("Source document not found: $srcName");
-    }
-    if (file_exists($dstPath)) {
-      throw new RuntimeException("A document named '$dstName' already exists");
-    }
-
-    $data = json_decode(file_get_contents($srcPath), true);
-    if (!is_array($data)) throw new RuntimeException("Corrupt document: $srcName");
-
-    $data['filename'] = $dstName;
-
-    if (!rename($srcPath, $dstPath)) {
-      throw new RuntimeException("File rename failed: $srcName -> $dstName");
-    }
-
-    file_put_contents($dstPath, json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
-
-    if ($bookId) {
-      self::rebuildActIndex($bookId);
-      Cache::clearChapters($bookId);
-      Book::chapters($bookId);
-      self::rebuildStoryCache($bookId, 'characters');
-      self::rebuildStoryCache($bookId, 'settings');
-    }
-
-    return $dstName;
-  }
-
-  public static function setOrder(string $filename, int $order, ?int $bookId = null): void
-  {
-    $path = self::path($filename, $bookId);
-    if (!file_exists($path)) throw new RuntimeException("Document not found: $filename");
-    $data = json_decode(file_get_contents($path), true);
-    if (!is_array($data)) throw new RuntimeException("Corrupt document: $filename");
-    $data['meta']['order'] = $order;
-    file_put_contents($path, json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
-  }
-
-  // ── Act index ─────────────────────────────────
-  // Scans all docs in the book dir, finds first class:"act" entry,
-  // strips HTML, writes data/$bookId/cache/act.json.
-  //
-  // act.json shape:
-  //   [ { "filename": "chapter-one", "act": "Act One Title" }, … ]
-
-  public static function rebuildActIndex(int $bookId): void
-  {
-    $dir = self::dir($bookId);
-    if (!is_dir($dir)) return;
-
-    // Resolve act default: book default.json overrides global default.json
-    $resolved   = Config::resolveDefaults($bookId);
-    $actDefault = $resolved['act'] ?? 'None';
-
-    $files = glob($dir . '/*.json') ?: [];
-    $result = [];
-
-    foreach ($files as $file) {
-      // Skip conf/ directory files
-		if (strpos($file, '/cache/') !== false || strpos($file, '/conf/') !== false) continue;
-
-      $raw = @file_get_contents($file);
-      if (!$raw) continue;
-      $doc = json_decode($raw, true);
-      if (!is_array($doc)) continue;
-
-      // Use filesystem name as key — must match what Book::chapters() looks up.
-      // $doc['filename'] can be stale (e.g. from a pre-rename save), so
-      // basename is the ground truth.
-      $filename = basename($file, '.json');
-      $actText  = $actDefault;
-
-      // Find first entry with class "act"
-      $article = $doc['article'] ?? [];
-      foreach ($article as $entry) {
-        if (($entry['class'] ?? '') === 'act') {
-          $actText = self::stripHtml($entry['content'] ?? '');
-          break;
+    private static function safeName(string $filename): string
+    {
+        $name = basename($filename);
+        $name = preg_replace("/[^a-zA-Z0-9\-_.]/", "-", $name);
+        $name = preg_replace('/\.json$/i', "", $name);
+        if ($name === "" || $name === ".") {
+            throw new InvalidArgumentException("Invalid filename");
         }
-      }
-
-      $result[] = [
-        'filename' => $filename,
-        'act'      => $actText,
-      ];
+        return $name;
     }
 
-    // ? Config::ensureBookDirs($bookId);
-    $cacheDir = Config::dataDir() . '/' . $bookId . '/cache';
-    if (!is_dir($cacheDir)) mkdir($cacheDir, 0755, true);
-    file_put_contents(
-      $cacheDir . '/act.json',
-      json_encode($result, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE)
-    );
-  }
+    private static function dir(?int $bookId): string
+    {
+        $base = Config::dataDir();
+        return $bookId ? $base . "/" . $bookId : $base;
+    }
 
+    private static function path(string $filename, ?int $bookId = null): string
+    {
+        return self::dir($bookId) . "/" . self::safeName($filename) . ".json";
+    }
 
-  // ── Helpers ───────────────────────────────────
+    // ── Purge stale cache files (>1 day old) ──────
 
-  private static function stripHtml(string $html): string
-  {
-    // Decode HTML entities, strip tags, collapse whitespace
-    $text = html_entity_decode($html, ENT_QUOTES | ENT_HTML5, 'UTF-8');
-    $text = strip_tags($text);
-    $text = preg_replace('/\s+/', ' ', $text);
-    return trim($text);
-  }
+    private static function purgeStaleCacheFiles(int $bookId): void
+    {
+        $cacheDir = Config::dataDir() . "/" . $bookId . "/cache";
+        if (!is_dir($cacheDir)) {
+            return;
+        }
 
-  // ── Act index reader (used by Book::chapters) ─
+        $files = glob($cacheDir . "/*.json") ?: [];
+        $threshold = time() - 86400; // 1 day in seconds
 
-  public static function readActIndex(int $bookId): array
-  {
-    $path = Config::dataDir() . '/' . $bookId . '/cache/act.json';
-    if (!file_exists($path)) return [];
-    $data = json_decode(file_get_contents($path), true);
-    return is_array($data) ? $data : [];
-  }
+        foreach ($files as $file) {
+            if (filemtime($file) < $threshold) {
+                @unlink($file);
+            }
+        }
+    }
+
+    // ── CRUD ──────────────────────────────────────
+
+    public static function list(?int $bookId = null): array
+    {
+        $dir = self::dir($bookId);
+        if (!is_dir($dir)) {
+            return [];
+        }
+
+        if ($bookId) {
+            self::purgeStaleCacheFiles($bookId);
+        }
+
+        $files = glob($dir . "/*.json") ?: [];
+        // Exclude act.json from document list
+        $files = array_filter(
+            $files,
+            fn($f) => strpos($f, "/cache/") === false &&
+                strpos($f, "/conf/") === false,
+        );
+        return array_map(fn($f) => basename($f, ".json"), array_values($files));
+    }
+
+    public static function get(string $filename, ?int $bookId = null): array
+    {
+        $path = self::path($filename, $bookId);
+        if (!file_exists($path)) {
+            http_response_code(404);
+            throw new RuntimeException("Document not found: $filename");
+        }
+        $data = json_decode(file_get_contents($path), true);
+        return is_array($data) ? $data : [];
+    }
+
+    public static function save(
+        string $filename,
+        array $data,
+        ?int $bookId = null
+    ): void {
+        $dir = self::dir($bookId);
+        if (!is_dir($dir)) {
+            mkdir($dir, 0755, true);
+        }
+        if ($bookId) {
+            Config::ensureBookDirs($bookId);
+        }
+
+        $data["filename"] = self::safeName($filename);
+        // Always overwrite bookId — corrects stale values from docs copied across books
+        if ($bookId !== null) {
+            $data["bookId"] = $bookId;
+        }
+
+        // Ensure meta.order exists, default 99
+        if (!isset($data["meta"]["order"])) {
+            $data["meta"] = array_merge(["order" => 99], $data["meta"] ?? []);
+        }
+
+        $writePath = self::path($filename, $bookId);
+        $encoded = json_encode(
+            $data,
+            JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE,
+        );
+        if (file_put_contents($writePath, $encoded) === false) {
+            throw new RuntimeException("Failed to write document: $writePath");
+        }
+
+        // Rebuild all caches in one pass — same logic chapterIndex() reads from.
+        // Order matters: act index must be fresh before Book::chapters() reads it.
+        if ($bookId) {
+            self::rebuildActIndex($bookId);
+            Cache::clearChapters($bookId);
+            Book::chapters($bookId);
+            self::rebuildStoryCache($bookId, "characters");
+            self::rebuildStoryCache($bookId, "settings");
+        }
+    }
+
+    public static function delete(string $filename, ?int $bookId = null): void
+    {
+        $path = self::path($filename, $bookId);
+        if (file_exists($path)) {
+            unlink($path);
+        }
+
+        if ($bookId) {
+            self::rebuildActIndex($bookId);
+            Cache::clearChapters($bookId);
+            Book::chapters($bookId);
+            self::rebuildStoryCache($bookId, "characters");
+            self::rebuildStoryCache($bookId, "settings");
+        }
+    }
+
+    public static function rebuildStoryCache(int $bookId, string $field): void
+    {
+        $dir = self::dir($bookId);
+        $files = glob($dir . "/*.json") ?: [];
+        $index = [];
+
+        foreach ($files as $file) {
+            if (
+                strpos($file, "/cache/") !== false ||
+                strpos($file, "/conf/") !== false
+            ) {
+                continue;
+            }
+
+            $raw = @file_get_contents($file);
+            if (!$raw) {
+                continue;
+            }
+            $doc = json_decode($raw, true);
+            if (!is_array($doc)) {
+                continue;
+            }
+
+            $raw_val = $doc["meta"][$field] ?? "";
+            if (!$raw_val) {
+                continue;
+            }
+
+            $values = array_values(
+                array_unique(
+                    array_filter(array_map("trim", explode(",", $raw_val))),
+                ),
+            );
+
+            if (!empty($values)) {
+                $index[] = [
+                    "filename" => $doc["filename"] ?? basename($file, ".json"),
+                    "values" => $values,
+                ];
+            }
+        }
+
+        $cacheDir = Config::dataDir() . "/" . $bookId . "/cache";
+        if (!is_dir($cacheDir)) {
+            mkdir($cacheDir, 0755, true);
+        }
+
+        file_put_contents(
+            $cacheDir . "/story-" . $field . ".json",
+            json_encode($index, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE),
+        );
+    }
+
+    // Rename a document file on disk and update its internal filename field.
+    // Returns the sanitized new filename (no extension).
+    // Throws RuntimeException if source missing or destination already exists.
+    public static function rename(
+        string $from,
+        string $to,
+        ?int $bookId = null
+    ): string {
+        $srcName = self::safeName($from);
+        $dstName = self::safeName($to);
+
+        if ($srcName === $dstName) {
+            return $dstName;
+        }
+
+        $srcPath = self::path($from, $bookId);
+        $dstPath = self::path($to, $bookId);
+
+        if (!file_exists($srcPath)) {
+            throw new RuntimeException("Source document not found: $srcName");
+        }
+        if (file_exists($dstPath)) {
+            throw new RuntimeException(
+                "A document named '$dstName' already exists",
+            );
+        }
+
+        $data = json_decode(file_get_contents($srcPath), true);
+        if (!is_array($data)) {
+            throw new RuntimeException("Corrupt document: $srcName");
+        }
+
+        $data["filename"] = $dstName;
+
+        if (!rename($srcPath, $dstPath)) {
+            throw new RuntimeException(
+                "File rename failed: $srcName -> $dstName",
+            );
+        }
+
+        file_put_contents(
+            $dstPath,
+            json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE),
+        );
+
+        if ($bookId) {
+            self::rebuildActIndex($bookId);
+            Cache::clearChapters($bookId);
+            Book::chapters($bookId);
+            self::rebuildStoryCache($bookId, "characters");
+            self::rebuildStoryCache($bookId, "settings");
+        }
+
+        return $dstName;
+    }
+
+    public static function setOrder(
+        string $filename,
+        int $order,
+        ?int $bookId = null
+    ): void {
+        $path = self::path($filename, $bookId);
+        if (!file_exists($path)) {
+            throw new RuntimeException("Document not found: $filename");
+        }
+        $data = json_decode(file_get_contents($path), true);
+        if (!is_array($data)) {
+            throw new RuntimeException("Corrupt document: $filename");
+        }
+        $data["meta"]["order"] = $order;
+        file_put_contents(
+            $path,
+            json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE),
+        );
+    }
+
+    // ── Act index ─────────────────────────────────
+    // Scans all docs in the book dir, finds first class:"act" entry,
+    // strips HTML, writes data/$bookId/cache/act.json.
+    //
+    // act.json shape:
+    //   [ { "filename": "chapter-one", "act": "Act One Title" }, … ]
+
+    public static function rebuildActIndex(int $bookId): void
+    {
+        $dir = self::dir($bookId);
+        if (!is_dir($dir)) {
+            return;
+        }
+
+        // Resolve act default: book default.json overrides global default.json
+        $resolved = Config::resolveDefaults($bookId);
+        $actDefault = $resolved["act"] ?? "None";
+
+        $files = glob($dir . "/*.json") ?: [];
+        $result = [];
+
+        foreach ($files as $file) {
+            // Skip conf/ directory files
+            if (
+                strpos($file, "/cache/") !== false ||
+                strpos($file, "/conf/") !== false
+            ) {
+                continue;
+            }
+
+            $raw = @file_get_contents($file);
+            if (!$raw) {
+                continue;
+            }
+            $doc = json_decode($raw, true);
+            if (!is_array($doc)) {
+                continue;
+            }
+
+            // Use filesystem name as key — must match what Book::chapters() looks up.
+            // $doc['filename'] can be stale (e.g. from a pre-rename save), so
+            // basename is the ground truth.
+            $filename = basename($file, ".json");
+            $actText = $actDefault;
+
+            // Find first entry with class "act"
+            $article = $doc["article"] ?? [];
+            foreach ($article as $entry) {
+                if (($entry["class"] ?? "") === "act") {
+                    $actText = self::stripHtml($entry["content"] ?? "");
+                    break;
+                }
+            }
+
+            $result[] = [
+                "filename" => $filename,
+                "act" => $actText,
+            ];
+        }
+
+        // ? Config::ensureBookDirs($bookId);
+        $cacheDir = Config::dataDir() . "/" . $bookId . "/cache";
+        if (!is_dir($cacheDir)) {
+            mkdir($cacheDir, 0755, true);
+        }
+        file_put_contents(
+            $cacheDir . "/act.json",
+            json_encode($result, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE),
+        );
+    }
+
+    // ── Helpers ───────────────────────────────────
+
+    private static function stripHtml(string $html): string
+    {
+        // Decode HTML entities, strip tags, collapse whitespace
+        $text = html_entity_decode($html, ENT_QUOTES | ENT_HTML5, "UTF-8");
+        $text = strip_tags($text);
+        $text = preg_replace("/\s+/", " ", $text);
+        return trim($text);
+    }
+
+    // ── Act index reader (used by Book::chapters) ─
+
+    public static function readActIndex(int $bookId): array
+    {
+        $path = Config::dataDir() . "/" . $bookId . "/cache/act.json";
+        if (!file_exists($path)) {
+            return [];
+        }
+        $data = json_decode(file_get_contents($path), true);
+        return is_array($data) ? $data : [];
+    }
 }

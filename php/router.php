@@ -56,470 +56,545 @@
      POST ?action=notes.save           ← Note[]
 ─────────────────────────────────────────────────── */
 
-require_once __DIR__ . '/config.php';
-require_once __DIR__ . '/document.php';
-require_once __DIR__ . '/book.php';
-require_once __DIR__ . '/state.php';
-require_once __DIR__ . '/pref.php';
-require_once __DIR__ . '/import.php';
-require_once __DIR__ . '/cache.php';
-require_once __DIR__ . '/gallery.php';
-require_once __DIR__ . '/editor-pref.php';
-require_once __DIR__ . '/ai.php';
-require_once __DIR__ . '/chatlog.php';
-require_once __DIR__ . '/notes.php';
-require_once __DIR__ . '/kanban.php';
-require_once __DIR__ . '/fileman.php';
-require_once __DIR__ . '/preprompts.php';
-require_once __DIR__ . '/query.php';
+require_once __DIR__ . "/config.php";
+require_once __DIR__ . "/document.php";
+require_once __DIR__ . "/book.php";
+require_once __DIR__ . "/state.php";
+require_once __DIR__ . "/pref.php";
+require_once __DIR__ . "/import.php";
+require_once __DIR__ . "/cache.php";
+require_once __DIR__ . "/gallery.php";
+require_once __DIR__ . "/editor-pref.php";
+require_once __DIR__ . "/ai.php";
+require_once __DIR__ . "/chatlog.php";
+require_once __DIR__ . "/notes.php";
+require_once __DIR__ . "/kanban.php";
+require_once __DIR__ . "/fileman.php";
+require_once __DIR__ . "/preprompts.php";
+require_once __DIR__ . "/query.php";
 
 class Router
 {
-
     public static function dispatch(): void
     {
-        header('Content-Type: application/json');
-        header('Access-Control-Allow-Origin: *');
-        header('Access-Control-Allow-Methods: GET, POST, DELETE, OPTIONS');
-        header('Access-Control-Allow-Headers: Content-Type');
+        header("Content-Type: application/json");
+        header("Access-Control-Allow-Origin: *");
+        header("Access-Control-Allow-Methods: GET, POST, DELETE, OPTIONS");
+        header("Access-Control-Allow-Headers: Content-Type");
 
         $method = self::requestMethod();
 
-        if ($method === 'OPTIONS') {
+        if ($method === "OPTIONS") {
             http_response_code(204);
-            exit;
+            exit();
         }
 
-        $action = $_GET['action'] ?? '';
+        $action = $_GET["action"] ?? "";
 
         try {
             switch ($action) {
-
-
-                case 'kanban.get':
-                    self::requireMethod($method, 'GET');
-                    $bookId = (int) self::requireParam('bookId');
+                case "kanban.get":
+                    self::requireMethod($method, "GET");
+                    $bookId = (int) self::requireParam("bookId");
                     echo json_encode(Kanban::get($bookId));
                     break;
 
-                case 'kanban.set':
-                    self::requireMethod($method, 'POST');
-                    $bookId = (int) self::requireParam('bookId');
+                case "kanban.set":
+                    self::requireMethod($method, "POST");
+                    $bookId = (int) self::requireParam("bookId");
                     Kanban::set($bookId, self::body());
-                    echo json_encode(['ok' => true]);
+                    echo json_encode(["ok" => true]);
                     break;
 
                 // ── Notes ────────────────────────────────────
-                case 'notes.list':
-                    self::requireMethod($method, 'GET');
+                case "notes.list":
+                    self::requireMethod($method, "GET");
                     echo json_encode(Notes::list());
                     break;
 
-                case 'notes.save':
-                    self::requireMethod($method, 'POST');
+                case "notes.save":
+                    self::requireMethod($method, "POST");
                     $body = self::body();
                     // body() returns [] on empty input — that would wipe all notes
-                    if (empty($body) && file_get_contents('php://input') !== '[]') {
-                        self::error(400, 'Expected JSON array of notes');
+                    if (
+                        empty($body) &&
+                        file_get_contents("php://input") !== "[]"
+                    ) {
+                        self::error(400, "Expected JSON array of notes");
                     }
                     Notes::save($body);
-                    echo json_encode(['ok' => true]);
+                    echo json_encode(["ok" => true]);
                     break;
 
                 // ── Chatlog ──────────────────────────────────
-                case 'chatlog.get':
-                    self::requireMethod($method, 'GET');
-                    $bookId = (int) self::requireParam('bookId');
-                    echo json_encode(['log' => Chatlog::get($bookId)]);
+                case "chatlog.get":
+                    self::requireMethod($method, "GET");
+                    $bookId = (int) self::requireParam("bookId");
+                    echo json_encode(["log" => Chatlog::get($bookId)]);
                     break;
 
-                case 'chatlog.save':
-                    self::requireMethod($method, 'POST');
-                    $bookId = (int) self::requireParam('bookId');
-                    $entry  = Chatlog::save($bookId, self::body());
-                    echo json_encode(['ok' => true, 'entry' => $entry]);
+                case "chatlog.save":
+                    self::requireMethod($method, "POST");
+                    $bookId = (int) self::requireParam("bookId");
+                    $entry = Chatlog::save($bookId, self::body());
+                    echo json_encode(["ok" => true, "entry" => $entry]);
                     break;
 
-                case 'chatlog.clear':
-                    self::requireMethod($method, 'DELETE');
-                    $bookId = (int) self::requireParam('bookId');
+                case "chatlog.clear":
+                    self::requireMethod($method, "DELETE");
+                    $bookId = (int) self::requireParam("bookId");
                     Chatlog::clear($bookId);
-                    echo json_encode(['ok' => true]);
+                    echo json_encode(["ok" => true]);
                     break;
 
                 // ── Config ───────────────────────────────────
-case 'config.get':
-    self::requireMethod($method, 'GET');
-    echo json_encode(array_merge(Config::get(), Config::getActive()));
-    break;
+                case "config.get":
+                    self::requireMethod($method, "GET");
+                    echo json_encode(
+                        array_merge(Config::get(), Config::getActive()),
+                    );
+                    break;
 
-                case 'config.set':
-                    self::requireMethod($method, 'POST');
+                case "config.set":
+                    self::requireMethod($method, "POST");
                     Config::set(self::body());
-                    echo json_encode(['ok' => true]);
+                    echo json_encode(["ok" => true]);
                     break;
 
                 // ── Global defaults ──────────────────────────
-                case 'default.get':
-                    self::requireMethod($method, 'GET');
-                    echo json_encode(['defaults' => Config::getGlobalDefaults()]);
+                case "default.get":
+                    self::requireMethod($method, "GET");
+                    echo json_encode([
+                        "defaults" => Config::getGlobalDefaults(),
+                    ]);
                     break;
 
-                case 'default.set':
-                    self::requireMethod($method, 'POST');
-                    $body     = self::body();
-                    $defaults = $body['defaults'] ?? $body;
+                case "default.set":
+                    self::requireMethod($method, "POST");
+                    $body = self::body();
+                    $defaults = $body["defaults"] ?? $body;
                     Config::setGlobalDefaults($defaults);
-                    echo json_encode(['ok' => true]);
+                    echo json_encode(["ok" => true]);
                     break;
 
                 // ── Per-book defaults ────────────────────────
-                case 'bookdefault.get':
-                    self::requireMethod($method, 'GET');
-                    $bookId = (int) self::requireParam('bookId');
-                    echo json_encode(['defaults' => Config::getBookDefaults($bookId)]);
+                case "bookdefault.get":
+                    self::requireMethod($method, "GET");
+                    $bookId = (int) self::requireParam("bookId");
+                    echo json_encode([
+                        "defaults" => Config::getBookDefaults($bookId),
+                    ]);
                     break;
 
-                case 'bookdefault.set':
-                    self::requireMethod($method, 'POST');
-                    $body   = self::body();
-                    $bookId = isset($_GET['bookId'])
-                        ? (int)$_GET['bookId']
-                        : (int)($body['bookId'] ?? 0);
-                    if (!$bookId) self::error(400, 'Missing bookId');
-                    $defaults = $body['defaults'] ?? $body;
+                case "bookdefault.set":
+                    self::requireMethod($method, "POST");
+                    $body = self::body();
+                    $bookId = isset($_GET["bookId"])
+                        ? (int) $_GET["bookId"]
+                        : (int) ($body["bookId"] ?? 0);
+                    if (!$bookId) {
+                        self::error(400, "Missing bookId");
+                    }
+                    $defaults = $body["defaults"] ?? $body;
                     Config::setBookDefaults($bookId, $defaults);
-                    echo json_encode(['ok' => true]);
+                    echo json_encode(["ok" => true]);
                     break;
 
                 // ── Documents ────────────────────────────────
-                case 'doc.list':
-                    self::requireMethod($method, 'GET');
-                    $bookId = isset($_GET['bookId']) ? (int)$_GET['bookId'] : null;
+                case "doc.list":
+                    self::requireMethod($method, "GET");
+                    $bookId = isset($_GET["bookId"])
+                        ? (int) $_GET["bookId"]
+                        : null;
                     echo json_encode(Document::list($bookId));
                     break;
 
-                case 'doc.get':
-                    self::requireMethod($method, 'GET');
-                    $bookId = isset($_GET['bookId']) ? (int)$_GET['bookId'] : null;
-                    echo json_encode(Document::get(self::requireParam('filename'), $bookId));
+                case "doc.get":
+                    self::requireMethod($method, "GET");
+                    $bookId = isset($_GET["bookId"])
+                        ? (int) $_GET["bookId"]
+                        : null;
+                    echo json_encode(
+                        Document::get(self::requireParam("filename"), $bookId),
+                    );
                     break;
 
-                case 'doc.save':
-                    self::requireMethod($method, 'POST');
+                case "doc.save":
+                    self::requireMethod($method, "POST");
                     $body = self::body();
-                    if (empty($body['filename'])) self::error(400, 'Missing filename');
+                    if (empty($body["filename"])) {
+                        self::error(400, "Missing filename");
+                    }
                     // Always use the server-side active book as authority.
                     // Ignores $body['bookId'] — it may carry a stale value from
                     // a doc copied across books.
                     $active = Config::getActive();
-                    $bookId = isset($active['activeBookId']) ? (int)$active['activeBookId'] : null;
-                    if (!$bookId) self::error(400, 'No active book on server — open a book first');
-                    Document::save($body['filename'], $body, $bookId);
-                    echo json_encode(['ok' => true, 'body' => $body['filename']]);
+                    $bookId = isset($active["activeBookId"])
+                        ? (int) $active["activeBookId"]
+                        : null;
+                    if (!$bookId) {
+                        self::error(
+                            400,
+                            "No active book on server — open a book first",
+                        );
+                    }
+                    Document::save($body["filename"], $body, $bookId);
+                    echo json_encode([
+                        "ok" => true,
+                        "body" => $body["filename"],
+                    ]);
                     break;
 
-                case 'doc.delete':
-                    self::requireMethod($method, 'DELETE');
-                    $bookId = isset($_GET['bookId']) ? (int)$_GET['bookId'] : null;
-                    Document::delete(self::requireParam('filename'), $bookId);
-                    echo json_encode(['ok' => true]);
+                case "doc.delete":
+                    self::requireMethod($method, "DELETE");
+                    $bookId = isset($_GET["bookId"])
+                        ? (int) $_GET["bookId"]
+                        : null;
+                    Document::delete(self::requireParam("filename"), $bookId);
+                    echo json_encode(["ok" => true]);
                     break;
 
-                case 'doc.setOrder':
-                    self::requireMethod($method, 'POST');
-                    $body     = self::body();
-                    $filename = trim($body['filename'] ?? '');
-                    $order    = (int)($body['order'] ?? 99);
-                    $bookId   = isset($body['bookId']) ? (int)$body['bookId'] : null;
-                    if (!$filename) self::error(400, 'Missing filename');
+                case "doc.setOrder":
+                    self::requireMethod($method, "POST");
+                    $body = self::body();
+                    $filename = trim($body["filename"] ?? "");
+                    $order = (int) ($body["order"] ?? 99);
+                    $bookId = isset($body["bookId"])
+                        ? (int) $body["bookId"]
+                        : null;
+                    if (!$filename) {
+                        self::error(400, "Missing filename");
+                    }
                     Document::setOrder($filename, $order, $bookId);
-                    echo json_encode(['ok' => true]);
+                    echo json_encode(["ok" => true]);
                     break;
 
-                case 'doc.rename':
-                    self::requireMethod($method, 'POST');
-                    $body   = self::body();
-                    $from   = trim($body['from']   ?? '');
-                    $to     = trim($body['to']     ?? '');
-                    $bookId = isset($body['bookId']) ? (int)$body['bookId'] : null;
-                    if (!$from || !$to) self::error(400, 'Missing from or to');
+                case "doc.rename":
+                    self::requireMethod($method, "POST");
+                    $body = self::body();
+                    $from = trim($body["from"] ?? "");
+                    $to = trim($body["to"] ?? "");
+                    $bookId = isset($body["bookId"])
+                        ? (int) $body["bookId"]
+                        : null;
+                    if (!$from || !$to) {
+                        self::error(400, "Missing from or to");
+                    }
                     $newName = Document::rename($from, $to, $bookId);
-                    echo json_encode(['ok' => true, 'filename' => $newName]);
+                    echo json_encode(["ok" => true, "filename" => $newName]);
                     break;
 
                 // ── Books ────────────────────────────────────
-                case 'book.index':
-                    self::requireMethod($method, 'GET');
+                case "book.index":
+                    self::requireMethod($method, "GET");
                     echo json_encode(Book::index());
                     break;
 
-                case 'book.chapters':
-                    self::requireMethod($method, 'GET');
-                    $id = (int) self::requireParam('id');
+                case "book.chapters":
+                    self::requireMethod($method, "GET");
+                    $id = (int) self::requireParam("id");
                     echo json_encode(Book::chapters($id));
                     break;
 
-                case 'book.create':
-                    self::requireMethod($method, 'POST');
-                    $body  = self::body();
-                    $title = trim($body['title'] ?? '');
-                    if ($title === '') self::error(400, 'Missing title');
+                case "book.create":
+                    self::requireMethod($method, "POST");
+                    $body = self::body();
+                    $title = trim($body["title"] ?? "");
+                    if ($title === "") {
+                        self::error(400, "Missing title");
+                    }
                     echo json_encode(Book::create($title));
                     break;
 
-                case 'book.setActive':
-                    self::requireMethod($method, 'POST');
-                    $body   = self::body();
-                    $bookId = (int)($body['bookId'] ?? 0);
-                    if (!$bookId) self::error(400, 'Missing bookId');
+                case "book.setActive":
+                    self::requireMethod($method, "POST");
+                    $body = self::body();
+                    $bookId = (int) ($body["bookId"] ?? 0);
+                    if (!$bookId) {
+                        self::error(400, "Missing bookId");
+                    }
                     Book::setActive($bookId);
-                    echo json_encode(['ok' => true]);
+                    echo json_encode(["ok" => true]);
                     break;
 
                 // ── Chapter state ────────────────────────────
-                case 'state.get':
-                    self::requireMethod($method, 'GET');
-                    $bookId = (int) self::requireParam('bookId');
-                    echo json_encode(['states' => ChapterState::get($bookId)]);
+                case "state.get":
+                    self::requireMethod($method, "GET");
+                    $bookId = (int) self::requireParam("bookId");
+                    echo json_encode(["states" => ChapterState::get($bookId)]);
                     break;
 
-                case 'state.set':
-                    self::requireMethod($method, 'POST');
-                    $body     = self::body();
-                    $bookId   = (int)($body['bookId'] ?? 0);
-                    $filename = trim($body['filename'] ?? '');
-                    $state    = trim($body['state']    ?? 'unlock');
-                    if (!$bookId || !$filename) self::error(400, 'Missing bookId or filename');
+                case "state.set":
+                    self::requireMethod($method, "POST");
+                    $body = self::body();
+                    $bookId = (int) ($body["bookId"] ?? 0);
+                    $filename = trim($body["filename"] ?? "");
+                    $state = trim($body["state"] ?? "unlock");
+                    if (!$bookId || !$filename) {
+                        self::error(400, "Missing bookId or filename");
+                    }
                     ChapterState::set($bookId, $filename, $state);
-                    echo json_encode(['ok' => true]);
+                    echo json_encode(["ok" => true]);
                     break;
 
                 // ── Theme CSS variables ──────────────────────
-                case 'pref.get':
-                    self::requireMethod($method, 'GET');
-                    header('Content-Type: text/css');
+                case "pref.get":
+                    self::requireMethod($method, "GET");
+                    header("Content-Type: text/css");
                     echo Pref::get();
-                    exit;
+                    exit();
 
-                case 'pref.set':
-                    self::requireMethod($method, 'POST');
+                case "pref.set":
+                    self::requireMethod($method, "POST");
                     Pref::set();
-                    echo json_encode(['ok' => true]);
+                    echo json_encode(["ok" => true]);
                     break;
 
                 // ── Editor preferences (per-book) ────────────
                 // Stored in data/$bookId/conf/editor.json.
                 // Returns defaults if the file does not exist yet —
                 // never 404, the check is inside EditorPref::get().
-                case 'editorpref.get':
-                    self::requireMethod($method, 'GET');
-                    $bookId = (int) self::requireParam('bookId');
+                case "editorpref.get":
+                    self::requireMethod($method, "GET");
+                    $bookId = (int) self::requireParam("bookId");
                     echo json_encode(EditorPref::get($bookId));
                     break;
 
-                case 'editorpref.set':
-                    self::requireMethod($method, 'POST');
-                    $bookId = isset($_GET['bookId'])
-                        ? (int)$_GET['bookId']
-                        : (int)(self::body()['bookId'] ?? 0);
-                    if (!$bookId) self::error(400, 'Missing bookId');
+                case "editorpref.set":
+                    self::requireMethod($method, "POST");
+                    $bookId = isset($_GET["bookId"])
+                        ? (int) $_GET["bookId"]
+                        : (int) (self::body()["bookId"] ?? 0);
+                    if (!$bookId) {
+                        self::error(400, "Missing bookId");
+                    }
                     EditorPref::set($bookId, self::body());
-                    echo json_encode(['ok' => true]);
+                    echo json_encode(["ok" => true]);
                     break;
 
                 // ── Import staging ───────────────────────────
-                case 'import.upload':
+                case "import.upload":
                     // multipart POST — do NOT use self::body() (reads php://input)
-                    self::requireMethod($method, 'POST');
-                    $bookId = (int)($_GET['bookId'] ?? $_POST['bookId'] ?? 0);
-                    if (!$bookId) self::error(400, 'Missing bookId');
+                    self::requireMethod($method, "POST");
+                    $bookId =
+                        (int) ($_GET["bookId"] ?? ($_POST["bookId"] ?? 0));
+                    if (!$bookId) {
+                        self::error(400, "Missing bookId");
+                    }
                     $result = Import::upload($bookId);
-                    echo json_encode(['ok' => true, 'file' => $result]);
+                    echo json_encode(["ok" => true, "file" => $result]);
                     break;
 
-                case 'import.list':
-                    self::requireMethod($method, 'GET');
-                    $bookId = (int) self::requireParam('bookId');
+                case "import.list":
+                    self::requireMethod($method, "GET");
+                    $bookId = (int) self::requireParam("bookId");
                     echo json_encode(Import::list($bookId));
                     break;
 
-                case 'import.delete':
-                    self::requireMethod($method, 'DELETE');
-                    $bookId   = (int) self::requireParam('bookId');
-                    $filename = self::requireParam('filename');
+                case "import.delete":
+                    self::requireMethod($method, "DELETE");
+                    $bookId = (int) self::requireParam("bookId");
+                    $filename = self::requireParam("filename");
                     Import::delete($bookId, $filename);
-                    echo json_encode(['ok' => true]);
+                    echo json_encode(["ok" => true]);
                     break;
 
-                case 'import.read':
-                    self::requireMethod($method, 'GET');
-                    $bookId   = (int) self::requireParam('bookId');
-                    $filename = self::requireParam('filename');
+                case "import.read":
+                    self::requireMethod($method, "GET");
+                    $bookId = (int) self::requireParam("bookId");
+                    $filename = self::requireParam("filename");
                     // Return raw text — override content-type for this one action
-                    header('Content-Type: text/plain; charset=utf-8');
+                    header("Content-Type: text/plain; charset=utf-8");
                     echo Import::read($bookId, $filename);
-                    exit;
+                    exit();
 
-                    // ── Gallery ──────────────────────────────────
-                case 'gallery.upload':
-                    self::requireMethod($method, 'POST');
-                    $bookId = (int)($_GET['bookId'] ?? $_POST['bookId'] ?? 0);
-                    if (!$bookId) self::error(400, 'Missing bookId');
+                // ── Gallery ──────────────────────────────────
+                case "gallery.upload":
+                    self::requireMethod($method, "POST");
+                    $bookId =
+                        (int) ($_GET["bookId"] ?? ($_POST["bookId"] ?? 0));
+                    if (!$bookId) {
+                        self::error(400, "Missing bookId");
+                    }
                     $result = Gallery::upload($bookId);
-                    echo json_encode(['ok' => true, 'file' => $result]);
+                    echo json_encode(["ok" => true, "file" => $result]);
                     break;
 
-                case 'gallery.list':
-                    self::requireMethod($method, 'GET');
-                    $bookId = (int) self::requireParam('bookId');
+                case "gallery.list":
+                    self::requireMethod($method, "GET");
+                    $bookId = (int) self::requireParam("bookId");
                     echo json_encode(Gallery::list($bookId));
                     break;
 
-                case 'gallery.delete':
-                    self::requireMethod($method, 'DELETE');
-                    $bookId   = (int) self::requireParam('bookId');
-                    $filename = self::requireParam('filename');
+                case "gallery.delete":
+                    self::requireMethod($method, "DELETE");
+                    $bookId = (int) self::requireParam("bookId");
+                    $filename = self::requireParam("filename");
                     Gallery::delete($bookId, $filename);
-                    echo json_encode(['ok' => true]);
+                    echo json_encode(["ok" => true]);
                     break;
 
-                case 'gallery.rename':
-                    self::requireMethod($method, 'POST');
-                    $body   = self::body();
-                    $bookId = (int)($_GET['bookId'] ?? $body['bookId'] ?? 0);
-                    $from   = trim($body['from'] ?? '');
-                    $to     = trim($body['to']   ?? '');
-                    if (!$bookId || !$from || !$to) self::error(400, 'Missing bookId, from, or to');
+                case "gallery.rename":
+                    self::requireMethod($method, "POST");
+                    $body = self::body();
+                    $bookId = (int) ($_GET["bookId"] ?? ($body["bookId"] ?? 0));
+                    $from = trim($body["from"] ?? "");
+                    $to = trim($body["to"] ?? "");
+                    if (!$bookId || !$from || !$to) {
+                        self::error(400, "Missing bookId, from, or to");
+                    }
                     $renamed = Gallery::rename($bookId, $from, $to);
-                    echo json_encode(['ok' => true, 'filename' => $renamed['filename']]);
+                    echo json_encode([
+                        "ok" => true,
+                        "filename" => $renamed["filename"],
+                    ]);
                     break;
 
-                case 'gallery.autocomplete':
-                    self::requireMethod($method, 'GET');
-                    $bookId = (int) self::requireParam('bookId');
+                case "gallery.autocomplete":
+                    self::requireMethod($method, "GET");
+                    $bookId = (int) self::requireParam("bookId");
                     echo json_encode(Gallery::autocomplete($bookId));
                     break;
 
                 // ── Cache ────────────────────────────────────
-                case 'cache.list':
-                    self::requireMethod($method, 'GET');
-                    $bookId = (int) self::requireParam('bookId');
+                case "cache.list":
+                    self::requireMethod($method, "GET");
+                    $bookId = (int) self::requireParam("bookId");
                     echo json_encode(Cache::list($bookId));
                     break;
 
-                case 'cache.rebuild':
-                    self::requireMethod($method, 'POST');
-                    $bookId = (int) self::requireParam('bookId');
+                case "cache.rebuild":
+                    self::requireMethod($method, "POST");
+                    $bookId = (int) self::requireParam("bookId");
                     echo json_encode(Cache::rebuild($bookId));
                     break;
 
                 // ── AI Chat ──────────────────────────────────
-                case 'ai.chat':
-                    self::requireMethod($method, 'POST');
-                    $body    = self::body();
-                    $message = trim($body['message'] ?? '');
-                    if ($message === '') self::error(400, 'Missing message');
+                case "ai.chat":
+                    self::requireMethod($method, "POST");
+                    $body = self::body();
+                    $message = trim($body["message"] ?? "");
+                    if ($message === "") {
+                        self::error(400, "Missing message");
+                    }
                     echo json_encode(AiChat::chat($message));
                     break;
                 // ── AI Chat config ───────────────────────────
 
-                case 'ai.get':
-                    self::requireMethod($method, 'GET');
+                case "ai.get":
+                    self::requireMethod($method, "GET");
                     echo json_encode(AiChat::get());
                     break;
 
-                case 'ai.set':
-                    self::requireMethod($method, 'POST');
+                case "ai.set":
+                    self::requireMethod($method, "POST");
                     AiChat::set(self::body());
-                    echo json_encode(['ok' => true]);
+                    echo json_encode(["ok" => true]);
                     break;
                 // ── File Manager ─────────────────────────────
-                case 'fileman.list':
-                    self::requireMethod($method, 'GET');
-                    $bookId = (int) self::requireParam('bookId');
+                case "fileman.list":
+                    self::requireMethod($method, "GET");
+                    $bookId = (int) self::requireParam("bookId");
                     echo json_encode(FileMan::list($bookId));
                     break;
 
-                case 'fileman.upload':
+                case "fileman.upload":
                     // multipart POST — do NOT use self::body()
-                    self::requireMethod($method, 'POST');
-                    $bookId = (int)($_GET['bookId'] ?? $_POST['bookId'] ?? 0);
-                    if (!$bookId) self::error(400, 'Missing bookId');
+                    self::requireMethod($method, "POST");
+                    $bookId =
+                        (int) ($_GET["bookId"] ?? ($_POST["bookId"] ?? 0));
+                    if (!$bookId) {
+                        self::error(400, "Missing bookId");
+                    }
                     $result = FileMan::upload($bookId);
-                    echo json_encode(['ok' => true, 'file' => $result]);
+                    echo json_encode(["ok" => true, "file" => $result]);
                     break;
 
-                case 'fileman.delete':
-                    self::requireMethod($method, 'DELETE');
-                    $bookId   = (int) self::requireParam('bookId');
-                    $filename = self::requireParam('filename');
+                case "fileman.delete":
+                    self::requireMethod($method, "DELETE");
+                    $bookId = (int) self::requireParam("bookId");
+                    $filename = self::requireParam("filename");
                     FileMan::delete($bookId, $filename);
-                    echo json_encode(['ok' => true]);
+                    echo json_encode(["ok" => true]);
                     break;
 
-                case 'fileman.rename':
-                    self::requireMethod($method, 'POST');
-                    $body   = self::body();
-                    $bookId = (int)($_GET['bookId'] ?? $body['bookId'] ?? 0);
-                    $from   = trim($body['from'] ?? '');
-                    $to     = trim($body['to']   ?? '');
-                    if (!$bookId || !$from || !$to) self::error(400, 'Missing bookId, from, or to');
-                    echo json_encode(['ok' => true, 'filename' => FileMan::rename($bookId, $from, $to)['filename']]);
+                case "fileman.rename":
+                    self::requireMethod($method, "POST");
+                    $body = self::body();
+                    $bookId = (int) ($_GET["bookId"] ?? ($body["bookId"] ?? 0));
+                    $from = trim($body["from"] ?? "");
+                    $to = trim($body["to"] ?? "");
+                    if (!$bookId || !$from || !$to) {
+                        self::error(400, "Missing bookId, from, or to");
+                    }
+                    echo json_encode([
+                        "ok" => true,
+                        "filename" => FileMan::rename($bookId, $from, $to)[
+                            "filename"
+                        ],
+                    ]);
                     break;
 
-                case 'fileman.save':
-                    self::requireMethod($method, 'POST');
-                    $body     = self::body();
-                    $bookId   = (int)($body['bookId']   ?? 0);
-                    $filename = trim($body['filename']  ?? '');
-                    $content  = $body['content'] ?? '';
-                    if (!$bookId || $filename === '') self::error(400, 'Missing bookId or filename');
+                case "fileman.save":
+                    self::requireMethod($method, "POST");
+                    $body = self::body();
+                    $bookId = (int) ($body["bookId"] ?? 0);
+                    $filename = trim($body["filename"] ?? "");
+                    $content = $body["content"] ?? "";
+                    if (!$bookId || $filename === "") {
+                        self::error(400, "Missing bookId or filename");
+                    }
                     FileMan::save($bookId, $filename, $content);
-                    echo json_encode(['ok' => true]);
+                    echo json_encode(["ok" => true]);
                     break;
 
-// ── Preprompts ───────────────────────────────
-                case 'preprompts.get':
-                    self::requireMethod($method, 'GET');
+                // ── Preprompts ───────────────────────────────
+                case "preprompts.get":
+                    self::requireMethod($method, "GET");
                     echo json_encode(Preprompts::get());
                     break;
 
-                case 'preprompts.set':
-                    self::requireMethod($method, 'POST');
+                case "preprompts.set":
+                    self::requireMethod($method, "POST");
                     Preprompts::set(self::body());
-                    echo json_encode(['ok' => true]);
+                    echo json_encode(["ok" => true]);
                     break;
 
-                case 'preprompts.reset':
-                    self::requireMethod($method, 'DELETE');
+                case "preprompts.reset":
+                    self::requireMethod($method, "DELETE");
                     Preprompts::reset();
-                    echo json_encode(['ok' => true]);
+                    echo json_encode(["ok" => true]);
                     break;
-					
+
                 // ── Query ────────────────────────────────────
-                case 'query.search':
-                    self::requireMethod($method, 'GET');
-                    $bookId = (int) self::requireParam('bookId');
-                    $query  = trim($_GET['query'] ?? '');
-                    if ($query === '') self::error(400, 'Missing query');
+                case "query.search":
+                    self::requireMethod($method, "GET");
+                    $bookId = (int) self::requireParam("bookId");
+                    $query = trim($_GET["query"] ?? "");
+                    if ($query === "") {
+                        self::error(400, "Missing query");
+                    }
                     echo json_encode(Query::search($bookId, $query));
                     break;
 
-                case 'query.build':
-                    self::requireMethod($method, 'POST');
-                    $body   = self::body();
-                    $bookId = (int)($body['bookId'] ?? 0);
-                    $query  = trim($body['query'] ?? '');
-                    $remove = $body['remove'] ?? [];
-                    if (!$bookId || $query === '') self::error(400, 'Missing bookId or query');
-                    if (!is_array($remove)) self::error(400, 'remove must be an array');
+                case "query.build":
+                    self::requireMethod($method, "POST");
+                    $body = self::body();
+                    $bookId = (int) ($body["bookId"] ?? 0);
+                    $query = trim($body["query"] ?? "");
+                    $remove = $body["remove"] ?? [];
+                    if (!$bookId || $query === "") {
+                        self::error(400, "Missing bookId or query");
+                    }
+                    if (!is_array($remove)) {
+                        self::error(400, "remove must be an array");
+                    }
                     echo json_encode(Query::build($bookId, $query, $remove));
                     break;
 
                 // ── Unknown ──────────────────────────────────
                 default:
-                    self::error(404, 'Unknown action: ' . $action);
+                    self::error(404, "Unknown action: " . $action);
             }
         } catch (Throwable $e) {
             self::error(500, $e->getMessage());
@@ -530,12 +605,16 @@ case 'config.get':
 
     private static function requestMethod(): string
     {
-        if (PHP_SAPI === 'cli') return 'GET';
-        return $_SERVER['REQUEST_METHOD'] ?? 'GET';
+        if (PHP_SAPI === "cli") {
+            return "GET";
+        }
+        return $_SERVER["REQUEST_METHOD"] ?? "GET";
     }
 
-    private static function requireMethod(string $actual, string $expected): void
-    {
+    private static function requireMethod(
+        string $actual,
+        string $expected
+    ): void {
         if ($actual !== $expected) {
             self::error(405, "Method $actual not allowed for this action");
         }
@@ -543,27 +622,33 @@ case 'config.get':
 
     private static function requireParam(string $key): string
     {
-        if (empty($_GET[$key])) self::error(400, "Missing query param: $key");
+        if (empty($_GET[$key])) {
+            self::error(400, "Missing query param: $key");
+        }
         return $_GET[$key];
     }
 
     private static function body(): array
     {
-        $raw = file_get_contents('php://input');
-        if ($raw === false || $raw === '') return [];
+        $raw = file_get_contents("php://input");
+        if ($raw === false || $raw === "") {
+            return [];
+        }
         $data = json_decode($raw, true);
-        if (!is_array($data)) self::error(400, 'Invalid JSON body');
+        if (!is_array($data)) {
+            self::error(400, "Invalid JSON body");
+        }
         return $data;
     }
 
     private static function error(int $code, string $message): void
     {
         http_response_code($code);
-        echo json_encode(['error' => $message]);
-        exit;
+        echo json_encode(["error" => $message]);
+        exit();
     }
 }
 
-if (basename(__FILE__) === basename($_SERVER['SCRIPT_FILENAME'] ?? '')) {
+if (basename(__FILE__) === basename($_SERVER["SCRIPT_FILENAME"] ?? "")) {
     Router::dispatch();
 }

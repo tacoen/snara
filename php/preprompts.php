@@ -15,21 +15,23 @@
 
 class Preprompts
 {
-    const LOCKED = ['Characters', 'Summarize'];
+    const LOCKED = ["Characters", "Summarize"];
 
     private static function sourcePath(): string
     {
-        return Config::root() . '/json/preprompts.json';
+        return Config::root() . "/json/preprompts.json";
     }
 
     private static function userPath(): string
     {
-        return Config::dataDir() . '/preprompts.json';
+        return Config::dataDir() . "/preprompts.json";
     }
 
     private static function readFile(string $path): array
     {
-        if (!file_exists($path)) return [];
+        if (!file_exists($path)) {
+            return [];
+        }
         $raw = file_get_contents($path);
         $data = json_decode($raw, true);
         return is_array($data) ? $data : [];
@@ -51,7 +53,9 @@ class Preprompts
     public static function set(array $items): void
     {
         if (empty($items)) {
-            throw new InvalidArgumentException('Preprompts list cannot be empty');
+            throw new InvalidArgumentException(
+                "Preprompts list cannot be empty",
+            );
         }
 
         $existing = self::get();
@@ -59,7 +63,7 @@ class Preprompts
         // Index locked items from the existing list by label for value lookup.
         $lockedMap = [];
         foreach ($existing as $row) {
-            $label = trim($row['label'] ?? '');
+            $label = trim($row["label"] ?? "");
             if (in_array($label, self::LOCKED, true)) {
                 $lockedMap[$label] = $row;
             }
@@ -68,19 +72,23 @@ class Preprompts
         $clean = [];
 
         foreach ($items as $row) {
-            if (!is_array($row)) continue;
+            if (!is_array($row)) {
+                continue;
+            }
 
-            $label = trim($row['label'] ?? '');
-            $value = trim($row['value'] ?? '');
+            $label = trim($row["label"] ?? "");
+            $value = trim($row["value"] ?? "");
 
-            if ($label === '' || $value === '') continue;
+            if ($label === "" || $value === "") {
+                continue;
+            }
 
             if (in_array($label, self::LOCKED, true)) {
                 // Locked: accept only the value update, never rename or drop the row.
-                $clean[] = ['label' => $label, 'value' => $value];
+                $clean[] = ["label" => $label, "value" => $value];
                 unset($lockedMap[$label]); // mark as seen
             } else {
-                $clean[] = ['label' => $label, 'value' => $value];
+                $clean[] = ["label" => $label, "value" => $value];
             }
         }
 
@@ -91,11 +99,13 @@ class Preprompts
         }
 
         $dir = Config::dataDir();
-        if (!is_dir($dir)) mkdir($dir, 0755, true);
+        if (!is_dir($dir)) {
+            mkdir($dir, 0755, true);
+        }
 
         file_put_contents(
             self::userPath(),
-            json_encode($clean, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE)
+            json_encode($clean, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE),
         );
     }
 
@@ -103,6 +113,8 @@ class Preprompts
     public static function reset(): void
     {
         $path = self::userPath();
-        if (file_exists($path)) unlink($path);
+        if (file_exists($path)) {
+            unlink($path);
+        }
     }
 }
