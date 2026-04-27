@@ -77,9 +77,6 @@ nav div.embed {
   width: auto;
   border-left: 1px solid var(--bg-muted);
 }
-[data-theme="dark"] nav div.embed {
-  box-shadow: 0 0 3px var(--shadow);
-}
 
 .tabmenu {
   display: flex;

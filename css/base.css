@@ -17,38 +17,54 @@
 }
 
 [data-theme="light"] body {
-
   --fg-muted: color-mix(in srgb, var(--fg-main), var(--white) 30%);
-  
+
   --bg-alt: color-mix(in srgb, var(--bg-main), var(--black) 3%);
   --border: color-mix(in srgb, var(--bg-main), var(--black) 20%);
   --bg-muted: color-mix(in srgb, var(--bg-main), var(--black) 6%);
-  --bg-hover: color-mix(in srgb, var(--bg-main), var(--black) 3%);
-  --overlay: color-mix(in srgb, color-mix(in srgb, var(--bg-main), var(--black) 5%), transparent 9%);
-  --shadow: color-mix(in srgb,  var(--black) 60%, transparent 5%);
+  --bg-hover: color-mix(in srgb, var(--bg-main), var(--black) 4%);
+  --bg-input: color-mix(in srgb, var(--bg-main), var(--white) 10%);
+  --overlay: color-mix(
+    in srgb,
+    color-mix(in srgb, var(--bg-main), var(--black) 5%),
+    transparent 9%
+  );
+  --shadow: color-mix(in srgb, var(--black) 60%, transparent 5%);
   --scroll: var(--border);
-  --scroll-track: color-mix(in srgb, color-mix(in srgb, var(--scroll), var(--white) 60%), transparent 60%);
+  --scroll-track: color-mix(
+    in srgb,
+    color-mix(in srgb, var(--scroll), var(--white) 60%),
+    transparent 60%
+  );
   --scroll-thumb: color-mix(in srgb, var(--scroll), var(--black) 15%);
 }
 
 [data-theme="dark"] body {
-
   --fg-muted: color-mix(in srgb, var(--fg-main), var(--black) 30%);
 
   --bg-alt: color-mix(in srgb, var(--bg-main), var(--white) 10%);
   --border: color-mix(in srgb, var(--bg-main), var(--white) 20%);
   --bg-muted: color-mix(in srgb, var(--bg-main), var(--white) 15%);
   --bg-hover: color-mix(in srgb, var(--bg-main), var(--white) 25%);
-  --overlay: color-mix(in srgb, color-mix(in srgb, var(--bg-main), var(--black) 5%), transparent 9%);
-  --shadow: color-mix(in srgb,  var(--black) 50%, transparent 25%);
+  --bg-input: color-mix(in srgb, var(--bg-main), var(--black) 30%);
+  --overlay: color-mix(
+    in srgb,
+    color-mix(in srgb, var(--bg-main), var(--black) 5%),
+    transparent 9%
+  );
+  --shadow: color-mix(in srgb, var(--black) 50%, transparent 25%);
   --scroll: var(--border);
-  --scroll-track: color-mix(in srgb, color-mix(in srgb, var(--scroll), var(--black) 60%), transparent 60%);
+  --scroll-track: color-mix(
+    in srgb,
+    color-mix(in srgb, var(--scroll), var(--black) 60%),
+    transparent 60%
+  );
   --scroll-thumb: color-mix(in srgb, var(--scroll), var(--white) 15%);
 }
 
 ::-webkit-scrollbar {
   width: 4px;
-  background: var(--scroll-bg);  
+  background: var(--scroll-bg);
 }
 ::-webkit-scrollbar-thumb {
   border-radius: 4px;
@@ -59,10 +75,9 @@
   background: var(--scroll-ho);
 }
 
-
 .content::-webkit-scrollbar {
   width: 2px;
-  background: var(--scroll-bg);  
+  background: var(--scroll-bg);
 }
 .content::-webkit-scrollbar-thumb {
   background: var(--scroll);
@@ -72,10 +87,9 @@
   background: var(--scroll-ho);
 }
 
-
 #article::-webkit-scrollbar {
   width: 4px;
-  background: var(--scroll-track);  
+  background: var(--scroll-track);
 }
 
 #article::-webkit-scrollbar-thumb {
@@ -85,7 +99,6 @@
 #article::-webkit-scrollbar-thumb:hover {
   background: var(--scroll);
 }
-
 
 .entry::-webkit-scrollbar {
   width: 4px;
@@ -246,7 +259,6 @@ svg.icon {
 code {
   font-weight: 200;
 }
-
 
 #app {
   display: grid;

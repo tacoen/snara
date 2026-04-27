@@ -2,12 +2,52 @@ import { SnaraTool } from "./tools.js";
 import { SnaraUI } from "./ui.js";
 import { SnaraStruct } from "./struct.js";
 
+// Registered once per module load — marked.use() is global and cumulative.
+let _markedExtRegistered = false;
+
+function _registerSectionLabel() {
+  if (_markedExtRegistered) return;
+  _markedExtRegistered = true;
+
+  // Block-level extension: -[text]- => <p class="noprint">text</p>
+  //                        -[cls:text]- => <p class="noprint cls">text</p>
+  // 'noprint' is always the base class; prefix adds an extra class on top.
+  // Regex anchored to line start; no conflict with list items ('- ' needs a space).
+  marked.use({
+    extensions: [
+      {
+        name: "sectionLabel",
+        level: "block",
+        start(src) { return src.indexOf("-["); },
+        tokenizer(src) {
+          const match = /^-\[(?:([a-z0-9-]+):)?([^\]]+)\]-[ \t]*(?:\n|$)/.exec(src);
+          if (match) {
+            return {
+              type: "sectionLabel",
+              raw: match[0],
+              cls: match[1] || null,
+              text: match[2].trim(),
+            };
+          }
+        },
+        renderer(token) {
+          const cls = token.cls && token.cls !== "noprint"
+            ? `noprint ${token.cls}`
+            : "noprint";
+          return `<p class="${cls}">${token.text}</p>\n`;
+        },
+      },
+    ],
+  });
+}
+
 export class SnaraEditor {
   static CLASSES = SnaraStruct.CLASSES;
   static instance = null;
 
   constructor() {
     SnaraEditor.instance = this;
+    _registerSectionLabel();
     this.editorEl = document.getElementById("editor");
     this.entriesEl = document.querySelector(".entries");
     this.editorArea = document.querySelector(".editor-area");
@@ -37,6 +77,12 @@ export class SnaraEditor {
       .forEach((div) => this._bindEntryEvents(div));
   }
 
+  // Central MD -> HTML parse point. All entry rendering goes through here
+  // so custom extensions (sectionLabel, etc.) apply consistently.
+  _parseMd(md) {
+    return marked.parse(md, { breaks: true });
+  }
+
   setTag(cls) {
     document
       .querySelectorAll(".tag-pill")
@@ -57,7 +103,7 @@ export class SnaraEditor {
     const div = document.createElement("div");
     div.contentEditable = "true";
     div.className = `entry ${cls}`;
-    div.innerHTML = marked.parse(md, { breaks: true });
+    div.innerHTML = this._parseMd(md);
     this._bindEntryEvents(div);
     return div;
   }
@@ -113,7 +159,7 @@ export class SnaraEditor {
   // Purge all open entries (each committed: MD -> HTML, dirty check),
   // open target entry (HTML -> MD), scroll to it.
   // Called from focus handler and TOC click.
-  _openEntry(div) {
+  _openEntry(div, { scroll = false } = {}) {
     this.entriesEl.querySelectorAll(".entry[data-editing]").forEach((open) => {
       if (open !== div) this._commitEntry(open);
     });
@@ -128,13 +174,42 @@ export class SnaraEditor {
     // use the snapshot as source so both sides of the dirty check share the same origin
     div.innerText = SnaraTool.htmlToMd(div.dataset.originalHtml);
 
-    setTimeout(() => this._scrollToEntry(div), 10);
+    // restore cursor to where the user clicked after innerText wipes the DOM
+    const pt = div._clickPoint;
+    if (pt) {
+      delete div._clickPoint;
+      const range =
+        document.caretRangeFromPoint?.(pt.x, pt.y) ||
+        (document.caretPositionFromPoint
+          ? (() => {
+              const pos = document.caretPositionFromPoint(pt.x, pt.y);
+              if (!pos) return null;
+              const r = document.createRange();
+              r.setStart(pos.offsetNode, pos.offset);
+              r.collapse(true);
+              return r;
+            })()
+          : null);
+      if (range) {
+        const sel = window.getSelection();
+        sel.removeAllRanges();
+        sel.addRange(range);
+      }
+    }
+
+    // setTimeout(() => this._scrollToEntry(div), 10);
+    if (scroll) setTimeout(() => this._scrollToEntry(div), 10);
   }
 
   _bindEntryEvents(div) {
     div.addEventListener("focus", () => {
       SnaraUI.instance.focusEntry(div);
       if (!div.dataset.editing) this._openEntry(div);
+    });
+
+    // capture click position before focus fires — used by _openEntry to restore caret
+    div.addEventListener("mousedown", (e) => {
+      div._clickPoint = { x: e.clientX, y: e.clientY };
     });
 
     div.addEventListener("mouseup", () => SnaraUI.instance.focusEntry(div));
@@ -181,7 +256,7 @@ export class SnaraEditor {
       SnaraStruct.CLASSES.forEach((c) => div.classList.remove(c));
       div.classList.add(cls);
 
-      const newHtml = marked.parse(md, { breaks: true });
+      const newHtml = this._parseMd(md);
 
       // dirty check — compare normalized HTML to detect real changes
       if (

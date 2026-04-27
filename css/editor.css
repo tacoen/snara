@@ -158,7 +158,7 @@
 }
 .entries:not([hidden]) {
   display: flex;
-  padding: 0 var(--s-md) var(--s-lg) 0;
+  padding-bottom: var(--s-lg);
 }
 .entries:empty::before {
   content: "Your story will appear here ---";
@@ -179,6 +179,7 @@
   cursor: text;
   word-break: break-word;
   overflow-y: overlay;
+  width: 100%;
 }
 .entry + .entry {
   border-top: 1px dashed var(--border);
@@ -196,7 +197,7 @@
   color: var(--fg-muted);
 }
 .entry p {
-  margin-bottom: 0.6em;
+  margin-bottom: .75em;
 }
 .entry p:last-child {
   margin-bottom: 0;
@@ -223,7 +224,13 @@
   font-size: 1.1em;
   font-weight: 600;
   line-height: 1.3;
-  margin-bottom: 0.3em;
+  margin-bottom: 1.25em;
+}
+.entry h4 {
+  font-size: 1em;
+  font-weight: 600;
+  line-height: 1.3;
+  margin-bottom: .75em;
 }
 .entry blockquote {
   border-left: 2px solid var(--border);
@@ -298,17 +305,16 @@
 .entry-edit #editor {
   height: 72px;
 }
+
 .editor-area {
   border-top: 1px solid var(--border);
   background: var(--bg-input);
   margin: var(--s-md) var(--s-md) 0 var(--s-md);
   position: sticky;
   bottom: 0;
-  box-shadow: inset 0px 0 3px 0 var(--shadow);
+  box-shadow: outside 1px 1px 3px 0 var(--shadow);
 }
-[data-theme="dark"] .editor-area {
-  box-shadow: inset 0 1px 4px 0 var(--shadow);
-}
+
 .toolbar-row {
   display: none;
   align-items: center;

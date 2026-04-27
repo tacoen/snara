@@ -33,7 +33,7 @@ export class SnaraTool {
       a.addEventListener("click", (e) => {
         e.preventDefault();
         const target = document.getElementById(anchor);
-        if (target) SnaraEditor.instance?._openEntry(target);
+        if (target) SnaraEditor.instance?._openEntry(target, { scroll: true });
       });
 
       li.appendChild(a);
@@ -152,8 +152,15 @@ export class SnaraTool {
           return inner() + "\n";
         case "br":
           return "\n";
-        case "p":
+        case "p": {
+          // noprint p was written as -[text]- or -[cls:text]- — restore on round-trip.
+          if (node.classList.contains("noprint")) {
+            const extras = Array.from(node.classList).filter((c) => c !== "noprint");
+            const prefix = extras.length ? `${extras[0]}:` : "";
+            return `-[${prefix}${inner()}]-\n\n`;
+          }
           return `${inner().trim()}\n\n`;
+        }
         case "div":
           return inner() + "\n\n";
         case "hr":

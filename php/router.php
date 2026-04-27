@@ -592,6 +592,26 @@ class Router
                     echo json_encode(Query::build($bookId, $query, $remove));
                     break;
 
+// ── Asset existence check ────────────────────
+                case 'asset.exists':
+                    self::requireMethod($method, 'GET');
+                    $rel = ltrim($_GET['path'] ?? '', '/');
+                    if ($rel === '') self::error(400, 'Missing path');
+                    if (strpos($rel, '..') !== false) self::error(400, 'Invalid path');
+                    $abs  = rtrim(Config::dataDir(), '/') . '/' . $rel;
+                    $real = realpath($abs);
+                    $base = realpath(Config::dataDir());
+                    if ($real !== false && $base !== false && strpos($real, $base) === 0 && is_file($real)) {
+                        // Strip dataDir + bookId segment to return e.g. "image/cover.jpg"
+                        $relative = ltrim(substr($real, strlen($base) + 1), '/');
+                        $parts    = explode('/', $relative, 2);
+                        $file     = $parts[1] ?? $relative; // drop the bookId prefix
+                        echo json_encode(['exists' => true, 'file' => $file]);
+                    } else {
+                        echo json_encode(['exists' => false, 'file' => null]);
+                    }
+                    break;
+					
                 // ── Unknown ──────────────────────────────────
                 default:
                     self::error(404, "Unknown action: " . $action);

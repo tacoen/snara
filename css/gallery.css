@@ -4,9 +4,7 @@
   padding: var(--s-lg);
   height: 100%;
 }
-[data-theme="dark"] #about {
-  color: var(--fg-main);
-}
+
 #about .page {
   height: 80dvh;
   display: flex;
@@ -157,4 +155,18 @@
 #gallery-ac-list {
   margin: 0;
   width: 100%;
+}
+
+
+
+#chapter-cover-preview {
+	background: var(--bg-muted);
+	padding: var(--s-md);
+	height: 90vh;
+	width: auto !important;
+	margin-left: var(--s-md);
+}
+
+#chapter-cover-preview img {
+	height: 100%;
 }

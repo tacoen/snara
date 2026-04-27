@@ -92,7 +92,7 @@
 .opt-menu {
   display: flex;
   columns: 3;
-  gap: var(--s-sm);
+  gap: var(--s-md);
   margin-left: var(--s-lg);
 }
 .opt-menu li {
@@ -101,6 +101,7 @@
   justify-content: center;
   opacity: 0.5;
 }
+.opt-menu li[data-file],
 .opt-menu li.enable {
   opacity: 1;
 }
@@ -371,34 +372,6 @@ button[data-preprompt-index] svg {
   letter-spacing: 0.04em;
 }
 
-.submit-btn {
-  display: flex;
-  align-items: center;
-  gap: var(--s-xs);
-  background: var(--primary);
-  color: var(--bg-main);
-  border: none;
-  border-radius: 6px;
-  padding: var(--s-xs) var(--s-md);
-  font-family: var(--font-mono);
-  font-size: var(--f-xs);
-  letter-spacing: 0.05em;
-  cursor: pointer;
-  white-space: nowrap;
-  transition: opacity 0.15s;
-}
-
-[data-theme='dark'] .submit-btn {
-  background: var(--primary);
-  color: var(--fg-main);
-}
-
-.submit-btn:hover {
-  opacity: 0.85;
-}
-.submit-btn:active {
-  transform: scale(0.98);
-}
 .tag-pills {
   display: flex;
   align-items: center;

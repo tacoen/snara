@@ -241,27 +241,32 @@ export class SnaraIndex {
     }).catch(() => {});
   }
 
-  // Probes a URL with HEAD; resolves true if the server returns 200-299.
+  // Checks asset existence via API — avoids direct HEAD on restricted paths.
+  // Returns the relative file path (e.g. "image/cover.jpg") or null.
   async _checkAsset(url) {
     try {
-      const res = await fetch(url, { method: "HEAD" });
-      return res.ok;
+      const rel = url.startsWith(AppConfig.dataPath)
+        ? url.slice(AppConfig.dataPath.length)
+        : url;
+      const res  = await fetch(
+        `${AppConfig.apiPath}?action=asset.exists&path=${encodeURIComponent(rel)}`
+      );
+      const data = await res.json();
+      return data.exists === true ? (data.file ?? null) : null;
     } catch {
-      return false;
+      return null;
     }
   }
 
-  // Tries cover.png, cover.jpg, cover.webp — resolves true on first hit.
+  // Tries cover.png, cover.jpg, cover.webp — returns file string on first hit or null.
   async _checkCover(bookId) {
     for (const ext of ["png", "jpg", "webp"]) {
-      if (
-        await this._checkAsset(
-          `${AppConfig.dataPath}/${bookId}/image/cover.${ext}`
-        )
-      )
-        return true;
+      const file = await this._checkAsset(
+        `${AppConfig.dataPath}/${bookId}/image/cover.${ext}`
+      );
+      if (file) return file;
     }
-    return false;
+    return null;
   }
 
   _bindOptMenu(modal) {
@@ -296,6 +301,48 @@ export class SnaraIndex {
         }, 0);
       });
     }
+  }
+
+  _bindCoverPreview(modal) {
+    const li   = modal.querySelector('li[data-opt="cover"]');
+    const file = li?.getAttribute('data-file') || null;
+
+    const COVER_ID = 'chapter-cover-preview';
+    const existing = document.getElementById(COVER_ID);
+    if (existing) existing.remove();
+
+    if (!file) return;
+
+    const bookId = this.activeBookId;
+    const src    = `${AppConfig.dataPath}/${bookId}/${file}`;
+
+    const box = document.createElement('div');
+    box.id        = COVER_ID;
+    box.className = 'app-modal idx-cover-preview';
+
+    const img = document.createElement('img');
+    img.src = src;
+    img.alt = 'Cover';
+
+    box.appendChild(img);
+    document.getElementById('app-overlay').appendChild(box);
+    box.removeAttribute('hidden');
+
+    // Remove preview when chapter modal is closed (hidden attr set)
+    const chapterModal = document.getElementById('chapter-index-modal');
+    const mo = new MutationObserver(() => {
+      if (chapterModal.hasAttribute('hidden')) {
+        document.getElementById(COVER_ID)?.remove();
+        const overlay  = document.getElementById('app-overlay');
+        const anyOpen  = overlay?.querySelectorAll('.app-modal:not([hidden])').length > 0;
+        if (!anyOpen) {
+          overlay?.setAttribute('hidden', '');
+          document.body.classList.remove('modal-open');
+        }
+        mo.disconnect();
+      }
+    });
+    mo.observe(chapterModal, { attributes: true, attributeFilter: ['hidden'] });
   }
 
   async openChapterIndex() {
@@ -359,6 +406,7 @@ export class SnaraIndex {
           if (e.key === "Enter") this._createChapter(modal);
         });
       this._bindOptMenu(modal);
+      this._bindCoverPreview(modal);
 
       const toDelete = chapters.filter(
         (ch) => states[ch.filename] === "delete"
@@ -402,11 +450,24 @@ export class SnaraIndex {
       return `<p class="idx-empty">No chapters saved yet in this book.</p>`;
     }
 
+    // Normalize: empty/missing act -> "None"
+    chapters.forEach(ch => { if (!ch.act) ch.act = 'None'; });
+
+    // Sort: None always first, then act alpha -> order ASC -> filename alpha
+    chapters.sort((a, b) => {
+      const aAct = a.act === 'None' ? '' : a.act;
+      const bAct = b.act === 'None' ? '' : b.act;
+      const actCmp = aAct.localeCompare(bAct);
+      if (actCmp !== 0) return actCmp;
+      if (a.order !== b.order) return a.order - b.order;
+      return (a.filename || '').localeCompare(b.filename || '');
+    });
+
     const groups = [];
     const actSeen = new Map();
 
     for (const ch of chapters) {
-      const actLabel = ch.act || "";
+      const actLabel = ch.act;
       if (actSeen.has(actLabel)) {
         groups[actSeen.get(actLabel)].chapters.push(ch);
       } else {
@@ -436,7 +497,14 @@ export class SnaraIndex {
             <span class="idx-row-sub">${fmtDate(ch.mtime)}${
           ch.order !== 99 ? ` · #${ch.order}` : ""
         }</span>
-          </span>
+          </span>${
+          ch.h2 || ch.h3
+            ? `<span class="idx-row-main idx-row-main--headings">
+            <span class="idx-row-title">${esc(ch.h2 || "")}</span>
+            <span class="idx-row-sub">${esc(ch.h3 || "")}</span>
+          </span>`
+            : ""
+        }
           <span class="idx-row-badge">${esc(
             String(ch.entries ?? 0)
           )} entries</span>
@@ -578,10 +646,14 @@ export class SnaraIndex {
     }).catch(() => {});
   }
 
-  // hints: { hasCover: bool, hasSynopsis: bool } — controls opt-link styling
+  // hints: { hasCover: string|null, hasSynopsis: string|null } — controls opt-link styling
   _shell(id, heading, bodyHTML, hints = {}) {
-    const coverCls = hints.hasCover ? " opt-link" : "";
-    const synopsisCls = hints.hasSynopsis ? " opt-link" : "";
+    const coverFile    = hints.hasCover    || null;
+    const synopsisFile = hints.hasSynopsis || null;
+    const coverCls     = coverFile    ? ' opt-link' : '';
+    const synopsisCls  = synopsisFile ? ' opt-link' : '';
+    const coverData    = coverFile    ? ` data-file="${esc(coverFile)}"` : '';
+    const synopsisData = synopsisFile ? ` data-file="${esc(synopsisFile)}"` : '';
     return `
       <div class="modal-header">
         <div class='flex'>
@@ -589,8 +661,8 @@ export class SnaraIndex {
           ${
             id !== "book-index-modal"
               ? `<ul class='opt-menu'>
-              <li class="${coverCls.trim()}" data-opt="cover"><i data-icon="photo"></i><span>Cover</span></li>
-              <li class="${synopsisCls.trim()}" data-opt="synopsis"><i data-icon="synote"></i><span>Synopsis</span></li>
+              <li class="${coverCls.trim()}" data-opt="cover"${coverData}><i data-icon="photo"></i><span>Cover</span></li>
+              <li class="${synopsisCls.trim()}" data-opt="synopsis"${synopsisData}><i data-icon="synote"></i><span>Synopsis</span></li>
             </ul>`
               : ""
           }

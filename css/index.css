@@ -135,6 +135,15 @@
   gap: 1px;
   min-width: 0;
 }
+
+.idx-row-main--headings * {
+  font-size: 0.65rem !important;
+  opacity: .6;
+  overflow: hidden;
+  text-wrap-mode: nowrap;
+  text-overflow: ellipsis;
+}
+
 .idx-row-title {
   font-size: 0.875rem;
   color: var(--fg-main);
