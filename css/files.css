@@ -48,14 +48,15 @@
   background: var(--bg-main);
 }
 .fnav-item.active {
-  color: var(--primary);
+  color: var(--fg-link);
   background: var(--bg-muted);
-  font-weight: 500;
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
   font-weight: 600;
 }
 .fnav-item.active svg {
-  color: var(--primary);
-  stroke: var(--primary);
+  color: var(--fg-link);
+  stroke: var(--fg-link);
 }
 #files-main {
   display: flex;

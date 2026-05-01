@@ -181,6 +181,31 @@ export async function apiFetch(url, opts = {}) {
   return json;
 }
 
+// ── Plain-text paste enforcer ─────────────────────
+// Intercepts paste on any element and inserts plain text only,
+// preserving line breaks and stripping all HTML markup.
+// Supports contentEditable elements (uses execCommand) and
+// input/textarea elements (uses setRangeText + input event).
+// Call once per element after it is created.
+export function stripHtmlOnPaste(el) {
+  el.addEventListener("paste", (e) => {
+    e.preventDefault();
+    const text = (e.clipboardData || window.clipboardData).getData("text/plain");
+    if (!text) return;
+
+    const tag = el.tagName.toLowerCase();
+    if (tag === "textarea" || tag === "input") {
+      const start = el.selectionStart ?? 0;
+      const end = el.selectionEnd ?? 0;
+      el.setRangeText(text, start, end, "end");
+      el.dispatchEvent(new Event("input", { bubbles: true }));
+    } else {
+      // contentEditable — execCommand preserves undo stack
+      document.execCommand("insertText", false, text);
+    }
+  });
+}
+
 // ── POST JSON shorthand ───────────────────────────
 // Wraps apiFetch with POST method and JSON Content-Type header.
 export async function postJson(url, body, opts = {}) {

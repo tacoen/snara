@@ -1,4 +1,4 @@
-import { uid, debugLog, apiFetch, postJson } from "./helpers.js";
+import { uid, debugLog, apiFetch, postJson, stripHtmlOnPaste } from "./helpers.js";
 
 const TAG = "[SnaraKanban]";
 
@@ -273,6 +273,7 @@ export class SnaraKanban {
       this._scheduleSave();
     });
     titleEl.addEventListener("mousedown", (e) => e.stopPropagation());
+    stripHtmlOnPaste(titleEl);
     elh.appendChild(titleEl);
     el.appendChild(elh);
 
@@ -313,6 +314,7 @@ export class SnaraKanban {
       });
 
       refEl.addEventListener("mousedown", (e) => e.stopPropagation());
+      stripHtmlOnPaste(refEl);
       el.appendChild(refEl);
 
       // Render existing saved ref link on card build
@@ -334,6 +336,7 @@ export class SnaraKanban {
         this._scheduleSave();
       });
       revEl.addEventListener("mousedown", (e) => e.stopPropagation());
+      stripHtmlOnPaste(revEl);
       el.appendChild(revEl);
     }
 
@@ -439,6 +442,7 @@ export class SnaraKanban {
       if (item.done) li.classList.add("kanban__todo-done");
 
       span.addEventListener("mousedown", (e) => e.stopPropagation());
+      stripHtmlOnPaste(span);
       span.addEventListener("blur", () => this._syncChecklist(ul, card));
 
       span.addEventListener("keydown", (e) => {

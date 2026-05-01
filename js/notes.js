@@ -1,4 +1,4 @@
-import { esc, uid, debugLog } from "./helpers.js";
+import { esc, uid, debugLog, stripHtmlOnPaste } from "./helpers.js";
 
 export class SnaraNotes {
   static instance = null;
@@ -266,6 +266,7 @@ export class SnaraNotes {
     titleInput.className = "notes__card-title";
     titleInput.value = esc(note.title || "Untitled");
     titleInput.setAttribute("aria-label", "Note title");
+    stripHtmlOnPaste(titleInput);
     const actions = document.createElement("div");
     actions.className = "notes__card-actions";
     const delBtn = document.createElement("button");
@@ -289,6 +290,7 @@ export class SnaraNotes {
       ta.value = note.body || "";
       ta.setAttribute("placeholder", "Write in Markdown…");
       ta.setAttribute("aria-label", "Note body");
+      stripHtmlOnPaste(ta);
 
       requestAnimationFrame(() => {
         ta.style.height = "auto";

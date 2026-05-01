@@ -128,10 +128,10 @@ export class SnaraTool {
           return `#### ${inner()}\n\n`;
         case "strong":
         case "b":
-          return `**${inner()}**`;
+          return ` **${inner()}** `;
         case "em":
         case "i":
-          return `*${inner()}*`;
+          return ` *${inner()}* `;
         case "code":
           return node.closest("pre") ? inner() : `\`${inner()}\``;
         case "pre":

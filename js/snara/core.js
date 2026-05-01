@@ -1,6 +1,7 @@
 import { SnaraTool } from "./tools.js";
 import { SnaraUI } from "./ui.js";
 import { SnaraStruct } from "./struct.js";
+import { stripHtmlOnPaste } from "../helpers.js";
 
 // Registered once per module load — marked.use() is global and cumulative.
 let _markedExtRegistered = false;
@@ -57,6 +58,7 @@ export class SnaraEditor {
   }
 
   _bindEditor() {
+    stripHtmlOnPaste(this.editorEl);
     this.editorEl.addEventListener("keydown", (e) => {
       if (e.key === "Enter" && e.ctrlKey) {
         e.preventDefault();
@@ -202,6 +204,7 @@ export class SnaraEditor {
   }
 
   _bindEntryEvents(div) {
+    stripHtmlOnPaste(div);
     div.addEventListener("focus", () => {
       SnaraUI.instance.focusEntry(div);
       if (!div.dataset.editing) this._openEntry(div);
